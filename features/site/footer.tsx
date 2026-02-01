@@ -1,6 +1,14 @@
 "use client";
 
-import { GraduationCap, Heart, ArrowUp } from "lucide-react";
+import {
+  GraduationCap,
+  Heart,
+  ArrowUp,
+  Facebook,
+  Linkedin,
+  Instagram,
+  Youtube,
+} from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import NextImage from "next/image";
@@ -46,28 +54,50 @@ const Footer = () => {
                 />
               </div>
               <span className="font-display font-bold text-2xl">
-                © 2024 Aerophantom. Made with
+                Aerophantom
               </span>
             </Link>
             <p className="text-background/70 max-w-md text-lg leading-relaxed mb-6">
-              Complete student management solution for modern educators. Manage
-              students, track payments, and grow your coaching business.
+              Aerophantom is a robotics education platform that enables teachers
+              and institutes to run hands-on training programs with complete
+              academic and business support.
             </p>
 
             {/* Social Links */}
             <div className="flex gap-3">
-              {["facebook", "twitter", "instagram", "linkedin"].map(
-                (social) => (
-                  <a
-                    key={social}
-                    href="#"
-                    className="w-10 h-10 rounded-xl bg-background/10 hover:bg-primary hover:scale-110 flex items-center justify-center transition-all duration-300"
-                  >
-                    <span className="sr-only">{social}</span>
-                    <div className="w-5 h-5 rounded-full bg-background/50" />
-                  </a>
-                ),
-              )}
+              {[
+                {
+                  icon: Facebook,
+                  href: "https://www.facebook.com/people/AeroPhantom/100088056520354/?mibextid=LQQJ4d&rdid=TZ4C0zeEhsCarFZN&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F7gh6GjhsnCapmEps%2F%3Fmibextid%3DLQQJ4d",
+                  label: "Facebook",
+                },
+                {
+                  icon: Instagram,
+                  href: "https://www.instagram.com/aero_phantom?igsh=MTdmanZjNG5tMG5w&utm_source=qr",
+                  label: "Instagram",
+                },
+                {
+                  icon: Linkedin,
+                  href: "https://www.linkedin.com/company/aerophantom/posts/?feedView=all",
+                  label: "LinkedIn",
+                },
+                {
+                  icon: Youtube,
+                  href: "https://www.youtube.com/@aerophantom-jl7nd",
+                  label: "Youtube",
+                },
+              ].map((social) => (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-xl bg-background/10 hover:bg-primary hover:scale-110 flex items-center justify-center transition-all duration-300 group/icon"
+                >
+                  <span className="sr-only">{social.label}</span>
+                  <social.icon className="w-5 h-5 text-background/70 group-hover/icon:text-background transition-colors" />
+                </a>
+              ))}
             </div>
           </div>
 
@@ -129,16 +159,16 @@ const Footer = () => {
           </p>
           <div className="flex gap-6">
             <a
-              href="#"
+              href="https://www.aerophantom.com/privacypolicy"
               className="text-background/60 hover:text-primary text-sm transition-colors"
             >
               Privacy Policy
             </a>
             <a
-              href="#"
+              href="https://www.aerophantom.com/faq"
               className="text-background/60 hover:text-primary text-sm transition-colors"
             >
-              Terms of Service
+              FAQ
             </a>
           </div>
         </div>

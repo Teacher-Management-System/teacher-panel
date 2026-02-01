@@ -104,19 +104,17 @@ const AboutSection = () => {
               About Us
             </span>
             <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mt-3 mb-6">
-              Empowering Educators <br />
-              <span className="text-gradient">Since 2020</span>
+              Empowering Robotics <br />
+              <span className="text-gradient">Education Since 2020</span>
             </h2>
             <p className="text-muted-foreground text-lg mb-6 leading-relaxed">
-              Aerophantom is a comprehensive student management solution
-              designed specifically for teachers, tutors, and coaching centers.
-              We understand the challenges educators face in managing student
-              records and payments.
+              Aerophantom is a practical STEM education company helping teachers
+              deliver real robotics skills through hands-on training, projects,
+              and industry-relevant learning.
             </p>
             <p className="text-muted-foreground text-lg mb-10 leading-relaxed">
-              Our platform streamlines student enrollment, payment tracking, and
-              administrative tasks so you can focus on what matters most -
-              teaching.
+              We focus on training, not just kits — so students learn how to
+              think, design, and solve problems.
             </p>
 
             {/* Stats */}
@@ -164,10 +162,10 @@ const AboutSection = () => {
                   </div>
                   <div>
                     <h3 className="font-display text-2xl font-bold text-foreground">
-                      Aerophantom Technologies
+                      Aerophantom
                     </h3>
                     <p className="text-muted-foreground">
-                      Your Partner in Education
+                      Your Partner in Robotics Education
                     </p>
                   </div>
                 </div>
@@ -178,22 +176,19 @@ const AboutSection = () => {
                       icon: MapPin,
                       title: "Address",
                       content: [
-                        "123 Education Street, Tech Park",
-                        "New Delhi, India - 110001",
+                        "Plot no 57 Balaji Vihar 2 Govindpura Kalwar Road,",
+                        "Jaipur, Rajasthan 302012",
                       ],
                     },
                     {
                       icon: Mail,
                       title: "Email",
-                      content: [
-                        "support@aerophantom.com",
-                        "sales@aerophantom.com",
-                      ],
+                      content: ["Info@aerophantom.com"],
                     },
                     {
                       icon: Phone,
                       title: "Phone",
-                      content: ["+91 98765 43210", "+91 12345 67890"],
+                      content: ["+91 9509206534"],
                     },
                   ].map((item, index) => (
                     <div

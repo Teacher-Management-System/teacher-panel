@@ -1,34 +1,40 @@
 "use client";
 
-import { UserPlus, Upload, CheckCircle, Unlock } from "lucide-react";
+import {
+  UserPlus,
+  GraduationCap,
+  Users,
+  Rocket,
+  CheckCircle,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 const steps = [
   {
     icon: UserPlus,
     number: "01",
-    title: "Sign Up",
-    description:
-      "Create your account with basic details. Quick and easy registration process.",
+    title: "Register",
+    description: "Apply to become a Robotics Partner.",
   },
   {
-    icon: Upload,
+    icon: GraduationCap,
     number: "02",
-    title: "Upload Payment",
-    description: "Upload payment screenshot and UTR number for verification.",
+    title: "Get Trained",
+    description: "Complete technical + teaching certification.",
   },
   {
-    icon: CheckCircle,
+    icon: Users,
     number: "03",
-    title: "Admin Verification",
-    description: "Our admin team verifies your payment within 24 hours.",
+    title: "Onboard Students",
+    description:
+      "Add students using your unique ID. They appear directly in your dashboard.",
   },
   {
-    icon: Unlock,
+    icon: Rocket,
     number: "04",
-    title: "Access Panel",
+    title: "Start Teaching & Earning",
     description:
-      "Once verified, get full access to your student management panel.",
+      "Receive kits, content, marketing tools, and begin your robotics classes.",
   },
 ];
 

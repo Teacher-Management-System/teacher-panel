@@ -132,9 +132,9 @@ const HeroSection = () => {
               variants={itemVariants}
               className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6"
             >
-              Manage Your Students
+              Create a Robotics
               <span className="text-gradient block mt-2">
-                With Ease & Confidence
+                Training Center Today
               </span>
             </motion.h1>
 
@@ -143,8 +143,9 @@ const HeroSection = () => {
               variants={itemVariants}
               className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-8"
             >
-              Complete student management solution with payment tracking, secure
-              admin panel, and real-time insights for modern educators.
+              Teach Robotics in your city with full support. We provide
+              training, kits, curriculum, student platform, and marketing — so
+              you can focus on teaching and earning.
             </motion.p>
 
             {/* Features List */}
@@ -211,8 +212,8 @@ const HeroSection = () => {
               variants={itemVariants}
               className="mt-8 text-sm text-muted-foreground"
             >
-              ✓ No credit card required &nbsp;&nbsp; ✓ Quick Setup &nbsp;&nbsp;
-              ✓ 24/7 Support
+              ✓ No franchise fee &nbsp;&nbsp; ✓ Complete training & kits
+              &nbsp;&nbsp; ✓ Central academic team
             </motion.p>
           </motion.div>
 

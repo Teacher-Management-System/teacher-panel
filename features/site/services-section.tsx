@@ -3,54 +3,61 @@
 import {
   Users,
   CreditCard,
-  ShieldCheck,
-  LayoutDashboard,
-  FileCheck,
   BarChart3,
+  BookOpen,
+  Megaphone,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 const services = [
   {
     icon: Users,
-    title: "Student Management",
-    description:
-      "Complete CRUD operations for student records. Add, edit, view and manage all student information in one place.",
+    title: "Teacher Training & Certification",
+    description: [
+      "We train you on: Robotics concepts, Hardware & coding, Classroom handling, Safety & troubleshooting",
+      "After certification, you become an authorized Aerophantom Robotics Partner.",
+    ],
+    color: "from-primary to-primary/70",
+  },
+  {
+    icon: BookOpen,
+    title: "Robotics Curriculum & Kits",
+    description: [
+      "Step-by-step robotics curriculum",
+      "Project manuals & Video tutorials",
+      "Multi-project robotics kits",
+      "Assessment & progress tracking",
+    ],
     color: "from-primary to-primary/70",
   },
   {
     icon: CreditCard,
-    title: "Payment Tracking",
-    description:
-      "Track student payments, upload receipts, and maintain complete payment history with UTR verification.",
+    title: "Student Enrollment & Fee Tracking",
+    description: [
+      "Manage everything from one dashboard",
+      "Student details, Payments & status",
+      "Attendance & Certificates",
+    ],
     color: "from-primary to-primary/70",
   },
   {
-    icon: ShieldCheck,
-    title: "Admin Verification",
-    description:
-      "Secure admin approval system ensures only verified payments grant panel access.",
-    color: "from-primary to-primary/70",
-  },
-  {
-    icon: LayoutDashboard,
-    title: "Intuitive Dashboard",
-    description:
-      "Clean, modern dashboard with real-time insights into student enrollment and payment status.",
-    color: "from-primary to-primary/70",
-  },
-  {
-    icon: FileCheck,
-    title: "Document Upload",
-    description:
-      "Easy screenshot and document upload for payment verification and record keeping.",
+    icon: Megaphone,
+    title: "Marketing & Growth Support",
+    description: [
+      "Ready-to-use: Parent pitch PPT, Admission videos",
+      "Posters, banners, WhatsApp creatives",
+      "Pamphlets with kits",
+      "So you can onboard students faster",
+    ],
     color: "from-primary to-primary/70",
   },
   {
     icon: BarChart3,
-    title: "Analytics & Reports",
-    description:
-      "Detailed analytics on enrollments, payments, and student progress at your fingertips.",
+    title: "Analytics & Performance",
+    description: [
+      "Track Student enrollments & Revenue",
+      "Monitor Project progress & Batch performance",
+    ],
     color: "from-primary to-primary/70",
   },
 ];
@@ -97,11 +104,11 @@ const ServicesSection = () => {
           </span>
           <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mt-3 mb-4">
             Everything You Need to
-            <span className="text-gradient block">Manage Students</span>
+            <span className="text-gradient block">Run Robotics Classes</span>
           </h2>
           <p className="text-muted-foreground text-lg">
-            A complete suite of tools designed specifically for educators and
-            coaching centers.
+            Aerophantom provides an end-to-end system for teachers to start and
+            grow robotics programs.
           </p>
         </div>
 
@@ -135,9 +142,17 @@ const ServicesSection = () => {
               <h3 className="relative font-display text-xl font-semibold text-foreground mb-3 group-hover:text-primary transition-colors duration-300">
                 {service.title}
               </h3>
-              <p className="relative text-muted-foreground leading-relaxed">
-                {service.description}
-              </p>
+              <ul className="relative space-y-2">
+                {service.description.map((item, i) => (
+                  <li
+                    key={i}
+                    className="flex items-start text-muted-foreground"
+                  >
+                    <span className="mr-2 mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary" />
+                    <span className="leading-relaxed">{item}</span>
+                  </li>
+                ))}
+              </ul>
 
               {/* Arrow indicator on hover */}
               <div className="absolute bottom-8 right-8 w-10 h-10 rounded-full bg-primary/0 group-hover:bg-primary/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
