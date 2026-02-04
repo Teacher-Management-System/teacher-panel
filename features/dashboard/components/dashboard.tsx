@@ -1,152 +1,610 @@
-"use client";
-import { useEffect, useState } from "react";
-import { DateTime } from "luxon";
-
-import { RefreshCw, CalendarIcon } from "lucide-react";
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 import { DateRange } from "react-day-picker";
-import { Calendar } from "@/components/ui/calendar";
-import { Stats } from "./stats";
-import { UserGrowthChart } from "./user";
-import { CheckInChart } from "./check-ins";
-import { PostChart } from "./posts";
-import { VendorChart } from "./vendors";
-import dashboardService from "../api.service";
-import { TopStats } from "./top-stats";
+import {
+  Users,
+  CreditCard,
+  UserCheck,
+  Clock,
+  TrendingUp,
+  ArrowUpRight,
+  ArrowDownRight,
+  UserPlus,
+  IndianRupee,
+  Calendar,
+  Sparkles,
+  CalendarIcon,
+  Filter,
+} from "lucide-react";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
 
-interface Vendor {
-  id: string;
-  name: string;
-  logo: string;
-  count: number;
-}
+// Earnings data for area chart
+const earningsData = [
+  { month: "Aug", earnings: 45000 },
+  { month: "Sep", earnings: 52000 },
+  { month: "Oct", earnings: 48000 },
+  { month: "Nov", earnings: 61000 },
+  { month: "Dec", earnings: 55000 },
+  { month: "Jan", earnings: 72000 },
+];
 
-interface User {
-  id: string;
-  first_name: string;
-  last_name: string;
-  username: string;
-  avatar: string | null;
-  total_earned: number;
-}
+// Student enrollments data for bar chart
+const enrollmentData = [
+  { month: "Aug", students: 18 },
+  { month: "Sep", students: 24 },
+  { month: "Oct", students: 20 },
+  { month: "Nov", students: 28 },
+  { month: "Dec", students: 32 },
+  { month: "Jan", students: 34 },
+];
 
-interface TopStatsProps {
-  vendors: Vendor[];
-  users: User[];
-}
+// Student status for pie chart
+const statusData = [
+  { name: "Active", value: 142, color: "hsl(var(--success))" },
+  { name: "Pending", value: 14, color: "hsl(var(--warning))" },
+];
 
-const AdminDashboard = () => {
-  const [range, setRange] = useState<DateRange | undefined>({
-    from: DateTime.now().minus({ days: 7 }).toJSDate(),
-    to: DateTime.now().toJSDate(),
+const stats = [
+  {
+    title: "Total Students",
+    value: "156",
+    change: "+12",
+    changeLabel: "this month",
+    trend: "up",
+    icon: Users,
+    color: "bg-[#26c6da]", // Cyan
+  },
+  {
+    title: "Active Students",
+    value: "142",
+    change: "91%",
+    changeLabel: "active rate",
+    trend: "up",
+    icon: UserCheck,
+    color: "bg-[#66bb6a]", // Green
+  },
+  {
+    title: "Total Earning",
+    value: "₹1,45,000",
+    change: "+₹25,000",
+    changeLabel: "this month",
+    trend: "up",
+    icon: CreditCard,
+    color: "bg-[#42a5f5]", // Blue
+  },
+  {
+    title: "Pending Students",
+    value: "14",
+    change: "9%",
+    changeLabel: "of total",
+    trend: "down",
+    icon: Clock,
+    color: "bg-[#ffa726]", // Orange
+  },
+];
+
+const recentActivities = [
+  {
+    type: "enrollment",
+    name: "Rahul Sharma",
+    action: "enrolled",
+    time: "2 hours ago",
+    amount: "₹15,000",
+  },
+  {
+    type: "payment",
+    name: "Priya Patel",
+    action: "payment verified",
+    time: "5 hours ago",
+    amount: "₹12,000",
+  },
+  {
+    type: "enrollment",
+    name: "Amit Kumar",
+    action: "enrolled",
+    time: "1 day ago",
+    amount: "₹18,000",
+  },
+  {
+    type: "payment",
+    name: "Sneha Gupta",
+    action: "payment verified",
+    time: "2 days ago",
+    amount: "₹15,000",
+  },
+];
+
+const quickInsights = [
+  {
+    label: "Avg. Earning/Student",
+    value: "₹929",
+    icon: IndianRupee,
+    color: "text-primary",
+  },
+  {
+    label: "This Week Enrollments",
+    value: "8",
+    icon: UserPlus,
+    color: "text-success",
+  },
+  {
+    label: "Conversion Rate",
+    value: "87%",
+    icon: TrendingUp,
+    color: "text-accent",
+  },
+  {
+    label: "Best Month",
+    value: "January",
+    icon: Calendar,
+    color: "text-warning",
+  },
+];
+
+const Dashboard = () => {
+  const [date, setDate] = useState<DateRange | undefined>({
+    from: new Date(),
+    to: new Date(),
   });
-
-  const [startDate, setStartDate] = useState(
-    DateTime.now().minus({ days: 7 }).toFormat("yyyy-MM-dd")
-  );
-  const [endDate, setEndDate] = useState(
-    DateTime.now().endOf("month").toFormat("yyyy-MM-dd")
-  );
-
-  const [topStats, setTopStats] = useState<TopStatsProps>({
-    vendors: [],
-    users: [],
-  });
-  useEffect(() => {
-    const fetchData = async () => {
-      await dashboardService
-        .getTopStats({ from: startDate, to: endDate })
-        .then((res: any) => {
-          setTopStats(res.stats);
-        });
-    };
-    fetchData();
-  }, [startDate, endDate]);
 
   return (
-    <div className="min-h-screen">
-      <div className="max-w-7xl mx-auto py-6 space-y-6">
-        <Stats />
-      </div>
-
+    <div className="space-y-6">
       {/* Header */}
-      <div className="bg-card border-b rounded-lg sticky top-0 z-10 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-foreground">
-              Analytical Overview
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 animate-slide-up">
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground">
+              Dashboard
             </h1>
-            <div className="flex items-center gap-3">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline">
-                    <CalendarIcon />
-                    {range?.from && range?.to
-                      ? `${range.from.toLocaleDateString()} - ${range.to.toLocaleDateString()}`
-                      : "January 2025"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="w-auto overflow-hidden p-0"
-                  align="end"
-                >
-                  <Calendar
-                    className="w-full"
-                    mode="range"
-                    defaultMonth={range?.from}
-                    selected={range}
-                    onSelect={setRange}
-                    startMonth={range?.from}
-                    fixedWeeks
-                    showOutsideDays
-                  />
-                </PopoverContent>
-              </Popover>
-              <button
-                className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-all flex items-center gap-2 shadow-sm hover:shadow"
-                onClick={() => {
-                  setRange({
-                    from: DateTime.now().startOf("month").toJSDate(),
-                    to: DateTime.now().endOf("month").toJSDate(),
-                  });
-                  if (range?.from) {
-                    setStartDate(
-                      DateTime.fromJSDate(range.from).toFormat("yyyy-MM-dd")
-                    );
-                    setEndDate(
-                      DateTime.fromJSDate(range.to || range.from).toFormat(
-                        "yyyy-MM-dd"
-                      )
-                    );
-                  }
-                }}
-              >
-                <RefreshCw className="w-4 h-4" />
-                Refresh
-              </button>
-            </div>
+            <Badge className="bg-primary/10 text-primary border-0 gap-1">
+              <Sparkles className="w-3 h-3" />
+              Live
+            </Badge>
           </div>
+          <p className="text-muted-foreground">
+            Welcome back! Here's your performance overview.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 bg-background/50 p-1 rounded-lg border shadow-sm">
+          <div className="flex items-center gap-2 px-3 text-muted-foreground border-r">
+            <Filter className="w-4 h-4" />
+            <span className="text-sm font-medium">Filter:</span>
+          </div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                id="date"
+                variant={"ghost"}
+                className={cn(
+                  "justify-start text-left font-normal hover:bg-transparent",
+                  !date && "text-muted-foreground",
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {date?.from ? (
+                  date.to ? (
+                    <>
+                      {format(date.from, "LLL dd, y")} -{" "}
+                      {format(date.to, "LLL dd, y")}
+                    </>
+                  ) : (
+                    format(date.from, "LLL dd, y")
+                  )
+                ) : (
+                  <span>Pick a date</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <CalendarComponent
+                initialFocus
+                mode="range"
+                defaultMonth={date?.from}
+                selected={date}
+                onSelect={setDate}
+                numberOfMonths={2}
+              />
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto py-6 space-y-6">
-        <TopStats vendors={topStats.vendors} users={topStats.users} />
+      {/* Stats Grid */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {stats.map((stat, index) => (
+          <Card
+            key={index}
+            className="border-0 shadow-lg overflow-hidden card-hover animate-fade-in group p-0"
+            style={{ animationDelay: `${index * 0.1}s` }}
+          >
+            <CardContent className="p-0">
+              <div
+                className={`${stat.color} flex-1 p-6 text-white relative overflow-hidden flex flex-col justify-between`}
+              >
+                {/* Decorative circles - subtler now */}
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/5 rounded-full blur-2xl pointer-events-none" />
 
-        <UserGrowthChart from={startDate} to={endDate} />
+                <div className="relative z-10 flex justify-between items-start mb-6">
+                  <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center transition-transform group-hover:scale-110">
+                    <stat.icon className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/10">
+                    {stat.trend === "up" ? (
+                      <ArrowUpRight className="w-3 h-3" />
+                    ) : (
+                      <ArrowDownRight className="w-3 h-3" />
+                    )}
+                    {stat.change}
+                  </div>
+                </div>
 
-        <CheckInChart from={startDate} to={endDate} />
+                <div className="relative z-10">
+                  <p className="text-white/90 text-sm font-medium mb-1">
+                    {stat.title}
+                  </p>
+                  <p className="font-display text-4xl font-bold tracking-tight mb-1">
+                    {stat.value}
+                  </p>
+                  <p className="text-white/80 text-xs font-medium">
+                    {stat.changeLabel}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-        <PostChart from={startDate} to={endDate} />
+      {/* Charts Row */}
+      <div className="grid lg:grid-cols-2 gap-6 mb-8">
+        {/* Earnings Chart */}
+        <Card
+          className="border-0 shadow-lg animate-fade-in"
+          style={{ animationDelay: "0.4s" }}
+        >
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <TrendingUp className="w-4 h-4 text-primary" />
+                </div>
+                Earnings Overview
+              </CardTitle>
+              <Badge
+                variant="secondary"
+                className="bg-success/10 text-success border-0"
+              >
+                +18% vs last month
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <div className="h-[280px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={earningsData}
+                  margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient
+                      id="earningsGradient"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="5%"
+                        stopColor="hsl(var(--primary))"
+                        stopOpacity={0.3}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor="hsl(var(--primary))"
+                        stopOpacity={0}
+                      />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="hsl(var(--border))"
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="month"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{
+                      fill: "hsl(var(--muted-foreground))",
+                      fontSize: 12,
+                    }}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{
+                      fill: "hsl(var(--muted-foreground))",
+                      fontSize: 12,
+                    }}
+                    tickFormatter={(value) => `₹${value / 1000}k`}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "12px",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    }}
+                    formatter={(value: number) => [
+                      `₹${value.toLocaleString()}`,
+                      "Earnings",
+                    ]}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="earnings"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={3}
+                    fill="url(#earningsGradient)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
 
-        <VendorChart from={startDate} to={endDate} />
+        {/* Enrollments Chart */}
+        <Card
+          className="border-0 shadow-lg animate-fade-in"
+          style={{ animationDelay: "0.5s" }}
+        >
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-[#009688]/10 flex items-center justify-center">
+                  <UserPlus className="w-4 h-4 text-[#009688]" />
+                </div>
+                Student Enrollments
+              </CardTitle>
+              <Badge
+                variant="secondary"
+                className="bg-[#009688]/10 text-[#009688] border-0"
+              >
+                34 this month
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <div className="h-[280px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={enrollmentData}
+                  margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="hsl(var(--border))"
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="month"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{
+                      fill: "hsl(var(--muted-foreground))",
+                      fontSize: 12,
+                    }}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{
+                      fill: "hsl(var(--muted-foreground))",
+                      fontSize: 12,
+                    }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "12px",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    }}
+                    formatter={(value: number) => [value, "Students"]}
+                  />
+                  <Bar
+                    dataKey="students"
+                    fill="#009688"
+                    radius={[8, 8, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Bottom Row */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Student Status Pie Chart */}
+        <Card
+          className="border-0 shadow-lg animate-fade-in"
+          style={{ animationDelay: "0.6s" }}
+        >
+          <CardHeader>
+            <CardTitle className="font-display text-lg flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
+                <Users className="w-4 h-4 text-success" />
+              </div>
+              Student Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[200px] relative">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={statusData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {statusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "12px",
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              {/* Center text */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <p className="font-display text-2xl font-bold">156</p>
+                  <p className="text-xs text-muted-foreground">Total</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-center gap-6 mt-4">
+              {statusData.map((item) => (
+                <div key={item.name} className="flex items-center gap-2">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    {item.name}
+                  </span>
+                  <span className="text-sm font-semibold">{item.value}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Quick Insights */}
+        <Card
+          className="border-0 shadow-lg animate-fade-in"
+          style={{ animationDelay: "0.7s" }}
+        >
+          <CardHeader>
+            <CardTitle className="font-display text-lg flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-warning/10 flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-warning" />
+              </div>
+              Quick Insights
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {quickInsights.map((insight, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between p-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-10 h-10 rounded-lg bg-background flex items-center justify-center ${insight.color}`}
+                  >
+                    <insight.icon className="w-5 h-5" />
+                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    {insight.label}
+                  </span>
+                </div>
+                <span className="font-display font-bold text-foreground">
+                  {insight.value}
+                </span>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Recent Activity */}
+        <Card
+          className="border-0 shadow-lg animate-fade-in"
+          style={{ animationDelay: "0.8s" }}
+        >
+          <CardHeader>
+            <CardTitle className="font-display text-lg flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Clock className="w-4 h-4 text-primary" />
+              </div>
+              Recent Activity
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {recentActivities.map((activity, index) => (
+              <div
+                key={index}
+                className="flex items-start gap-3 pb-4 border-b border-border/50 last:border-0 last:pb-0"
+              >
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    activity.type === "enrollment"
+                      ? "bg-primary/10 text-primary"
+                      : "bg-success/10 text-success"
+                  }`}
+                >
+                  {activity.type === "enrollment" ? (
+                    <UserPlus className="w-5 h-5" />
+                  ) : (
+                    <CreditCard className="w-5 h-5" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">
+                    {activity.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {activity.action} • {activity.time}
+                  </p>
+                </div>
+                <Badge
+                  variant="secondary"
+                  className="bg-success/10 text-success border-0 text-xs flex-shrink-0"
+                >
+                  {activity.amount}
+                </Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
 };
 
-export default AdminDashboard;
+export default Dashboard;

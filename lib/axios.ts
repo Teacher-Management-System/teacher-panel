@@ -11,8 +11,11 @@ const apiClient = axios.create({
   baseURL: "/api", // Use an environment variable
   timeout: 10000, // Request timeout
   headers: {
-    "Content-Type": "application/json",
+    "ngrok-skip-browser-warning": "true",
   },
+  // headers: {
+  //   "Content-Type": "application/json",
+  // },
 });
 
 const debug = process.env.NODE_ENV !== "production";
@@ -34,7 +37,7 @@ apiClient.interceptors.request.use(
         {
           headers: config.headers,
           data: config.data,
-        }
+        },
       );
     }
 
@@ -43,7 +46,7 @@ apiClient.interceptors.request.use(
   (error: AxiosError) => {
     console.error("[API Request Error]", error);
     return Promise.reject(error);
-  }
+  },
 );
 
 // Response Interceptor
@@ -69,7 +72,7 @@ apiClient.interceptors.response.use(
 
         case 403:
           toast.error(
-            "Access denied. You do not have permission to perform this action."
+            "Access denied. You do not have permission to perform this action.",
           );
           break;
 
@@ -80,7 +83,7 @@ apiClient.interceptors.response.use(
             data?.message ||
               data?.error ||
               error.message ||
-              "Something went wrong."
+              "Something went wrong.",
           );
           break;
 
@@ -102,7 +105,7 @@ apiClient.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 // Helper function to handle unauthorized access

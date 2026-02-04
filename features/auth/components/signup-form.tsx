@@ -19,14 +19,17 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import NextImage from "next/image";
+import authService from "../api.service";
+import { cookieService } from "@/lib/cookie";
 
 export function SignupForm() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone: "",
+    mobile: "",
     password: "",
+    country_code: "+91",
     confirmPassword: "",
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -45,13 +48,20 @@ export function SignupForm() {
 
     setIsLoading(true);
 
-    setTimeout(() => {
+    try {
+      const response: any = await authService.register(formData);
+
+      if (response?.user) {
+        cookieService.setCookie("user", JSON.stringify(response.user));
+      }
+
+      toast.success("Account created successfully!");
+      router.push("/dashboard");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to create account");
+    } finally {
       setIsLoading(false);
-      toast.success(
-        "Account created! Please complete payment to access panel.",
-      );
-      router.push("/payment");
-    }, 1000);
+    }
   };
 
   const features = [
@@ -225,20 +235,21 @@ export function SignupForm() {
                 style={{ animationDelay: "0.25s" }}
               >
                 <Label
-                  htmlFor="phone"
+                  htmlFor="mobile"
                   className="text-sm font-medium text-gray-700"
                 >
-                  Phone
+                  Mobile Number
                 </Label>
                 <div className="relative group">
                   <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors" />
                   <Input
-                    id="phone"
-                    name="phone"
+                    id="mobile"
+                    name="mobile"
+                    max={10}
                     type="tel"
                     placeholder="+91 98765 43210"
                     className="pl-12 h-14 rounded-xl border border-gray-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-300"
-                    value={formData.phone}
+                    value={formData.mobile}
                     onChange={handleChange}
                     required
                   />

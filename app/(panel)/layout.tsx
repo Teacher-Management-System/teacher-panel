@@ -4,8 +4,8 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "5 O'Clock - Admin",
-  description: "An Admin Panel for 5 O'Clock to manage all the things",
+  title: "Aerophantom - Teacher Panel",
+  description: "A Teacher Panel for Aerophantom to manage all the things",
 };
 
 export default function DashboardLayout({
@@ -18,7 +18,7 @@ export default function DashboardLayout({
       <AppSidebar />
       <SidebarInset>
         <Header />
-        <main className="max-w-7xl mx-auto w-full px-4 py-6">{children}</main>
+        <main className="max-w-[85rem] mx-auto w-full py-2">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );

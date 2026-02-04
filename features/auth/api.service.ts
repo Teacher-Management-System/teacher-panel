@@ -24,6 +24,10 @@ class authService extends BaseService {
   async logout() {
     return await this.get("logout");
   }
+
+  async register(data: any) {
+    return await this.post("register", data);
+  }
 }
 
 export default new authService();

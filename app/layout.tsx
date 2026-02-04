@@ -30,7 +30,7 @@ export default async function RootLayout({
         className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased `}
       >
         <Providers>{children}</Providers>
-        <Toaster position="top-center" richColors closeButton={true} />
+        <Toaster richColors closeButton={true} />
       </body>
     </html>
   );

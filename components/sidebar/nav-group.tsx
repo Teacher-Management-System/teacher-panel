@@ -34,7 +34,7 @@ export function NavGroup({ title, items }: NavGroup) {
   const { state, isMobile } = useSidebar();
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="px-4">{title}</SidebarGroupLabel>
+      {title && <SidebarGroupLabel className="px-4">{title}</SidebarGroupLabel>}
       <SidebarMenu>
         {items.map((item: NavItem) => {
           const key = `${item.title}-${item.url}`;
@@ -67,6 +67,7 @@ const SidebarMenuLink = ({ item }: { item: NavLink }) => {
         asChild
         isActive={checkIsActive(pathname, item)}
         tooltip={item.title}
+        className="py-5 px-3"
       >
         <Link href={item.url} onClick={() => setOpenMobile(false)}>
           {item.icon && <item.icon />}
@@ -177,7 +178,7 @@ const SidebarMenuCollapsedDropdown = ({ item }: { item: NavCollapsible }) => {
 function checkIsActive(
   pathname: string,
   item: NavItem,
-  mainNav = false
+  mainNav = false,
 ): boolean {
   if (!pathname) {
     return false;

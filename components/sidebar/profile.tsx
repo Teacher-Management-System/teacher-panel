@@ -17,14 +17,24 @@ export function Profile({
     avatar: string;
   };
 }) {
+  const getDisplayName = () => {
+    if (user?.first_name && user?.last_name) {
+      return `${user.first_name} ${user.last_name}`;
+    }
+    return (user as any)?.name || user?.email?.split("@")[0] || "User";
+  };
+
+  const displayName = getDisplayName();
+  const initials = displayName.charAt(0).toUpperCase();
+
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-8 w-8 relative">
           <Avatar className="h-8 w-8 rounded-lg">
-            <AvatarImage src={user?.avatar} alt={user?.first_name} />
+            <AvatarImage src={user?.avatar} alt={displayName} />
             <AvatarFallback className="rounded-lg bg-primary text-primary-foreground">
-              {user?.first_name?.charAt(0).toUpperCase()}
+              {initials}
             </AvatarFallback>
           </Avatar>
         </Button>
