@@ -25,10 +25,8 @@ import authService from "../api.service";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Loader2, LockKeyhole } from "lucide-react";
-import { cookieService } from "@/lib/cookie";
 import { ResetPasswordSchema } from "../schema";
 import { z } from "zod";
-import { toast } from "sonner";
 
 type ResetPasswordFormValues = z.infer<typeof ResetPasswordSchema>;
 

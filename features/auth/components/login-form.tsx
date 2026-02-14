@@ -23,6 +23,15 @@ import Link from "next/link";
 import z from "zod";
 import NextImage from "next/image";
 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+
 type LoginFormValues = z.infer<typeof LoginSchema>;
 
 export function LoginForm({
@@ -45,7 +54,6 @@ export function LoginForm({
     authService
       .login(values)
       .then((response: any) => {
-        console.log(response.auth_token);
         cookieService.setCookie("user", JSON.stringify(response?.user));
         cookieService.setCookie("authToken", response.auth_token);
         const redirect = cookieService.getCookie("redirect");
@@ -111,91 +119,93 @@ export function LoginForm({
           </div>
 
           {/* Form */}
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div
-              className="space-y-2 animate-fade-in"
-              style={{ animationDelay: "0.2s" }}
-            >
-              <Label
-                htmlFor="email"
-                className="text-sm font-medium text-gray-700"
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem
+                    className="space-y-2 animate-fade-in"
+                    style={{ animationDelay: "0.2s" }}
+                  >
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Email Address
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative group">
+                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors z-10" />
+                        <Input
+                          type="email"
+                          placeholder="you@example.com"
+                          className="pl-12 h-14 rounded-xl border border-gray-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-300"
+                          disabled={loading}
+                          {...field}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem
+                    className="space-y-2 animate-fade-in"
+                    style={{ animationDelay: "0.3s" }}
+                  >
+                    <div className="flex justify-between">
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Password
+                      </FormLabel>
+                      <Link
+                        href="/auth/forgot-password"
+                        className="text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+                      >
+                        Forgot password?
+                      </Link>
+                    </div>
+                    <FormControl>
+                      <div className="relative group">
+                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors z-10" />
+                        <Input
+                          type="password"
+                          placeholder="••••••••"
+                          className="pl-12 h-14 rounded-xl border border-gray-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-300"
+                          disabled={loading}
+                          {...field}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Button
+                type="submit"
+                size="lg"
+                className="w-full h-14 rounded-xl text-base font-semibold animate-fade-in shadow-lg hover:shadow-primary/25 bg-primary hover:bg-primary/90 text-white"
+                style={{ animationDelay: "0.4s" }}
+                disabled={loading}
               >
-                Email Address
-              </Label>
-              <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors z-10" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  className="pl-12 h-14 rounded-xl border border-gray-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-300"
-                  disabled={loading}
-                  {...form.register("email")}
-                />
-              </div>
-              {form.formState.errors.email && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.email.message}
-                </p>
-              )}
-            </div>
-
-            <div
-              className="space-y-2 animate-fade-in"
-              style={{ animationDelay: "0.3s" }}
-            >
-              <div className="flex justify-between">
-                <Label
-                  htmlFor="password"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Password
-                </Label>
-                <Link
-                  href="/auth/forgot-password"
-                  className="text-sm text-primary hover:text-primary/80 transition-colors font-medium"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-              <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors z-10" />
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  className="pl-12 h-14 rounded-xl border border-gray-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-300"
-                  disabled={loading}
-                  {...form.register("password")}
-                />
-              </div>
-              {form.formState.errors.password && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.password.message}
-                </p>
-              )}
-            </div>
-
-            <Button
-              type="submit"
-              size="lg"
-              className="w-full h-14 rounded-xl text-base font-semibold animate-fade-in shadow-lg hover:shadow-primary/25 bg-primary hover:bg-primary/90 text-white"
-              style={{ animationDelay: "0.4s" }}
-              disabled={loading}
-            >
-              {loading ? (
-                <div className="flex items-center gap-2">
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Signing in...
-                </div>
-              ) : (
-                <>
-                  Sign In
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </>
-              )}
-            </Button>
-          </form>
+                {loading ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Signing in...
+                  </div>
+                ) : (
+                  <>
+                    Sign In
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </>
+                )}
+              </Button>
+            </form>
+          </Form>
 
           {/* Sign Up Link */}
           <p

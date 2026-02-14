@@ -9,6 +9,8 @@ export interface ApiResponse {
   status: boolean;
   message?: string;
   auth_token?: string;
+  token?: string;
+  reset_token?: string;
   meta?: any;
 }
 
@@ -55,6 +57,12 @@ export default class BaseService {
         : response.data || {};
       if (response.auth_token) {
         (result as any).auth_token = response.auth_token;
+      }
+      if (response.token) {
+        (result as any).token = response.token;
+      }
+      if (response.reset_token) {
+        (result as any).reset_token = response.reset_token;
       }
       return result;
     } catch (error) {

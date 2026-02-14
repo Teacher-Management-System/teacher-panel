@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/input-otp";
 import authService from "../api.service";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2, ArrowLeft, ShieldCheck, LockKeyhole } from "lucide-react";
 import { z } from "zod";
 import {
@@ -50,6 +50,30 @@ export function ForgotPasswordForm({
   const [step, setStep] = useState<"email" | "otp" | "reset">("email");
   const [email, setEmail] = useState("");
   const [token, setToken] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (resendCooldown > 0) {
+      timer = setInterval(() => {
+        setResendCooldown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
+  const handleResendOtp = async () => {
+    if (resendCooldown > 0) return;
+    setLoading(true);
+    try {
+      await authService.forgotPassword({ email });
+      setResendCooldown(60);
+    } catch (error: any) {
+      console.error(error.response?.data?.message || "Failed to resend OTP");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const emailForm = useForm<ForgotPasswordValues>({
     resolver: zodResolver(ForgotPasswordSchema),
@@ -76,6 +100,7 @@ export function ForgotPasswordForm({
       await authService.forgotPassword(values);
       setEmail(values.email);
       otpForm.setValue("email", values.email);
+      toast.success("OTP sent successfully!");
       setStep("otp");
     } catch (error: any) {
       console.error(error.response?.data?.message || "Failed to send OTP");
@@ -88,8 +113,9 @@ export function ForgotPasswordForm({
     setLoading(true);
     try {
       const response: any = await authService.verifyOtp(values);
-      if (response) {
-        const receivedToken = response;
+      console.log(response, "OTP Response");
+      const receivedToken = response?.token || response?.reset_token;
+      if (receivedToken) {
         setToken(receivedToken);
         resetForm.setValue("token", receivedToken);
         setStep("reset");
@@ -241,6 +267,19 @@ export function ForgotPasswordForm({
                       </FormItem>
                     )}
                   />
+                  <div className="mt-4 text-center">
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="text-sm font-medium text-primary hover:text-primary/80"
+                      onClick={handleResendOtp}
+                      disabled={loading || resendCooldown > 0}
+                    >
+                      {resendCooldown > 0
+                        ? `Resend OTP in ${resendCooldown}s`
+                        : "Resend OTP"}
+                    </Button>
+                  </div>
                 </div>
                 <Button
                   type="submit"

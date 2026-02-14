@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import NextImage from "next/image";
 import authService from "../api.service";
@@ -27,43 +27,81 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { RegisterSchema } from "../schema";
+import { z } from "zod";
+
+type RegisterValues = z.infer<typeof RegisterSchema>;
+
 export function SignupForm() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    mobile: "",
-    password: "",
-    country_code: "+91",
-    confirmPassword: "",
-  });
-  const [otp, setOtp] = useState("");
   const [showOtp, setShowOtp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const form = useForm<RegisterValues>({
+    resolver: zodResolver(RegisterSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      mobile: "",
+      country_code: "+91",
+      password: "",
+      password_confirmation: "",
+    },
+  });
 
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const [otp, setOtp] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0);
 
-    if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match!");
-      return;
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (resendCooldown > 0) {
+      timer = setInterval(() => {
+        setResendCooldown((prev) => prev - 1);
+      }, 1000);
     }
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
 
+  const onSignupSubmit = async (values: RegisterValues) => {
     setIsLoading(true);
-
     try {
-      const response: any = await authService.register(formData);
+      const response: any = await authService.register(values);
       if (response) {
+        setRegisteredEmail(values.email);
         toast.success("Account created! Please verify OTP sent to your email.");
         setShowOtp(true);
+        setResendCooldown(60);
       }
     } catch (error: any) {
       console.error(error.message || "Failed to create account");
-      toast.error(error.message || "Failed to create account");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (resendCooldown > 0) return;
+    setIsLoading(true);
+    try {
+      const values = form.getValues();
+      const response: any = await authService.register(values);
+      if (response) {
+        toast.success("OTP resent successfully!");
+        setResendCooldown(60);
+      }
+    } catch (error: any) {
+      console.error(error.message || "Failed to resend OTP");
     } finally {
       setIsLoading(false);
     }
@@ -79,7 +117,7 @@ export function SignupForm() {
 
     try {
       const response: any = await authService.verifyOtp({
-        email: formData.email,
+        email: registeredEmail,
         otp: otp,
         event: "register",
       });
@@ -88,11 +126,10 @@ export function SignupForm() {
         cookieService.setCookie("authToken", response.auth_token);
         router.push("/dashboard");
       } else {
-        toast.error("Verification failed. Please try again.");
+        console.error("Verification failed. Please try again.");
       }
     } catch (error: any) {
       console.error(error);
-      toast.error(error.message || "OTP Verification failed");
     } finally {
       setIsLoading(false);
     }
@@ -204,7 +241,7 @@ export function SignupForm() {
                 <p className="text-muted-foreground text-lg max-w-sm mx-auto leading-relaxed">
                   We have sent a 6-digit code to your email <br />
                   <span className="font-semibold text-foreground">
-                    {formData.email}
+                    {registeredEmail}
                   </span>
                 </p>
               </div>
@@ -268,10 +305,13 @@ export function SignupForm() {
                   Didn't receive the code?{" "}
                   <button
                     type="button"
-                    className="text-primary font-semibold hover:text-primary/80 transition-colors underline-offset-4 hover:underline"
-                    onClick={() => toast.info("Resend logic here")}
+                    className="text-primary font-semibold hover:text-primary/80 transition-colors underline-offset-4 hover:underline disabled:opacity-50 disabled:no-underline"
+                    onClick={handleResendOtp}
+                    disabled={resendCooldown > 0 || isLoading}
                   >
-                    Click to Resend
+                    {resendCooldown > 0
+                      ? `Resend in ${resendCooldown}s`
+                      : "Click to Resend"}
                   </button>
                 </p>
               </form>
@@ -297,162 +337,171 @@ export function SignupForm() {
                 </p>
               </div>
 
-              <form onSubmit={handleSignup} className="space-y-5">
-                {/* ... Existing Signup Fields ... */}
-                {/* I will invoke replace_file_content carefully to keep the existing form fields if I can, but since I am restructuring the render, it's safer to provide the full block or use a large chunk replacement. Given constraints, I will replace the component content. */}
-                {/* Actually, I should use the previous content for fields to avoid re-writing them all if they are complex. */}
-                {/* However, the tool requires providing the ReplacementContent. I'll paste the updated form content here. */}
-
-                <div
-                  className="space-y-2 animate-fade-in"
-                  style={{ animationDelay: "0.15s" }}
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSignupSubmit)}
+                  className="space-y-5"
                 >
-                  <Label
-                    htmlFor="name"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Full Name
-                  </Label>
-                  <div className="relative group">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors" />
-                    <Input
-                      id="name"
-                      name="name"
-                      type="text"
-                      placeholder="John Doe"
-                      className="pl-12 h-14 rounded-xl border border-gray-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-300 hover:border-gray-300"
-                      value={formData.name}
-                      onChange={handleChange}
-                      required
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem
+                        className="space-y-2 animate-fade-in"
+                        style={{ animationDelay: "0.15s" }}
+                      >
+                        <FormLabel className="text-sm font-medium text-gray-700">
+                          Full Name
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative group">
+                            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors" />
+                            <Input
+                              placeholder="John Doe"
+                              className="pl-12 h-14 rounded-xl border border-gray-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-300 hover:border-gray-300"
+                              {...field}
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem
+                          className="space-y-1.5 animate-fade-in"
+                          style={{ animationDelay: "0.2s" }}
+                        >
+                          <FormLabel className="text-sm font-medium text-foreground/80">
+                            Email
+                          </FormLabel>
+                          <FormControl>
+                            <div className="relative group">
+                              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                              <Input
+                                type="email"
+                                placeholder="you@example.com"
+                                className="pl-10 h-11 rounded-lg border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-300 hover:border-primary/50"
+                                {...field}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="mobile"
+                      render={({ field }) => (
+                        <FormItem
+                          className="space-y-1.5 animate-fade-in"
+                          style={{ animationDelay: "0.25s" }}
+                        >
+                          <FormLabel className="text-sm font-medium text-foreground/80">
+                            Mobile Number
+                          </FormLabel>
+                          <FormControl>
+                            <div className="relative group">
+                              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                              <Input
+                                maxLength={10}
+                                type="tel"
+                                placeholder="+91 98765 43210"
+                                className="pl-10 h-11 rounded-lg border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-300 hover:border-primary/50"
+                                {...field}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div
-                    className="space-y-1.5 animate-fade-in"
-                    style={{ animationDelay: "0.2s" }}
-                  >
-                    <Label
-                      htmlFor="email"
-                      className="text-sm font-medium text-foreground/80"
-                    >
-                      Email
-                    </Label>
-                    <div className="relative group">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        placeholder="you@example.com"
-                        className="pl-10 h-11 rounded-lg border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-300 hover:border-primary/50"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem
+                          className="space-y-1.5 animate-fade-in"
+                          style={{ animationDelay: "0.3s" }}
+                        >
+                          <FormLabel className="text-sm font-medium text-foreground/80">
+                            Password
+                          </FormLabel>
+                          <FormControl>
+                            <div className="relative group">
+                              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                              <Input
+                                type="password"
+                                placeholder="••••••••"
+                                className="pl-10 h-11 rounded-lg border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-300 hover:border-primary/50"
+                                {...field}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="password_confirmation"
+                      render={({ field }) => (
+                        <FormItem
+                          className="space-y-1.5 animate-fade-in"
+                          style={{ animationDelay: "0.35s" }}
+                        >
+                          <FormLabel className="text-sm font-medium text-foreground/80">
+                            Confirm Password
+                          </FormLabel>
+                          <FormControl>
+                            <div className="relative group">
+                              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                              <Input
+                                type="password"
+                                placeholder="••••••••"
+                                className="pl-10 h-11 rounded-lg border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-300 hover:border-primary/50"
+                                {...field}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
 
-                  <div
-                    className="space-y-1.5 animate-fade-in"
-                    style={{ animationDelay: "0.25s" }}
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="w-full h-12 rounded-lg text-base font-semibold mt-4 animate-slide-up shadow-md hover:shadow-lg bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white transition-all duration-300 transform active:scale-[0.98]"
+                    style={{ animationDelay: "0.4s" }}
+                    disabled={isLoading}
                   >
-                    <Label
-                      htmlFor="mobile"
-                      className="text-sm font-medium text-foreground/80"
-                    >
-                      Mobile Number
-                    </Label>
-                    <div className="relative group">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                      <Input
-                        id="mobile"
-                        name="mobile"
-                        maxLength={10}
-                        type="tel"
-                        placeholder="+91 98765 43210"
-                        className="pl-10 h-11 rounded-lg border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-300 hover:border-primary/50"
-                        value={formData.mobile}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div
-                    className="space-y-1.5 animate-fade-in"
-                    style={{ animationDelay: "0.3s" }}
-                  >
-                    <Label
-                      htmlFor="password"
-                      className="text-sm font-medium text-foreground/80"
-                    >
-                      Password
-                    </Label>
-                    <div className="relative group">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                      <Input
-                        id="password"
-                        name="password"
-                        type="password"
-                        placeholder="••••••••"
-                        className="pl-10 h-11 rounded-lg border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-300 hover:border-primary/50"
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div
-                    className="space-y-1.5 animate-fade-in"
-                    style={{ animationDelay: "0.35s" }}
-                  >
-                    <Label
-                      htmlFor="confirmPassword"
-                      className="text-sm font-medium text-foreground/80"
-                    >
-                      Confirm Password
-                    </Label>
-                    <div className="relative group">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                      <Input
-                        id="confirmPassword"
-                        name="confirmPassword"
-                        type="password"
-                        placeholder="••••••••"
-                        className="pl-10 h-11 rounded-lg border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-300 hover:border-primary/50"
-                        value={formData.confirmPassword}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="w-full h-12 rounded-lg text-base mt-4 animate-slide-up shadow-md hover:shadow-lg bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white transition-all duration-300 transform active:scale-[0.98]"
-                  style={{ animationDelay: "0.4s" }}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Creating Account...
-                    </div>
-                  ) : (
-                    <>
-                      Create Account
-                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </>
-                  )}
-                </Button>
-              </form>
+                    {isLoading ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Creating Account...
+                      </div>
+                    ) : (
+                      <>
+                        Create Account
+                        <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </Form>
 
               <p
                 className="mt-6 text-center text-sm text-muted-foreground animate-fade-in"

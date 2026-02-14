@@ -24,7 +24,6 @@ import {
 import { NotificationItem } from "../model";
 import notificationService from "../api.service";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
 export default function NotificationList() {
@@ -101,11 +100,8 @@ export default function NotificationList() {
         }));
         await notificationService.markAsRead();
       }
-      toast.success("Marked as read");
     } catch (error) {
       console.error("Failed to mark as read", error);
-      toast.error("Failed to update status");
-      // Revert optimistic update nicely? For now, we trust.
     } finally {
       setIsMarkingRead(false);
       setDialogOpen(false);
