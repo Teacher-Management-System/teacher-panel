@@ -81,6 +81,7 @@ export function SignupForm() {
       const response: any = await authService.verifyOtp({
         email: formData.email,
         otp: otp,
+        event: "register",
       });
       if (response?.auth_token) {
         cookieService.setCookie("user", JSON.stringify(response.user));

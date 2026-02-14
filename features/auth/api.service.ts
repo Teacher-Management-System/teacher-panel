@@ -13,11 +13,7 @@ class authService extends BaseService {
     return await this.post("forgot-password", data);
   }
 
-  async resetPassword(data: {
-    otp: string;
-    password: string;
-    password_confirmation: string;
-  }) {
+  async resetPassword(data: { password: string; token: string }) {
     return await this.post("reset-password", data);
   }
 
@@ -25,7 +21,7 @@ class authService extends BaseService {
     return await this.get("logout");
   }
 
-  async verifyOtp(data: { email: string; otp: string }) {
+  async verifyOtp(data: { email: string; otp: string; event: string }) {
     return await this.post("verify-otp", data);
   }
 
