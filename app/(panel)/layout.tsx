@@ -1,4 +1,5 @@
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
+import Script from "next/script";
 import Header from "@/components/sidebar/header";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { Metadata } from "next";

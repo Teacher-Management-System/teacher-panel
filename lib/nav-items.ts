@@ -4,6 +4,7 @@ import {
   CreditCard,
   Bell,
   Settings,
+  User,
 } from "lucide-react";
 
 export const navData = {
@@ -31,10 +32,15 @@ export const navData = {
           url: "/notifications",
           icon: Bell,
         },
+        // {
+        //   title: "Settings",
+        //   url: "/settings",
+        //   icon: Settings,
+        // },
         {
-          title: "Settings",
-          url: "/settings",
-          icon: Settings,
+          title: "Profile",
+          url: "/profile",
+          icon: User,
         },
       ],
     },

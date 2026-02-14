@@ -1,26 +1,10 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
-import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormDescription,
-  FormMessage,
-  Form,
-} from "@/components/ui/form";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { useEffect } from "react";
-import { toast } from "sonner";
-import profileService from "@/features/profile/api.service";
-import { cookieService } from "@/lib/cookie";
-import { Data } from "@/types/data";
-import MediaUpload from "@/features/media/components/upload";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -28,99 +12,103 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
 import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/ui/input-group";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format } from "date-fns";
+import {
+  CalendarIcon,
+  User,
+  Mail,
+  Phone,
+  Briefcase,
+  GraduationCap,
+  Building2,
+  DollarSign,
+  UserCircle,
+  Users,
+  AlertCircle,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import PaymentReminderDialog from "@/components/PaymentReminderDialogProps";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import profileService from "../api.service";
+import { toast } from "sonner";
+import { useEffect } from "react";
 
-const profileSchema = z.object({
-  username: z.string().min(2, "Username must be at least 2 characters").max(30),
-  email: z.string().email("Invalid email address"),
-  bio: z.string().max(160).optional(),
-  website: z.string().url().optional().or(z.literal("")),
-  first_name: z.string().min(1, "First name is required").max(50),
-  last_name: z.string().min(1, "Last name is required").max(50),
-  avatar: z.string().optional(),
-  mobile: z.string().max(15).optional(),
-  countryCode: z.string().optional(), // Add separate country code field
-});
+type Qualification = "undergraduate" | "graduate" | "postgraduate";
+type CurrentStatus = "college_student" | "employed" | "unemployed";
 
-type ProfileFormValues = z.infer<typeof profileSchema>;
+interface ProfileFormData {
+  fullName: string;
+  fatherName: string;
+  gender: string;
+  dob: Date | undefined;
+  contactNumber: string;
+  email: string;
+  qualification: Qualification | "";
+  currentStatus: CurrentStatus | "";
+  collegeName: string;
+  course: string;
+  year: string;
+  organizationName: string;
+  designation: string;
+  monthlyPaymentExpectation: string;
+}
 
-// Common country codes for the select dropdown
-const countryCodes = [
-  { code: "+1", name: "United States" },
-  { code: "+44", name: "United Kingdom" },
-  { code: "+91", name: "India" },
-  { code: "+61", name: "Australia" },
-  { code: "+33", name: "France" },
-  { code: "+49", name: "Germany" },
-  { code: "+81", name: "Japan" },
-  { code: "+86", name: "China" },
-  { code: "+55", name: "Brazil" },
-  { code: "+39", name: "Italy" },
-];
-
-export default function BasicProfileForm() {
-  const form = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileSchema),
-    defaultValues: {
-      username: "",
-      email: "",
-      bio: "",
-      website: "",
-      avatar: "",
-      first_name: "",
-      last_name: "",
-      mobile: "",
-      countryCode: "+1", // Separate field for country code
-    },
+const ProfileForm = () => {
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState<ProfileFormData>({
+    fullName: "",
+    fatherName: "",
+    gender: "",
+    dob: undefined,
+    contactNumber: "",
+    email: "",
+    qualification: "",
+    currentStatus: "",
+    collegeName: "",
+    course: "",
+    year: "",
+    organizationName: "",
+    designation: "",
+    monthlyPaymentExpectation: "",
   });
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
 
-  // Fetch profile data on component mount
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        // First try to get from cookie
-        const userCookie = cookieService.getCookie("user");
-        if (userCookie) {
-          const userData = JSON.parse(userCookie);
-          form.reset({
-            username: userData.username || "",
-            email: userData.email || "",
-            bio: userData.bio || "",
-            website: userData.website || "",
-            avatar: userData.avatar || "",
-            first_name: userData.first_name || userData.firstName || "",
-            last_name: userData.last_name || userData.lastName || "",
-            mobile: userData.mobile || "",
-            countryCode: userData.countryCode || "+1",
-          });
-          return;
-        }
-
-        // If not in cookie, fetch from API
-        const profileData = await profileService.getProfile();
-        if (profileData) {
-          form.reset({
-            username: (profileData as any).username || "",
-            email: (profileData as any).email || "",
-            bio: (profileData as any).bio || "",
-            website: (profileData as any).website || "",
-            avatar: (profileData as any).avatar || "",
-            first_name:
-              (profileData as any).first_name ||
-              (profileData as any).firstName ||
-              "",
-            last_name:
-              (profileData as any).last_name ||
-              (profileData as any).lastName ||
-              "",
-            mobile: (profileData as any).mobile || "",
-            countryCode: (profileData as any).country_code || "+1",
-          });
-        }
+        const response: any = await profileService.getProfile();
+        const data = response.user;
+        setFormData({
+          fullName: data.name || "",
+          fatherName: data.father_name || "",
+          gender: data.gender || "",
+          dob: data.dob
+            ? new Date(
+                !isNaN(Number(data.dob)) &&
+                  Math.abs(Number(data.dob)) < 100000000000
+                  ? Number(data.dob) * 1000
+                  : data.dob,
+              )
+            : undefined,
+          contactNumber: data.mobile || "",
+          email: data.email || "",
+          qualification: (data.qualification_level as Qualification) || "",
+          currentStatus: (data.current_status as CurrentStatus) || "",
+          collegeName: data.college_name || "",
+          course: data.course || "",
+          year: data.year ? String(data.year) : "",
+          organizationName: data.organization_name || "",
+          designation: data.designation || "",
+          monthlyPaymentExpectation: data.monthly_payment_expectation
+            ? String(data.monthly_payment_expectation)
+            : "",
+        });
       } catch (error) {
         console.error("Failed to fetch profile:", error);
         toast.error("Failed to load profile data");
@@ -128,180 +116,451 @@ export default function BasicProfileForm() {
     };
 
     fetchProfile();
-  }, [form]);
+  }, []);
 
-  async function onSubmit(data: ProfileFormValues) {
+  const handleInputChange = (
+    field: keyof ProfileFormData,
+    value: string | Date | undefined,
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const payload = {
+      name: formData.fullName,
+      father_name: formData.fatherName,
+      gender: formData.gender,
+      dob: formData.dob ? format(formData.dob, "yyyy-MM-dd") : null,
+      mobile: formData.contactNumber,
+      qualification: formData.qualification,
+      current_status: formData.currentStatus,
+      college_name: formData.collegeName,
+      course: formData.course,
+      year: formData.year,
+      organization_name: formData.organizationName,
+      designation: formData.designation,
+      monthly_payment_expectation: formData.monthlyPaymentExpectation,
+    };
+
     try {
-      // Prepare data for API call with separate fields
-      const profileData: any = {
-        first_name: data.first_name,
-        last_name: data.last_name,
-        country_code: data.countryCode,
-        mobile: data.mobile,
-        avatar: data.avatar,
-      };
-
-      console.log("Updating profile with data:", profileData);
-
-      // Update profile via API
-      const response = await profileService.updateProfile(profileData);
-
-      // Update cookie with new data
-      const userCookie = cookieService.getCookie("user");
-      if (userCookie) {
-        const userData = JSON.parse(userCookie);
-        const updatedUserData = {
-          ...userData,
-          firstName: data.first_name,
-          lastName: data.last_name,
-          username: data.username,
-          email: data.email,
-          avatar: data.avatar,
-          mobile: data.mobile,
-          countryCode: data.countryCode,
-        };
-        cookieService.setCookie("user", JSON.stringify(updatedUserData));
-      }
-
-      toast.success("Profile updated successfully");
+      await profileService.updateProfile(payload);
     } catch (error) {
-      console.error("Failed to update profile:", error);
+      console.error("Profile update failed:", error);
       toast.error("Failed to update profile");
+    } finally {
+      setLoading(false);
     }
-  }
+  };
+
+  const handlePayNow = () => {
+    setShowPaymentDialog(false);
+    console.log("Pay Now clicked, form data:", formData);
+  };
+
+  const handleCancelPayment = () => {
+    setShowPaymentDialog(false);
+  };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* First Name and Last Name in one row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="first_name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>First Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="John" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+    <>
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-8 animate-in fade-in duration-500"
+      >
+        {/* Personal Details Section */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+            <UserCircle className="w-5 h-5 text-primary" />
+            <h3 className="text-lg font-semibold text-foreground">
+              Personal Details
+            </h3>
+          </div>
 
-          <FormField
-            control={form.control}
-            name="last_name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Last Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Doe" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="fullName">Full Name</Label>
+              <div className="relative">
+                <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="fullName"
+                  placeholder="Enter your full name"
+                  className="pl-9 bg-background/50 focus:bg-background transition-colors"
+                  value={formData.fullName}
+                  onChange={(e) =>
+                    handleInputChange("fullName", e.target.value)
+                  }
+                />
+              </div>
+            </div>
 
-        <FormField
-          control={form.control}
-          name="username"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Username</FormLabel>
-              <FormControl>
-                <Input placeholder="johndoe" {...field} />
-              </FormControl>
-              <FormDescription>
-                This is your public display name
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <div className="space-y-2">
+              <Label htmlFor="fatherName">Father's Name</Label>
+              <div className="relative">
+                <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="fatherName"
+                  placeholder="Enter your father's name"
+                  className="pl-9 bg-background/50 focus:bg-background transition-colors"
+                  value={formData.fatherName}
+                  onChange={(e) =>
+                    handleInputChange("fatherName", e.target.value)
+                  }
+                />
+              </div>
+            </div>
 
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input type="email" placeholder="john@example.com" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Mobile Number with Country Code */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="countryCode"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Country Code</FormLabel>
-                <Select
-                  value={field.value || "+1"}
-                  onValueChange={field.onChange}
-                >
-                  <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {countryCodes.map((country) => (
-                      <SelectItem key={country.code} value={country.code}>
-                        {country.code} ({country.name})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="mobile"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Mobile Number</FormLabel>
-                <FormControl>
-                  <InputGroup>
-                    <InputGroupAddon align="inline-start">
-                      {form.watch("countryCode") || "+1"}
-                    </InputGroupAddon>
-                    <InputGroupInput
-                      placeholder="Enter phone number"
-                      {...field}
+            <div className="space-y-2 md:col-span-2">
+              <Label>Gender</Label>
+              <RadioGroup
+                value={formData.gender}
+                onValueChange={(value) => handleInputChange("gender", value)}
+                className="grid grid-cols-3 gap-4"
+              >
+                {["Male", "Female", "Other"].map((gender) => (
+                  <Label
+                    key={gender}
+                    htmlFor={gender.toLowerCase()}
+                    className={cn(
+                      "flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all",
+                      formData.gender === gender.toLowerCase()
+                        ? "border-primary bg-primary/5 shadow-sm"
+                        : "border-transparent border border-input shadow-sm",
+                    )}
+                  >
+                    <RadioGroupItem
+                      value={gender.toLowerCase()}
+                      id={gender.toLowerCase()}
+                      className="sr-only"
                     />
-                  </InputGroup>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                    <span className="text-sm font-medium">{gender}</span>
+                  </Label>
+                ))}
+              </RadioGroup>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Date of Birth</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full px-3 justify-start text-left font-normal bg-background/50",
+                      !formData.dob && "text-muted-foreground",
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                    {formData.dob ? (
+                      format(formData.dob, "PPP")
+                    ) : (
+                      <span>Select date</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.dob}
+                    onSelect={(date) => handleInputChange("dob", date)}
+                    initialFocus
+                    fromYear={1950}
+                    toYear={new Date().getFullYear()}
+                    captionLayout="dropdown"
+                    classNames={{
+                      caption_label: "hidden",
+                      caption_dropdowns: "flex gap-2 p-2",
+                    }}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+        </section>
+
+        {/* Contact Info Section */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+            <Phone className="w-5 h-5 text-primary" />
+            <h3 className="text-lg font-semibold text-foreground">
+              Contact Information
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="contactNumber">Contact Number</Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="contactNumber"
+                  type="tel"
+                  placeholder="Enter your contact number"
+                  className="pl-9 bg-background/50 focus:bg-background transition-colors"
+                  value={formData.contactNumber}
+                  onChange={(e) =>
+                    handleInputChange("contactNumber", e.target.value)
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email address"
+                  className="pl-9 bg-background/50 focus:bg-background transition-colors"
+                  value={formData.email}
+                  readOnly
+                  disabled
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Professional Info Section */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+            <Briefcase className="w-5 h-5 text-primary" />
+            <h3 className="text-lg font-semibold text-foreground">
+              Education & Work
+            </h3>
+          </div>
+
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <Label>Qualification</Label>
+              <Select
+                value={formData.qualification}
+                onValueChange={(value: Qualification) =>
+                  handleInputChange("qualification", value)
+                }
+              >
+                <SelectTrigger className="w-full bg-background/50">
+                  <div className="flex items-center gap-2">
+                    <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                    <SelectValue placeholder="Select your qualification" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="undergraduate">Under Graduate</SelectItem>
+                  <SelectItem value="graduate">Graduate</SelectItem>
+                  <SelectItem value="postgraduate">Post Graduate</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-3">
+              <Label>Current Status</Label>
+              <RadioGroup
+                value={formData.currentStatus}
+                onValueChange={(value: CurrentStatus) =>
+                  handleInputChange("currentStatus", value)
+                }
+                className="grid grid-cols-1 md:grid-cols-3 gap-4"
+              >
+                {[
+                  {
+                    value: "college_student",
+                    label: "College Student",
+                    icon: GraduationCap,
+                  },
+                  { value: "employed", label: "Employed", icon: Briefcase },
+                  {
+                    value: "unemployed",
+                    label: "Unemployed",
+                    icon: AlertCircle,
+                  },
+                ].map((status) => (
+                  <Label
+                    key={status.value}
+                    htmlFor={status.value}
+                    className={cn(
+                      "flex items-center justify-start gap-3 rounded-xl border p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all",
+                      formData.currentStatus === status.value
+                        ? "border-primary bg-primary/5 ring-1 ring-primary"
+                        : "border-input bg-card shadow-sm",
+                    )}
+                  >
+                    <RadioGroupItem
+                      value={status.value}
+                      id={status.value}
+                      className="sr-only"
+                    />
+                    <div
+                      className={cn(
+                        "p-2 rounded-full",
+                        formData.currentStatus === status.value
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground",
+                      )}
+                    >
+                      <status.icon className="w-4 h-4" />
+                    </div>
+                    <span className="font-medium">{status.label}</span>
+                  </Label>
+                ))}
+              </RadioGroup>
+            </div>
+
+            {/* Conditional Fields with Animation */}
+            <div className="min-h-[100px]">
+              {formData.currentStatus === "college_student" && (
+                <Card className="border-dashed border-primary/20 bg-primary/5 animate-in slide-in-from-top-4 duration-300">
+                  <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="collegeName">College Name</Label>
+                      <Input
+                        id="collegeName"
+                        placeholder="College Name"
+                        className="bg-background"
+                        value={formData.collegeName}
+                        onChange={(e) =>
+                          handleInputChange("collegeName", e.target.value)
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="course">Course</Label>
+                      <Input
+                        id="course"
+                        placeholder="Course Name"
+                        className="bg-background"
+                        value={formData.course}
+                        onChange={(e) =>
+                          handleInputChange("course", e.target.value)
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="year">Year</Label>
+                      <Select
+                        value={formData.year}
+                        onValueChange={(v) => handleInputChange("year", v)}
+                      >
+                        <SelectTrigger className="bg-background w-full">
+                          <SelectValue placeholder="Select Year" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[1, 2, 3, 4, 5].map((y) => (
+                            <SelectItem key={y} value={y.toString()}>
+                              {y}
+                              {y === 1
+                                ? "st"
+                                : y === 2
+                                  ? "nd"
+                                  : y === 3
+                                    ? "rd"
+                                    : "th"}{" "}
+                              Year
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {formData.currentStatus === "employed" && (
+                <Card className="border-dashed border-primary/20 bg-primary/5 animate-in slide-in-from-top-4 duration-300">
+                  <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="organizationName">Organization</Label>
+                      <div className="relative">
+                        <Building2 className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="organizationName"
+                          placeholder="Organization Name"
+                          className="pl-9 bg-background"
+                          value={formData.organizationName}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "organizationName",
+                              e.target.value,
+                            )
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="designation">Designation</Label>
+                      <div className="relative">
+                        <Users className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="designation"
+                          placeholder="Designation"
+                          className="pl-9 bg-background"
+                          value={formData.designation}
+                          onChange={(e) =>
+                            handleInputChange("designation", e.target.value)
+                          }
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {formData.currentStatus === "unemployed" && (
+                <Card className="border-dashed border-primary/20 bg-primary/5 animate-in slide-in-from-top-4 duration-300">
+                  <CardContent className="pt-6">
+                    <div className="space-y-2 max-w-md">
+                      <Label htmlFor="monthlyPaymentExpectation">
+                        Monthly Payment Expectation
+                      </Label>
+                      <div className="relative">
+                        <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="monthlyPaymentExpectation"
+                          type="number"
+                          placeholder="0.00"
+                          className="pl-9 bg-background"
+                          value={formData.monthlyPaymentExpectation}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "monthlyPaymentExpectation",
+                              e.target.value,
+                            )
+                          }
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* Submit Button */}
+        <div className="pt-4 flex justify-end">
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full md:w-auto px-8 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-lg shadow-primary/25 transition-all hover:scale-[1.02]"
+            disabled={loading}
+          >
+            {loading ? "Saving..." : "Save Profile"}
+          </Button>
         </div>
-
-        <FormField
-          control={form.control}
-          name="avatar"
-          render={({ field }) => (
-            <MediaUpload
-              label="Avatar"
-              value={field.value || ""}
-              onChange={(url) => field.onChange(url)}
-            />
-          )}
-        />
-
-        <Button type="submit">Save Changes</Button>
       </form>
-    </Form>
+
+      <PaymentReminderDialog
+        open={showPaymentDialog}
+        onOpenChange={setShowPaymentDialog}
+        onPayNow={handlePayNow}
+        onCancel={handleCancelPayment}
+      />
+    </>
   );
-}
+};
+
+export default ProfileForm;

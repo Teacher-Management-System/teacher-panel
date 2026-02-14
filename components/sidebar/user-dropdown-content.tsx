@@ -71,7 +71,7 @@ export function UserDropdownContent({
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
       <DropdownMenuGroup>
-        <DropdownMenuItem onClick={() => router.push("/profile/basic")}>
+        <DropdownMenuItem onClick={() => router.push("/profile")}>
           <User /> Profile
         </DropdownMenuItem>
         <DropdownMenuItem

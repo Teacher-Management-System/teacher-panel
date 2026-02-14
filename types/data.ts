@@ -1,41 +1,26 @@
-import { User } from "@/features/users/model";
-import { Otp } from "@/features/otps/model";
-import { OperationHour, Vendor } from "@/features/vendors/model";
-import { Amenity } from "@/features/amenities/model";
-import { City, State, Country } from "@/features/locations/model";
-import { Article, ArticleCategory } from "@/features/articles/model";
-import { FeedbackCategory, Feedback } from "@/features/feedbacks/model";
-import { Post } from "@/features/posts/model";
-import { Review } from "@/features/reviews/model";
-import { Voucher } from "@/features/vouchers/model";
+import { Student } from "@/features/students/model";
+import { User } from "./user";
+
 export interface Data {
-  user?: any;
-  users?: User[];
-  otps?: Otp[];
+  user?: User;
   meta?: Meta;
-  vendors?: Vendor[];
-  posts?: Post[];
-  vendor?: Vendor;
-  cities?: City[];
-  states?: State[];
-  countries?: Country[];
-  amenities?: Amenity[];
-  category?: FeedbackCategory | ArticleCategory;
-  categories?: FeedbackCategory[] | ArticleCategory[];
-  operation_hours?: OperationHour[];
-  article?: Article;
-  articles?: Article[];
-  article_category?: ArticleCategory;
-  article_categories?: ArticleCategory[];
+
   reports?: any[];
-  feedbacks?: Feedback[];
-  reviews?: Review[];
-  vouchers?: Voucher[];
+
+  students?: Student[];
+  total_students?: number;
+  active_students?: number;
+  pending_students?: number;
+  completed_students?: number;
+
+  payment_session_id?: string;
+  order_id?: string;
+  is_free?: boolean;
 }
 
 export interface Meta {
-  total_pages: number;
-  total_items: number;
+  total_page: number;
+  total_item: number;
   current_page: number;
   per_page: number;
 }

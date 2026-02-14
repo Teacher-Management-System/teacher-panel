@@ -25,6 +25,10 @@ class authService extends BaseService {
     return await this.get("logout");
   }
 
+  async verifyOtp(data: { email: string; otp: string }) {
+    return await this.post("verify-otp", data);
+  }
+
   async register(data: any) {
     return await this.post("register", data);
   }

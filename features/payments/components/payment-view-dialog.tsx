@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Payment } from "./columns";
+import { Payment } from "../model";
 import { CheckCircle2, Receipt } from "lucide-react";
 
 interface PaymentViewDialogProps {
@@ -29,13 +29,29 @@ export function PaymentViewDialog({
     }).format(amount);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
     });
   };
+
+  const dateVal = payment.createdAt as string | number;
+  if (!dateVal)
+    return <div className="text-center text-muted-foreground">-</div>;
+
+  // Handle both seconds (Unix timestamp) and milliseconds or ISO strings
+  let date: Date;
+  const numVal = Number(dateVal);
+
+  if (!isNaN(numVal)) {
+    // If it's a number, check if it's seconds (small) or ms (large)
+    // 10000000000 is roughly year 2286, so anything smaller is likely seconds
+    date = new Date(numVal < 10000000000 ? numVal * 1000 : numVal);
+  } else {
+    date = new Date(dateVal);
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -69,7 +85,7 @@ export function PaymentViewDialog({
             <div className="rounded-xl bg-gray-50 p-4">
               <p className="text-sm font-medium text-gray-500">Date</p>
               <p className="mt-1 text-lg font-bold text-gray-900">
-                {formatDate(payment.createdAt)}
+                {formatDate(date)}
               </p>
             </div>
           </div>
@@ -84,9 +100,9 @@ export function PaymentViewDialog({
 
           {/* UTR Section */}
           <div className="rounded-xl bg-gray-50 p-4">
-            <p className="text-sm font-medium text-gray-500">UTR Number</p>
+            <p className="text-sm font-medium text-gray-500">Transaction ID</p>
             <p className="mt-1 font-mono text-base font-medium text-gray-900">
-              {payment.utr || "UTR123456789012"}
+              {payment.transaction_id}
             </p>
           </div>
 

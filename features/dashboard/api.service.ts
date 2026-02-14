@@ -1,8 +1,14 @@
 import BaseService from "@/lib/api.service";
 
+import { DashboardResponse } from "./model";
+
 export class DashboardService extends BaseService {
   constructor() {
     super("dashboard");
+  }
+
+  getDashboardData(params?: any): Promise<DashboardResponse | undefined> {
+    return this.get("", params) as Promise<DashboardResponse | undefined>;
   }
 
   getStats(params?: any) {

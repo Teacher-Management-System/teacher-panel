@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,135 +40,165 @@ import {
   Pie,
   Cell,
 } from "recharts";
-
-// Earnings data for area chart
-const earningsData = [
-  { month: "Aug", earnings: 45000 },
-  { month: "Sep", earnings: 52000 },
-  { month: "Oct", earnings: 48000 },
-  { month: "Nov", earnings: 61000 },
-  { month: "Dec", earnings: 55000 },
-  { month: "Jan", earnings: 72000 },
-];
-
-// Student enrollments data for bar chart
-const enrollmentData = [
-  { month: "Aug", students: 18 },
-  { month: "Sep", students: 24 },
-  { month: "Oct", students: 20 },
-  { month: "Nov", students: 28 },
-  { month: "Dec", students: 32 },
-  { month: "Jan", students: 34 },
-];
-
-// Student status for pie chart
-const statusData = [
-  { name: "Active", value: 142, color: "hsl(var(--success))" },
-  { name: "Pending", value: 14, color: "hsl(var(--warning))" },
-];
-
-const stats = [
-  {
-    title: "Total Students",
-    value: "156",
-    change: "+12",
-    changeLabel: "this month",
-    trend: "up",
-    icon: Users,
-    color: "bg-[#26c6da]", // Cyan
-  },
-  {
-    title: "Active Students",
-    value: "142",
-    change: "91%",
-    changeLabel: "active rate",
-    trend: "up",
-    icon: UserCheck,
-    color: "bg-[#66bb6a]", // Green
-  },
-  {
-    title: "Total Earning",
-    value: "₹1,45,000",
-    change: "+₹25,000",
-    changeLabel: "this month",
-    trend: "up",
-    icon: CreditCard,
-    color: "bg-[#42a5f5]", // Blue
-  },
-  {
-    title: "Pending Students",
-    value: "14",
-    change: "9%",
-    changeLabel: "of total",
-    trend: "down",
-    icon: Clock,
-    color: "bg-[#ffa726]", // Orange
-  },
-];
-
-const recentActivities = [
-  {
-    type: "enrollment",
-    name: "Rahul Sharma",
-    action: "enrolled",
-    time: "2 hours ago",
-    amount: "₹15,000",
-  },
-  {
-    type: "payment",
-    name: "Priya Patel",
-    action: "payment verified",
-    time: "5 hours ago",
-    amount: "₹12,000",
-  },
-  {
-    type: "enrollment",
-    name: "Amit Kumar",
-    action: "enrolled",
-    time: "1 day ago",
-    amount: "₹18,000",
-  },
-  {
-    type: "payment",
-    name: "Sneha Gupta",
-    action: "payment verified",
-    time: "2 days ago",
-    amount: "₹15,000",
-  },
-];
-
-const quickInsights = [
-  {
-    label: "Avg. Earning/Student",
-    value: "₹929",
-    icon: IndianRupee,
-    color: "text-primary",
-  },
-  {
-    label: "This Week Enrollments",
-    value: "8",
-    icon: UserPlus,
-    color: "text-success",
-  },
-  {
-    label: "Conversion Rate",
-    value: "87%",
-    icon: TrendingUp,
-    color: "text-accent",
-  },
-  {
-    label: "Best Month",
-    value: "January",
-    icon: Calendar,
-    color: "text-warning",
-  },
-];
+import dashboardService from "../api.service";
+import { DashboardResponse } from "../model";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Dashboard = () => {
   const [date, setDate] = useState<DateRange | undefined>({
     from: new Date(),
     to: new Date(),
   });
+
+  const [data, setData] = useState<DashboardResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const params: any = {};
+        if (date?.from) {
+          params.start_date = format(date.from, "yyyy-MM-dd");
+        }
+        if (date?.to) {
+          params.end_date = format(date.to, "yyyy-MM-dd");
+        }
+        const response = (await dashboardService.getDashboardData(
+          params,
+        )) as DashboardResponse;
+        setData(response);
+      } catch (error) {
+        console.error("Failed to fetch dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, [date]);
+
+  // Transform chart data
+  const earningsData =
+    data?.charts.earnings_overview.labels.map((label, index) => ({
+      month: label,
+      earnings: data.charts.earnings_overview.data[index],
+    })) || [];
+
+  const enrollmentData =
+    data?.charts.student_enrollments.labels.map((label, index) => ({
+      month: label,
+      students: data.charts.student_enrollments.data[index],
+    })) || [];
+
+  const statusData = [
+    {
+      name: "Active",
+      value: data?.charts.student_status.active || 0,
+      color: "hsl(var(--success))",
+    },
+    {
+      name: "Pending",
+      value: data?.charts.student_status.pending || 0,
+      color: "hsl(var(--warning))",
+    },
+  ];
+
+  const stats = [
+    {
+      title: "Total Students",
+      value: data?.stats.total_students || 0,
+      change: "+12", // You might want to calculate this if historical data is available
+      changeLabel: "this month",
+      trend: "up",
+      icon: Users,
+      color: "bg-[#26c6da]",
+    },
+    {
+      title: "Active Students",
+      value: data?.stats.active_students || 0,
+      change: data?.stats.total_students
+        ? `${Math.round(
+            ((data.stats.active_students || 0) / data.stats.total_students) *
+              100,
+          )}%`
+        : "0%",
+      changeLabel: "active rate",
+      trend: "up",
+      icon: UserCheck,
+      color: "bg-[#66bb6a]",
+    },
+    {
+      title: "Total Earning",
+      value: `₹${(data?.stats.total_earning || 0).toLocaleString()}`,
+      change: `+₹${(data?.stats.this_month_earning || 0).toLocaleString()}`,
+      changeLabel: "this month",
+      trend: "up",
+      icon: CreditCard,
+      color: "bg-[#42a5f5]",
+    },
+    {
+      title: "Pending Students",
+      value: data?.stats.pending_students || 0,
+      change: data?.stats.total_students
+        ? `${Math.round(
+            ((data.stats.pending_students || 0) / data.stats.total_students) *
+              100,
+          )}%`
+        : "0%",
+      changeLabel: "of total",
+      trend: "down",
+      icon: Clock,
+      color: "bg-[#ffa726]",
+    },
+  ];
+
+  const quickInsights = [
+    {
+      label: "Avg. Earning/Student",
+      value: `₹${data?.quick_insights.avg_earning_per_student || 0}`,
+      icon: IndianRupee,
+      color: "text-primary",
+    },
+    {
+      label: "This Week Enrollments",
+      value: data?.quick_insights.this_week_enrollments || 0,
+      icon: UserPlus,
+      color: "text-success",
+    },
+    {
+      label: "Conversion Rate",
+      value: `${data?.quick_insights.conversion_rate || 0}%`,
+      icon: TrendingUp,
+      color: "text-accent",
+    },
+    {
+      label: "Best Month",
+      value: data?.quick_insights.best_month || "-",
+      icon: Calendar,
+      color: "text-warning",
+    },
+  ];
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between">
+          <Skeleton className="h-10 w-48" />
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-40 rounded-xl" />
+          ))}
+        </div>
+        <div className="grid lg:grid-cols-2 gap-6">
+          <Skeleton className="h-[350px] rounded-xl" />
+          <Skeleton className="h-[350px] rounded-xl" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -395,7 +425,7 @@ const Dashboard = () => {
                 variant="secondary"
                 className="bg-[#009688]/10 text-[#009688] border-0"
               >
-                34 this month
+                {data?.quick_insights.this_week_enrollments} this week
               </Badge>
             </div>
           </CardHeader>
@@ -493,7 +523,9 @@ const Dashboard = () => {
               {/* Center text */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
-                  <p className="font-display text-2xl font-bold">156</p>
+                  <p className="font-display text-2xl font-bold">
+                    {data?.stats.total_students || 0}
+                  </p>
                   <p className="text-xs text-muted-foreground">Total</p>
                 </div>
               </div>
@@ -566,23 +598,19 @@ const Dashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {recentActivities.map((activity, index) => (
+            {data?.recent_activity.map((activity, index) => (
               <div
                 key={index}
                 className="flex items-start gap-3 pb-4 border-b border-border/50 last:border-0 last:pb-0"
               >
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    activity.type === "enrollment"
-                      ? "bg-primary/10 text-primary"
-                      : "bg-success/10 text-success"
+                    activity.status === "success"
+                      ? "bg-success/10 text-success"
+                      : "bg-primary/10 text-primary"
                   }`}
                 >
-                  {activity.type === "enrollment" ? (
-                    <UserPlus className="w-5 h-5" />
-                  ) : (
-                    <CreditCard className="w-5 h-5" />
-                  )}
+                  <CreditCard className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">
@@ -596,7 +624,7 @@ const Dashboard = () => {
                   variant="secondary"
                   className="bg-success/10 text-success border-0 text-xs flex-shrink-0"
                 >
-                  {activity.amount}
+                  ₹{activity.amount}
                 </Badge>
               </div>
             ))}

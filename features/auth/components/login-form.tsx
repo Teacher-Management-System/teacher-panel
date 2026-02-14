@@ -45,8 +45,9 @@ export function LoginForm({
     authService
       .login(values)
       .then((response: any) => {
+        console.log(response.auth_token);
         cookieService.setCookie("user", JSON.stringify(response?.user));
-
+        cookieService.setCookie("authToken", response.auth_token);
         const redirect = cookieService.getCookie("redirect");
         if (redirect) {
           cookieService.deleteCookie("redirect");

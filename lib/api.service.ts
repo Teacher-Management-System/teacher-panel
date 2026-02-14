@@ -30,11 +30,11 @@ export default class BaseService {
    * Handles the API response and applies custom logic.
    */
   private async handleResponse(
-    promise: Promise<ApiResponse>
+    promise: Promise<ApiResponse>,
   ): Promise<Data | undefined> {
     try {
       const response = await promise;
-
+      console.log(response, "response");
       if (!response.status) {
         return Promise.reject(new Error(response.message || "Request failed"));
       }
@@ -50,8 +50,15 @@ export default class BaseService {
 
       const meta = response.meta ?? null;
 
-      return meta ? { ...response.data, meta: meta } : response.data;
+      const result = meta
+        ? { ...response.data, meta: meta }
+        : response.data || {};
+      if (response.auth_token) {
+        (result as any).auth_token = response.auth_token;
+      }
+      return result;
     } catch (error) {
+      console.log(error, "error");
       return Promise.reject(error);
     }
   }
@@ -59,17 +66,17 @@ export default class BaseService {
   public get(
     path: string = "",
     params?: any,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<Data | undefined> {
     return this.handleResponse(
-      apiClient.get(this.getUrl(path), { params, ...config })
+      apiClient.get(this.getUrl(path), { params, ...config }),
     );
   }
 
   public post(
     path: string = "",
     data: Partial<any>,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<Data | undefined> {
     return this.handleResponse(apiClient.post(this.getUrl(path), data, config));
   }
@@ -77,7 +84,7 @@ export default class BaseService {
   public put(
     path: string = "",
     data: Partial<any>,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<Data | undefined> {
     return this.handleResponse(apiClient.put(this.getUrl(path), data, config));
   }
@@ -85,16 +92,16 @@ export default class BaseService {
   public patch(
     path: string = "",
     data: Partial<any>,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<Data | undefined> {
     return this.handleResponse(
-      apiClient.patch(this.getUrl(path), data, config)
+      apiClient.patch(this.getUrl(path), data, config),
     );
   }
 
   public delete(
     path: string = "",
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<Data | undefined> {
     return this.handleResponse(apiClient.delete(this.getUrl(path), config));
   }

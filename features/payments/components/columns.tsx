@@ -5,16 +5,8 @@ import { Eye, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { PaymentViewDialog } from "./payment-view-dialog";
-
-export type Payment = {
-  id: string;
-  studentName: string;
-  amount: number;
-  yourEarning: number;
-  refund: number;
-  createdAt: string;
-  utr?: string;
-};
+import { Payment } from "../model";
+import { formatDate } from "@/lib/format";
 
 export const columns: ColumnDef<Payment>[] = [
   {
@@ -80,42 +72,68 @@ export const columns: ColumnDef<Payment>[] = [
     },
   },
   {
-    accessorKey: "refund",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Refund
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("refund"));
-      const formatted = new Intl.NumberFormat("en-IN", {
-        style: "currency",
-        currency: "INR",
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-      }).format(amount);
-      return <div className="font-medium text-red-500">{formatted}</div>;
-    },
-  },
-  {
     accessorKey: "createdAt",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="w-full justify-center font-medium text-muted-foreground hover:bg-transparent pl-0"
         >
           Created At
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
+    cell: ({ row }) => {
+      const dateVal = row.getValue("createdAt") as string | number;
+      if (!dateVal)
+        return <div className="text-center text-muted-foreground">-</div>;
+
+      // Handle both seconds (Unix timestamp) and milliseconds or ISO strings
+      let date: Date;
+      const numVal = Number(dateVal);
+
+      if (!isNaN(numVal)) {
+        // If it's a number, check if it's seconds (small) or ms (large)
+        // 10000000000 is roughly year 2286, so anything smaller is likely seconds
+        date = new Date(numVal < 10000000000 ? numVal * 1000 : numVal);
+      } else {
+        date = new Date(dateVal);
+      }
+
+      return (
+        <div className="text-center text-muted-foreground">
+          {date.toLocaleDateString("en-IN", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          })}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "transaction_id",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Transaction ID
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => (
+      <div
+        className="text-center font-mono text-xs text-muted-foreground w-32 truncate"
+        title={row.original.transaction_id}
+      >
+        {row.original.transaction_id || "-"}
+      </div>
+    ),
   },
   {
     id: "actions",

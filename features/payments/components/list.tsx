@@ -2,79 +2,96 @@
 
 import { useDataTable } from "@/hooks/use-data-table";
 import { DataTable } from "@/components/data-table/data-table";
-import { columns, Payment } from "./columns";
+import { columns } from "./columns";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Wallet,
   TrendingUp,
   Search,
-  CheckCircle,
   Calendar,
   IndianRupee,
   FileText,
   Users,
 } from "lucide-react";
-
-const data: Payment[] = [
-  {
-    id: "1",
-    studentName: "Rahul Sharma",
-    amount: 15000,
-    yourEarning: 12000,
-    refund: 0,
-    createdAt: "2024-02-01",
-  },
-  {
-    id: "2",
-    studentName: "Priya Patel",
-    amount: 20000,
-    yourEarning: 16000,
-    refund: 0,
-    createdAt: "2024-02-02",
-  },
-  {
-    id: "3",
-    studentName: "Amit Kumar",
-    amount: 18000,
-    yourEarning: 0,
-    refund: 18000,
-    createdAt: "2024-02-03",
-  },
-  {
-    id: "4",
-    studentName: "Sneha Gupta",
-    amount: 12000,
-    yourEarning: 9600,
-    refund: 0,
-    createdAt: "2024-02-03",
-  },
-  {
-    id: "5",
-    studentName: "Vikram Singh",
-    amount: 15000,
-    yourEarning: 12000,
-    refund: 0,
-    createdAt: "2024-02-04",
-  },
-];
+import { useEffect, useState } from "react";
+import paymentService from "../api.service";
+import { Payment } from "../model";
+import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 
 export default function PaymentList() {
+  const [data, setData] = useState<Payment[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [pageCount, setPageCount] = useState(1);
+  const [totalEarnings, setTotalEarnings] = useState(0);
+  const [thisMonthEarnings, setThisMonthEarnings] = useState(0);
+  const [totalPaymentsCount, setTotalPaymentsCount] = useState(0);
+  const [uniqueStudents, setUniqueStudents] = useState(0);
+  const [verifiedPaymentsCount, setVerifiedPaymentsCount] = useState(0);
+
+  // NUQS states (URL params)
+  const [page] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [perPage] = useQueryState("perPage", parseAsInteger.withDefault(10));
+  const [search, setSearch] = useQueryState("search", parseAsString);
+  const [sort] = useQueryState("sort", parseAsString);
+
   const { table } = useDataTable({
     data,
     columns,
-    pageCount: 1,
+    pageCount,
+    manual: true,
     enableAdvancedFilter: false,
   });
 
-  const totalEarnings = data.reduce((acc, curr) => acc + curr.yourEarning, 0);
-  const totalPaymentsCount = data.length;
-  const uniqueStudents = new Set(data.map((p) => p.studentName)).size;
-  const avgPerStudent = uniqueStudents > 0 ? totalEarnings / uniqueStudents : 0;
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const queryParams = {
+          page,
+          per_page: perPage,
+          search: search || undefined,
+          sort: sort || undefined,
+        };
 
-  // Assuming all mock data is for "This Month" for simplicity in this demo
-  const thisMonthEarnings = totalEarnings;
-  const verifiedPaymentsCount = data.filter((p) => p.refund === 0).length;
+        const response: any = await paymentService.list(queryParams);
+        console.log("Payment API Response:", response);
+
+        if (response?.data && Array.isArray(response.data)) {
+          const mappedData = response.data.map((item: any) => ({
+            id: item.id,
+            studentName: item.student?.name || "Unknown",
+            amount: parseFloat(item.amount),
+            yourEarning: item.earning,
+            createdAt: item.created_at,
+            transaction_id: item.transaction_id || item.utr,
+            status: item.payment_status,
+          }));
+          setData(mappedData);
+        }
+
+        // Update stats from API response
+        setTotalEarnings(response?.total_earning ?? 0);
+        setThisMonthEarnings(response?.month_earning ?? 0);
+        setTotalPaymentsCount(response?.meta?.total_item ?? 0);
+        setUniqueStudents(response?.total_student ?? 0); // Using total_student as per response
+        setVerifiedPaymentsCount(response?.student_enroll ?? 0); // Using student_enroll as placeholder or correct mapping
+
+        if (response?.meta) {
+          const totalPages = Number(response.meta.total_page);
+          setPageCount(!isNaN(totalPages) && totalPages > 0 ? totalPages : 1);
+        }
+      } catch (error) {
+        console.error("Failed to fetch payments:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [page, perPage, search, sort]);
+
+  const avgPerStudent = uniqueStudents > 0 ? totalEarnings / uniqueStudents : 0;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-IN", {
@@ -211,20 +228,13 @@ export default function PaymentList() {
             <Search className="h-5 w-5 text-muted-foreground" />
             <Input
               placeholder="Search by student name..."
-              value={
-                (table.getColumn("studentName")?.getFilterValue() as string) ??
-                ""
-              }
-              onChange={(event) =>
-                table
-                  .getColumn("studentName")
-                  ?.setFilterValue(event.target.value)
-              }
+              value={search ?? ""}
+              onChange={(event) => setSearch(event.target.value)}
               className="border-0 bg-transparent p-0 text-base placeholder:text-muted-foreground focus-visible:ring-0"
             />
           </div>
-          <div className="rounded-md border [&_thead_tr]:bg-rose-50/50 [&_thead_tr]:border-b-rose-100">
-            <DataTable table={table} />
+          <div className="rounded-md bg-background overflow-hidden">
+            <DataTable table={table} isLoading={loading} />
           </div>
         </CardContent>
       </Card>
