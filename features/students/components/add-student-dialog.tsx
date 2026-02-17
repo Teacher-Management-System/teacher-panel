@@ -47,6 +47,7 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import studentService from "../api.service";
+import profileService from "../../profile/api.service";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 
@@ -116,12 +117,24 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
     }
   }
 
-  const handleAddStudentClick = () => {
-    if (isPendingOrInactive) {
-      router.push("/profile");
-      toast.info("Please complete your profile payment to add students");
-    } else {
+  const handleAddStudentClick = async () => {
+    setIsLoading(true);
+    try {
+      const response = await profileService.getProfile();
+      const isCompleted = response?.user?.is_completed;
+
+      if (!isCompleted) {
+        toast.info("Please complete your profile to add students");
+        router.push("/profile");
+        return;
+      }
+
       setOpen(true);
+    } catch (error) {
+      console.error("Failed to check profile completion:", error);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 

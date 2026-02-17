@@ -1,6 +1,7 @@
 declare module "@cashfreepayments/cashfree-js" {
   export interface CheckoutOptions {
     paymentSessionId: string;
+    returnUrl?: string;
     redirectTarget?: "_self" | "_blank" | "_modal";
     onSuccess?: (data: any) => void;
     onFailure?: (data: any) => void;

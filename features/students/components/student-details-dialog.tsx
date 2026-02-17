@@ -105,7 +105,15 @@ export function StudentDetailsDialog({
                 <DetailItem
                   icon={Calendar}
                   label="Date of Birth"
-                  value={student.dob}
+                  value={
+                    student.dob
+                      ? isNaN(Number(student.dob))
+                        ? student.dob
+                        : new Date(
+                            Number(student.dob) * 1000,
+                          ).toLocaleDateString()
+                      : "Not provided"
+                  }
                 />
                 <DetailItem icon={User} label="Gender" value={student.gender} />
               </div>

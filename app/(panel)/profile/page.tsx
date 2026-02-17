@@ -7,83 +7,40 @@ import { load, CheckoutOptions } from "@cashfreepayments/cashfree-js";
 import { PaymentSession } from "@/features/profile/model";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-
+import { useRouter } from "next/navigation";
 export default function ProfilePage() {
   const { isPendingOrInactive, isActive, isLoading, refreshUser } = useAuth();
 
+  const router = useRouter();
+
   const handlePayNow = async () => {
     try {
-      const response: PaymentSession | undefined =
-        await import("@/features/profile/api.service").then((mod) =>
-          mod.default.initiatePayment(),
-        );
-      console.log(response, "response");
+      const response = await import("@/features/profile/api.service").then(
+        (mod) => mod.default.initiatePayment(),
+      );
 
-      const cashfree = await load({
-        mode: "sandbox",
-      });
-      let pollInterval: NodeJS.Timeout | null = null;
-      let pollCount = 0;
-      const maxPolls = 60;
+      console.log("Payment session response:", response);
 
-      const startPolling = async () => {
-        pollInterval = setInterval(async () => {
-          pollCount++;
+      if (!response?.payment_session_id) {
+        toast.error("Invalid payment session");
+        return;
+      }
 
-          try {
-            const profileService =
-              await import("@/features/profile/api.service").then(
-                (mod) => mod.default,
-              );
-
-            const statusResponse =
-              (await profileService.verifyPaymentStatus()) as any;
-
-            if (statusResponse?.payment_status === "paid") {
-              if (pollInterval) {
-                clearInterval(pollInterval);
-                pollInterval = null;
-              }
-
-              await refreshUser();
-            } else if (statusResponse?.payment_status === "failed") {
-              console.error("Payment failed. Please try again.");
-              if (pollInterval) {
-                clearInterval(pollInterval);
-                pollInterval = null;
-              }
-            }
-
-            if (pollCount >= maxPolls) {
-              if (pollInterval) {
-                clearInterval(pollInterval);
-                pollInterval = null;
-              }
-            }
-          } catch (error) {
-            toast.error("Failed to verify payment status");
-          }
-        }, 3000);
-      };
+      const cashfree = await load({ mode: "sandbox" });
 
       const checkoutOptions: CheckoutOptions = {
-        paymentSessionId: response?.payment_session_id || "",
-        redirectTarget: "_modal",
+        paymentSessionId: response.payment_session_id,
+        returnUrl: `${window.location.origin}/profile`,
+        redirectTarget: "_self",
         onClose: () => {
-          if (pollInterval) {
-            clearInterval(pollInterval);
-            pollInterval = null;
-          }
+          router.refresh();
         },
       };
 
-      cashfree.checkout(checkoutOptions);
-
-      setTimeout(() => {
-        startPolling();
-      }, 2000);
+      console.log("Opening checkout...");
+      await cashfree.checkout(checkoutOptions);
     } catch (error) {
-      toast.error("Failed to initiate payment");
+      console.error("Payment error:", error);
     }
   };
 

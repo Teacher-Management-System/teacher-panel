@@ -31,8 +31,10 @@ import { EditStudentDialog } from "./edit-student-dialog";
 
 import { StudentDetailsDialog } from "./student-details-dialog";
 import { Student, PaymentStatusResponse } from "@/features/students/model";
+import { useRouter } from "next/navigation";
 
 export const createColumns = (
+  router: ReturnType<typeof useRouter>,
   refreshData: () => void,
   isFree: boolean = false,
 ): ColumnDef<Student>[] => {
@@ -261,57 +263,16 @@ export const createColumns = (
             const cashfree = await load({
               mode: "sandbox",
             });
-            let pollInterval: NodeJS.Timeout | null = null;
-            let pollCount = 0;
-            const maxPolls = 60;
-
-            const startPolling = async (orderId: string) => {
-              pollInterval = setInterval(async () => {
-                pollCount++;
-                try {
-                  const statusResponse =
-                    (await studentService.verifyPaymentStatus(
-                      orderId,
-                    )) as PaymentStatusResponse;
-                  if (statusResponse?.payment_status === "paid") {
-                    if (pollInterval) {
-                      clearInterval(pollInterval);
-                      pollInterval = null;
-                    }
-                    refreshData();
-                  } else if (statusResponse?.payment_status === "failed") {
-                    if (pollInterval) {
-                      clearInterval(pollInterval);
-                      pollInterval = null;
-                    }
-                  }
-
-                  if (pollCount >= maxPolls) {
-                    if (pollInterval) {
-                      clearInterval(pollInterval);
-                      pollInterval = null;
-                    }
-                  }
-                } catch (error) {
-                  console.error("❌ Error during polling:", error);
-                }
-              }, 3000);
-            };
 
             const checkoutOptions: CheckoutOptions = {
               paymentSessionId: response.payment_session_id,
-              redirectTarget: "_modal",
+              returnUrl: `${window.location.origin}/students`,
+              redirectTarget: "_self",
               onClose: () => {
-                if (pollInterval) {
-                  clearInterval(pollInterval);
-                  pollInterval = null;
-                }
+                router.refresh();
               },
             };
             cashfree.checkout(checkoutOptions);
-            setTimeout(() => {
-              startPolling(response?.order_id);
-            }, 2000);
           } catch (error) {
             console.error("Payment initiation failed", error);
           }
@@ -357,60 +318,17 @@ export const createColumns = (
             const cashfree = await load({
               mode: "sandbox",
             });
-            let pollInterval: NodeJS.Timeout | null = null;
-            let pollCount = 0;
-            const maxPolls = 60;
-
-            const startPolling = async (orderId: string) => {
-              pollInterval = setInterval(async () => {
-                pollCount++;
-                try {
-                  const statusResponse =
-                    (await studentService.verifyPaymentStatus(orderId)) as any;
-                  if (statusResponse?.payment_status === "paid") {
-                    if (pollInterval) {
-                      clearInterval(pollInterval);
-                      pollInterval = null;
-                    }
-                    refreshData();
-                  } else if (statusResponse?.payment_status === "failed") {
-                    if (pollInterval) {
-                      clearInterval(pollInterval);
-                      pollInterval = null;
-                    }
-                    toast.error("Payment failed");
-                  }
-
-                  if (pollCount >= maxPolls) {
-                    if (pollInterval) {
-                      clearInterval(pollInterval);
-                      pollInterval = null;
-                    }
-                    toast.info(
-                      "Payment verification timeout. Please refresh if status doesn't update.",
-                    );
-                  }
-                } catch (error) {
-                  console.error("❌ Error during polling:", error);
-                }
-              }, 3000);
-            };
 
             const checkoutOptions: CheckoutOptions = {
               paymentSessionId: response.payment_session_id,
-              redirectTarget: "_modal",
+              returnUrl: `${window.location.origin}/students`,
+              redirectTarget: "_self",
               onClose: () => {
-                if (pollInterval) {
-                  clearInterval(pollInterval);
-                  pollInterval = null;
-                }
+                router.refresh();
               },
             };
 
             cashfree.checkout(checkoutOptions);
-            setTimeout(() => {
-              startPolling(response?.order_id);
-            }, 2000);
           } catch (error) {
             console.error(error);
           } finally {

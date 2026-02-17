@@ -33,6 +33,7 @@ import { toast } from "sonner";
 import { load, CheckoutOptions } from "@cashfreepayments/cashfree-js";
 import { useAuth } from "@/hooks/useAuth";
 import { PaymentSession } from "@/features/profile/model";
+import { useRouter } from "next/navigation";
 
 export default function StudentList() {
   const [data, setData] = useState<Student[]>([]);
@@ -55,10 +56,10 @@ export default function StudentList() {
   // Re-fetch when URL params change (or mounts) or when refreshKey changes
   const [refreshKey, setRefreshKey] = useState(0);
   const refreshData = () => setRefreshKey((prev) => prev + 1);
-
+  const router = useRouter();
   const { table } = useDataTable({
     data,
-    columns: createColumns(refreshData, isFree),
+    columns: createColumns(router, refreshData, isFree),
     pageCount,
     manual: true,
     enableAdvancedFilter: false,
@@ -107,8 +108,6 @@ export default function StudentList() {
   };
 
   const hasFilters = !!search || !!status;
-
-  // Get selected students
   const selectedRows = table.getFilteredSelectedRowModel().rows;
   const selectedStudents = selectedRows.map((row) => row.original);
   const hasSelectedStudents = selectedStudents.length > 0;
@@ -127,14 +126,10 @@ export default function StudentList() {
 
       const checkoutOptions: CheckoutOptions = {
         paymentSessionId: response?.payment_session_id || "",
-        redirectTarget: "_modal",
-        onSuccess: async (data: any) => {
-          console.log("Payment successful:", data);
-          await refreshUser();
-          toast.success("Payment successful! Refreshing...");
-        },
-        onFailure: (data: any) => {
-          console.error("Payment failed:", data);
+        returnUrl: `${window.location.origin}/students`,
+        redirectTarget: "_self",
+        onClose: () => {
+          router.refresh();
         },
       };
 

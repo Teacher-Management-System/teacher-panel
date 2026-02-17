@@ -8,4 +8,5 @@ export interface User {
   mobile?: string;
   profile_picture?: string;
   role: string;
+  is_completed?: boolean;
 }
