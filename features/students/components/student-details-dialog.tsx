@@ -162,8 +162,22 @@ export function StudentDetailsDialog({
                 />
                 <DetailItem
                   icon={BookOpen}
-                  label="Level"
-                  value={student.level ? `Level ${student.level}` : null}
+                  label="Category"
+                  // @ts-ignore
+                  value={
+                    student.category?.name || student.category || "Not provided"
+                  }
+                />
+                <DetailItem
+                  icon={BookOpen}
+                  label="Course"
+                  // @ts-ignore
+                  value={
+                    student.course?.title ||
+                    student.course?.name ||
+                    student.course ||
+                    "Not provided"
+                  }
                 />
               </div>
             </section>

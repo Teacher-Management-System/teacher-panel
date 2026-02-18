@@ -48,8 +48,10 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import studentService from "../api.service";
 import profileService from "../../profile/api.service";
+import courseService from "../course.service";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const studentSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -67,7 +69,8 @@ const studentSchema = z.object({
     .email("Please enter a valid email address"),
   school_name: z.string().min(2, "School name is required"),
   class: z.string().min(1, "Class is required"),
-  level: z.enum(["1", "2"]),
+  category_id: z.string().min(1, "Category is required"),
+  course_id: z.string().min(1, "Course is required"),
 });
 
 type StudentFormValues = z.infer<typeof studentSchema>;
@@ -79,6 +82,9 @@ interface AddStudentDialogProps {
 export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [isDataLoading, setIsDataLoading] = useState(false);
   const { isPendingOrInactive } = useAuth();
   const router = useRouter();
 
@@ -93,9 +99,53 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
       email: "",
       school_name: "",
       class: "",
-      level: undefined,
+      category_id: "",
+      course_id: "",
     },
   });
+
+  const selectedCategoryId = form.watch("category_id");
+
+  useEffect(() => {
+    if (open) {
+      fetchCategories();
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (selectedCategoryId) {
+      fetchCourses(selectedCategoryId);
+      // Reset course when category changes
+      form.setValue("course_id", "");
+    } else {
+      setCourses([]);
+      form.setValue("course_id", "");
+    }
+  }, [selectedCategoryId]);
+
+  const fetchCategories = async () => {
+    setIsDataLoading(true);
+    try {
+      const response: any = await courseService.getCategories();
+      setCategories(response || []);
+    } catch (error) {
+      console.error("Failed to fetch categories:", error);
+    } finally {
+      setIsDataLoading(false);
+    }
+  };
+
+  const fetchCourses = async (categoryId: string) => {
+    setIsDataLoading(true);
+    try {
+      const response: any = await courseService.getCourses(categoryId);
+      setCourses(response || []);
+    } catch (error) {
+      console.error("Failed to fetch courses:", error);
+    } finally {
+      setIsDataLoading(false);
+    }
+  };
 
   async function onSubmit(data: StudentFormValues) {
     setIsLoading(true);
@@ -391,25 +441,64 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
 
               <FormField
                 control={form.control}
-                name="level"
+                name="category_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Level</FormLabel>
+                    <FormLabel>Category</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
+                      disabled={isDataLoading}
                     >
                       <FormControl>
                         <SelectTrigger className="w-full bg-gray-50/50 border-gray-200 focus:bg-white transition-all">
                           <div className="flex items-center gap-2">
                             <BookOpen className="h-4 w-4 text-muted-foreground" />
-                            <SelectValue placeholder="Select level" />
+                            <SelectValue placeholder="Select category" />
                           </div>
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="1">Level 1</SelectItem>
-                        <SelectItem value="2">Level 2</SelectItem>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.id.toString()}>
+                            {cat.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="course_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Course</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      disabled={isDataLoading || !selectedCategoryId}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-full bg-gray-50/50 border-gray-200 focus:bg-white transition-all">
+                          <div className="flex items-center gap-2">
+                            <BookOpen className="h-4 w-4 text-muted-foreground" />
+                            <SelectValue placeholder="Select course" />
+                          </div>
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {courses.map((course) => (
+                          <SelectItem
+                            key={course.id}
+                            value={course.id.toString()}
+                          >
+                            {course.title || course.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />

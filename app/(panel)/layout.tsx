@@ -19,7 +19,9 @@ export default function DashboardLayout({
       <AppSidebar />
       <SidebarInset>
         <Header />
-        <main className="max-w-[85rem] mx-auto w-full py-2">{children}</main>
+        <main className="max-w-[85rem] mx-auto w-full px-4 md:px-0 py-4">
+          {children}
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );

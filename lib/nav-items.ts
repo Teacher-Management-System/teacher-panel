@@ -23,7 +23,7 @@ export const navData = {
           icon: Users,
         },
         {
-          title: "Payments",
+          title: "Earning & Payments",
           url: "/payments",
           icon: CreditCard,
         },

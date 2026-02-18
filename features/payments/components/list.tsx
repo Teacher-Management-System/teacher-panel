@@ -114,10 +114,10 @@ export default function PaymentList() {
       </div>
 
       {/* Main Hero Card */}
-      <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-teal-500 to-teal-600 p-8 text-white shadow-lg">
+      <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-teal-500 to-teal-600 p-6 sm:p-8 text-white shadow-lg">
         {/* Background decorative circles */}
-        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl opacity-50" />
+        <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-white/10 blur-3xl opacity-50" />
 
         <div className="relative z-10">
           <div className="mb-4 flex items-start justify-between">
@@ -136,7 +136,7 @@ export default function PaymentList() {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-12 border-t border-white/20 pt-3">
+          <div className="flex flex-wrap gap-x-12 gap-y-4 border-t border-white/20 pt-4 mt-2">
             <div className="flex items-center gap-3">
               <TrendingUp className="h-5 w-5 text-teal-200" />
               <div className="flex items-center gap-2">
@@ -171,7 +171,7 @@ export default function PaymentList() {
       </div>
 
       {/* Secondary Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-4 sm:gap-6 md:grid-cols-3">
         <Card className="rounded-xl border shadow-sm transition-all hover:shadow-md">
           <CardContent className="flex items-center gap-4 px-6">
             <div className="rounded-full bg-cyan-100 p-3 text-cyan-600">

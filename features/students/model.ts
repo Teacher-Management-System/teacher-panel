@@ -4,13 +4,25 @@ export interface Student {
   email: string;
   mobile: string;
   status: "active" | "inactive" | "pending";
-  fathers_name: string;
+  fathers_name?: string;
+  category_id?: string;
+  course_id?: string;
+  category?: {
+    id: string;
+    name: string;
+    slug?: string;
+  };
+  course?: {
+    id: string;
+    title: string;
+    name?: string;
+    slug?: string;
+  };
   created_at?: string;
   dob?: string;
   gender?: "male" | "female" | "other";
   school_name?: string;
   class?: string;
-  level?: "1" | "2";
 }
 
 export interface PaymentStatusResponse {

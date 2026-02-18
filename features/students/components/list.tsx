@@ -143,12 +143,12 @@ export default function StudentList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="gap-2">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             Students
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-sm sm:text-base">
             Manage student records and information
           </p>
         </div>
@@ -156,7 +156,7 @@ export default function StudentList() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-4">
         {[
           {
             label: "Total Students",
@@ -213,7 +213,7 @@ export default function StudentList() {
               className={`absolute -right-6 -bottom-6 h-32 w-32 ${stat.textColor} opacity-5 rotate-12 group-hover:scale-110 transition-transform duration-500`}
             />
 
-            <CardContent className="relative">
+            <CardContent className="relative p-4 sm:p-6">
               <div className="flex items-start justify-between">
                 <div className="space-y-2">
                   <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">

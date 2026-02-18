@@ -264,7 +264,7 @@ const Dashboard = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 sm:mb-8">
         {stats.map((stat, index) => (
           <Card
             key={index}
@@ -273,7 +273,7 @@ const Dashboard = () => {
           >
             <CardContent className="p-0">
               <div
-                className={`${stat.color} flex-1 p-6 text-white relative overflow-hidden flex flex-col justify-between`}
+                className={`${stat.color} flex-1 p-4 sm:p-6 text-white relative overflow-hidden flex flex-col justify-between`}
               >
                 {/* Decorative circles - subtler now */}
                 <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
@@ -311,7 +311,7 @@ const Dashboard = () => {
       </div>
 
       {/* Charts Row */}
-      <div className="grid lg:grid-cols-2 gap-6 mb-8">
+      <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {/* Earnings Chart */}
         <Card
           className="border-0 shadow-lg animate-fade-in"
@@ -480,7 +480,7 @@ const Dashboard = () => {
       </div>
 
       {/* Bottom Row */}
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 pb-8">
         {/* Student Status Pie Chart */}
         <Card
           className="border-0 shadow-lg animate-fade-in"

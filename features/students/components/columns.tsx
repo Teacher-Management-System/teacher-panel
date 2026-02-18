@@ -141,7 +141,7 @@ export const createColumns = (
       ),
     },
     {
-      accessorKey: "fathers_name",
+      accessorKey: "category",
       header: ({ column }) => {
         return (
           <Button
@@ -149,14 +149,34 @@ export const createColumns = (
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="hover:bg-transparent pl-0 w-full justify-center font-medium text-muted-foreground"
           >
-            Father's Name
+            Category
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         );
       },
       cell: ({ row }) => (
         <div className="text-center font-medium">
-          {row.getValue("fathers_name")}
+          {row.original.category?.name || "-"}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "course",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="hover:bg-transparent pl-0 w-full justify-center font-medium text-muted-foreground"
+          >
+            Course
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => (
+        <div className="text-center font-medium">
+          {row.original.course?.title || row.original.course?.name || "-"}
         </div>
       ),
     },
