@@ -59,7 +59,7 @@ interface ProfileFormData {
   monthlyPaymentExpectation: string;
 }
 
-const ProfileForm = () => {
+const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<ProfileFormData>({
     fullName: "",
@@ -147,6 +147,8 @@ const ProfileForm = () => {
 
     try {
       await profileService.updateProfile(payload);
+      toast.success("Profile updated successfully");
+      if (onSuccess) onSuccess();
     } catch (error) {
       console.error("Profile update failed:", error);
       toast.error("Failed to update profile");
@@ -268,11 +270,8 @@ const ProfileForm = () => {
                     initialFocus
                     fromYear={1950}
                     toYear={new Date().getFullYear()}
+                    disabled={{ after: new Date() }}
                     captionLayout="dropdown"
-                    classNames={{
-                      caption_label: "hidden",
-                      caption_dropdowns: "flex gap-2 p-2",
-                    }}
                   />
                 </PopoverContent>
               </Popover>

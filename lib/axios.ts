@@ -92,7 +92,11 @@ apiClient.interceptors.response.use(
           break;
 
         case 500:
-          toast.error("Internal server error. Please try again later.");
+          toast.error(
+            data?.message ||
+              data?.error ||
+              "Internal server error. Please try again later.",
+          );
           break;
 
         default:

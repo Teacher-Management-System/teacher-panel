@@ -9,4 +9,8 @@ export interface User {
   profile_picture?: string;
   role: string;
   is_completed?: boolean;
+  aadhar?: {
+    front: string;
+    back: string;
+  };
 }

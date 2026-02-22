@@ -16,6 +16,9 @@ export interface Data {
   payment_session_id?: string;
   order_id?: string;
   is_free?: boolean;
+
+  user_documents?: any[];
+  message?: string;
 }
 
 export interface Meta {

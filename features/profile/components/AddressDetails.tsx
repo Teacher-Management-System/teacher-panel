@@ -7,8 +7,13 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Home, Building, Globe } from "lucide-react";
 import profileService from "../api.service";
 import { Address } from "@/features/profile/model";
+import { toast } from "sonner";
 
-export default function AddressDetails() {
+export default function AddressDetails({
+  onSuccess,
+}: {
+  onSuccess?: () => void;
+}) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<Address>({
     address_line1: "",
@@ -80,6 +85,8 @@ export default function AddressDetails() {
 
     try {
       await profileService.updateAddress(payload);
+      toast.success("Address updated successfully");
+      if (onSuccess) onSuccess();
     } catch (error) {
       console.error("Address update failed:", error);
     } finally {

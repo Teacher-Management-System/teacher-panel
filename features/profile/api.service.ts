@@ -33,6 +33,14 @@ class ProfileService extends BaseService {
   async verifyPaymentStatus() {
     return await this.get("/payment-status");
   }
+
+  async getDocuments() {
+    return await this.get("/documents");
+  }
+
+  async uploadDocument(data: FormData) {
+    return await this.post("/documents", data);
+  }
 }
 
 const profileServiceInstance = new ProfileService();

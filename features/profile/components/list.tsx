@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { User, MapPin, FileText } from "lucide-react";
@@ -8,6 +9,8 @@ import AddressDetails from "@/features/profile/components/AddressDetails";
 import DocumentDetails from "@/features/profile/components/DocumentDetails";
 
 export default function ProfilePage() {
+  const [activeTab, setActiveTab] = useState("basic");
+
   return (
     <div className="container-fluid">
       <div className="flex flex-col gap-2">
@@ -17,7 +20,11 @@ export default function ProfilePage() {
         </p>
       </div>
 
-      <Tabs defaultValue="basic" className="w-full mt-5">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="w-full mt-5"
+      >
         <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-muted/50 rounded-xl">
           <TabsTrigger
             value="basic"
@@ -46,7 +53,7 @@ export default function ProfilePage() {
           <TabsContent value="basic" className="m-0 focus-visible:ring-0">
             <Card className="border-border/50 shadow-sm">
               <CardContent className="p-6">
-                <ProfileForm />
+                <ProfileForm onSuccess={() => setActiveTab("address")} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -54,7 +61,7 @@ export default function ProfilePage() {
           <TabsContent value="address" className="m-0 focus-visible:ring-0">
             <Card className="border-border/50 shadow-sm">
               <CardContent className="p-6">
-                <AddressDetails />
+                <AddressDetails onSuccess={() => setActiveTab("documents")} />
               </CardContent>
             </Card>
           </TabsContent>

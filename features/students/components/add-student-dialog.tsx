@@ -36,15 +36,22 @@ import {
   User,
   Mail,
   Phone,
-  Calendar,
   School,
   GraduationCap,
   Users,
   Baby,
   BookOpen,
   Loader2,
+  CalendarDays,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { format, parse } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { toast } from "sonner";
 import studentService from "../api.service";
 import profileService from "../../profile/api.service";
@@ -115,7 +122,6 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
   useEffect(() => {
     if (selectedCategoryId) {
       fetchCourses(selectedCategoryId);
-      // Reset course when category changes
       form.setValue("course_id", "");
     } else {
       setCourses([]);
@@ -171,10 +177,32 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
     setIsLoading(true);
     try {
       const response = await profileService.getProfile();
-      const isCompleted = response?.user?.is_completed;
+      const user = response?.user;
+      const isCompleted = user?.is_completed;
 
-      if (!isCompleted) {
-        toast.info("Please complete your profile to add students");
+      let hasAadhar = !!(user?.aadhar?.front && user?.aadhar?.back);
+
+      // If aadhar is not in profile response, check documents endpoint
+      if (!hasAadhar) {
+        const docResponse: any = await profileService.getDocuments();
+        const docs = docResponse.user_documents || docResponse;
+        if (Array.isArray(docs)) {
+          const front = docs.find(
+            (d: any) => d.document_type === "aadhar_front",
+          );
+          const back = docs.find((d: any) => d.document_type === "aadhar_back");
+          hasAadhar = !!front && !!back;
+        }
+      }
+
+      if (!isCompleted || !hasAadhar) {
+        if (!hasAadhar) {
+          toast.info(
+            "Please upload your Aadhar documents (front & back) to add students",
+          );
+        } else {
+          toast.info("Please complete your profile details to add students");
+        }
         router.push("/profile");
         return;
       }
@@ -303,18 +331,51 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                 control={form.control}
                 name="dob"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col">
                     <FormLabel>Date of Birth</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
-                        <Input
-                          type="date"
-                          className="pl-9 bg-gray-50/50 border-gray-200 focus:bg-white transition-all"
-                          {...field}
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full pl-3 text-left font-normal bg-gray-50/50 border-gray-200 focus:bg-white transition-all",
+                              !field.value && "text-muted-foreground",
+                            )}
+                          >
+                            <CalendarDays className="mr-2 h-4 w-4 text-muted-foreground" />
+                            {field.value ? (
+                              format(
+                                parse(field.value, "yyyy-MM-dd", new Date()),
+                                "PPP",
+                              )
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={
+                            field.value
+                              ? parse(field.value, "yyyy-MM-dd", new Date())
+                              : undefined
+                          }
+                          onSelect={(date) =>
+                            field.onChange(
+                              date ? format(date, "yyyy-MM-dd") : "",
+                            )
+                          }
+                          disabled={{ after: new Date() }}
+                          initialFocus
+                          fromYear={1950}
+                          toYear={new Date().getFullYear()}
+                          captionLayout="dropdown"
                         />
-                      </div>
-                    </FormControl>
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}
