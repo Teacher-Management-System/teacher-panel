@@ -13,6 +13,8 @@ import { useConfirm } from "@/hooks/use-confirm";
 import { cookieService } from "@/lib/cookie";
 import { useRouter } from "next/navigation";
 import { Lock } from "lucide-react";
+import { useModal } from "@/hooks/use-modal";
+import { ChangePasswordForm } from "@/features/profile/components/change-password-form";
 
 export function UserDropdownContent({
   user,
@@ -26,6 +28,7 @@ export function UserDropdownContent({
 }) {
   const router = useRouter();
   const confirm = useConfirm();
+  const { openModal } = useModal();
 
   const logout = async () => {
     await confirm({
@@ -74,9 +77,7 @@ export function UserDropdownContent({
         <DropdownMenuItem onClick={() => router.push("/profile")}>
           <User /> Profile
         </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => router.push("/profile/change-password")}
-        >
+        <DropdownMenuItem onClick={() => openModal(ChangePasswordForm)}>
           <Lock /> Change Password
         </DropdownMenuItem>
       </DropdownMenuGroup>

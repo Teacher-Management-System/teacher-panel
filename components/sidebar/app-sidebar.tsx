@@ -55,21 +55,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             ))}
           </nav>
         </SidebarContent>
-        <SidebarFooter className="p-4 border-t border-gray-100">
-          <button
-            onClick={() => {
-              // Handle logout logic, potentially calling authService.logout()
-              // For now just redirect or show toast
-              cookieService.deleteCookie("user");
-              cookieService.deleteCookie("authToken");
-              window.location.href = "/auth/login";
-            }}
-            className="flex items-center gap-3 w-full px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 group"
-          >
-            <LogOut className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            <span className="font-medium">Logout</span>
-          </button>
-        </SidebarFooter>
       </div>
     </Sidebar>
   );

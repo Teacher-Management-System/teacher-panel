@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import NextImage from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/hooks/useAuth";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { user, isLoading } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -83,30 +85,54 @@ const Navbar = () => {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-3">
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <Button variant="ghost" asChild className="font-medium">
-                <Link href="/auth/login">Login</Link>
-              </Button>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button
-                variant="default"
-                asChild
-                className="shadow-lg shadow-primary/25"
-              >
-                <Link href="/auth/login">Get Started</Link>
-              </Button>
-            </motion.div>
+            {!isLoading && (
+              <>
+                {user ? (
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Button
+                      variant="default"
+                      asChild
+                      className="shadow-lg shadow-primary/25"
+                    >
+                      <Link href="/dashboard">Dashboard</Link>
+                    </Button>
+                  </motion.div>
+                ) : (
+                  <>
+                    <motion.div
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.3 }}
+                    >
+                      <Button variant="ghost" asChild className="font-medium">
+                        <Link href="/auth/login">Login</Link>
+                      </Button>
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.4 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Button
+                        variant="default"
+                        asChild
+                        className="shadow-lg shadow-primary/25"
+                      >
+                        <Link href="/auth/login">Get Started</Link>
+                      </Button>
+                    </motion.div>
+                  </>
+                )}
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -146,16 +172,39 @@ const Navbar = () => {
                   </motion.a>
                 ))}
                 <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-border">
-                  <Button variant="outline" asChild className="w-full">
-                    <Link href="/auth/login" onClick={() => setIsOpen(false)}>
-                      Login
-                    </Link>
-                  </Button>
-                  <Button variant="default" asChild className="w-full">
-                    <Link href="/auth/login" onClick={() => setIsOpen(false)}>
-                      Get Started
-                    </Link>
-                  </Button>
+                  {!isLoading && (
+                    <>
+                      {user ? (
+                        <Button
+                          variant="default"
+                          asChild
+                          className="w-full"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <Link href="/dashboard">Dashboard</Link>
+                        </Button>
+                      ) : (
+                        <>
+                          <Button variant="outline" asChild className="w-full">
+                            <Link
+                              href="/auth/login"
+                              onClick={() => setIsOpen(false)}
+                            >
+                              Login
+                            </Link>
+                          </Button>
+                          <Button variant="default" asChild className="w-full">
+                            <Link
+                              href="/auth/login"
+                              onClick={() => setIsOpen(false)}
+                            >
+                              Get Started
+                            </Link>
+                          </Button>
+                        </>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             </div>
