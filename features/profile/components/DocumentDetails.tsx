@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,10 +13,19 @@ import {
   AlertCircle,
   ImageIcon,
   Loader2,
+  PartyPopper,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import profileService from "../api.service";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 interface DocumentState {
   file: File | null;
@@ -40,6 +50,7 @@ export default function DocumentDetails() {
     isUploading: false,
     isUploaded: false,
   });
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const frontInputRef = useRef<HTMLInputElement>(null);
   const backInputRef = useRef<HTMLInputElement>(null);
@@ -96,6 +107,9 @@ export default function DocumentDetails() {
           isUploaded: true,
           isUploading: false,
         }));
+        if (type === "aadhar_back") {
+          setShowSuccessModal(true);
+        }
       } else {
         toast.error(response?.message || "Upload failed");
       }
@@ -320,6 +334,41 @@ export default function DocumentDetails() {
           </strong>
         </p>
       </div>
+
+      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader className="flex flex-col items-center justify-center text-center space-y-4 pt-4">
+            <div className="bg-primary/10 p-4 rounded-full">
+              <PartyPopper className="w-12 h-12 text-primary animate-bounce transition-transform" />
+            </div>
+            <DialogTitle className="text-2xl font-bold">
+              Profile Update
+            </DialogTitle>
+            <DialogDescription className="text-base">
+              Your Aadhar card back side has been uploaded successfully. Your
+              profile documents are now complete!
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:justify-center">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full sm:w-auto"
+              asChild
+            >
+              <Link href="/dashboard">Back to Dashboard</Link>
+            </Button>
+            <Button
+              type="button"
+              variant="default"
+              className="w-full sm:w-auto px-10"
+              onClick={() => setShowSuccessModal(false)}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

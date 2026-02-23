@@ -33,7 +33,7 @@ export default function ProfilePage() {
         returnUrl: `${window.location.origin}/profile`,
         redirectTarget: "_self",
         onClose: () => {
-          router.refresh();
+          window.location.reload();
         },
       };
 

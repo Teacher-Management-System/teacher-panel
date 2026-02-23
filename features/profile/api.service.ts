@@ -41,6 +41,10 @@ class ProfileService extends BaseService {
   async uploadDocument(data: FormData) {
     return await this.post("/documents", data);
   }
+
+  async updateStatus(userId: number) {
+    return await this.patch(`/update-status/${userId}`, {});
+  }
 }
 
 const profileServiceInstance = new ProfileService();

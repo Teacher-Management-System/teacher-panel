@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   Collapsible,
   CollapsibleContent,
@@ -60,18 +61,46 @@ const NavBadge = ({ children }: { children: ReactNode }) => (
 const SidebarMenuLink = ({ item }: { item: NavLink }) => {
   const { setOpenMobile } = useSidebar();
   const pathname = usePathname();
+  const isAero = item.title === "Aero";
+  const isActive = checkIsActive(pathname, item);
 
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
         asChild
-        isActive={checkIsActive(pathname, item)}
+        isActive={isActive}
         tooltip={item.title}
-        className="py-5 px-3"
+        className={cn(
+          "py-5 px-3 transition-all duration-300",
+          isAero && [
+            "h-14 mb-2 mt-1",
+            "bg-gradient-to-br from-[#1394f9] via-[#1fc0c7] to-[#1394f9] bg-[length:200%_200%] animate-[gradient_3s_ease_infinite]",
+            "text-white shadow-xl shadow-primary/30",
+            "hover:scale-[1.05] hover:shadow-2xl hover:shadow-primary/40",
+            "active:scale-95",
+            "border-none ring-0",
+            isActive &&
+              "ring-2 ring-white ring-offset-2 ring-offset-primary/50",
+          ],
+        )}
       >
         <Link href={item.url} onClick={() => setOpenMobile(false)}>
-          {item.icon && <item.icon />}
-          <span>{item.title}</span>
+          {isAero ? (
+            <div className="relative">
+              <Sparkles className="w-5 h-5 animate-pulse text-white" />
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-white rounded-full animate-ping" />
+            </div>
+          ) : (
+            item.icon && <item.icon />
+          )}
+          <span
+            className={cn(
+              "transition-colors",
+              isAero ? "font-bold text-lg" : "",
+            )}
+          >
+            {item.title}
+          </span>
           {item.badge && <NavBadge>{item.badge}</NavBadge>}
           {item.shortcut && (
             <NavShortcut>

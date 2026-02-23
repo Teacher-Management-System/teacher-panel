@@ -180,7 +180,7 @@ const ServicesSection = () => {
         >
           {[
             { value: "99.9%", label: "Uptime" },
-            { value: "24/7", label: "Support" },
+            { value: "Dedicated", label: "Support" },
             { value: "100%", label: "Secure" },
             { value: "Free", label: "Setup" },
           ].map((stat, index) => (
@@ -188,7 +188,7 @@ const ServicesSection = () => {
               <div className="font-display text-3xl font-bold text-primary group-hover:scale-110 transition-transform duration-300">
                 {stat.value}
               </div>
-              <div className="text-sm text-muted-foreground mt-1">
+              <div className="text-md text-muted-foreground mt-1">
                 {stat.label}
               </div>
             </div>

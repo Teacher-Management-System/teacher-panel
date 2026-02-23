@@ -1,14 +1,7 @@
 "use client";
-import {
-  Building2,
-  Mail,
-  Phone,
-  MapPin,
-  TrendingUp,
-  Award,
-  Heart,
-} from "lucide-react";
+import { Mail, Phone, MapPin, TrendingUp, Award, Heart } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 
 const AboutSection = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -50,8 +43,8 @@ const AboutSection = () => {
         const easeOut = 1 - Math.pow(1 - progress, 3);
 
         setCounters({
-          teachers: Math.floor(500 * easeOut),
-          students: Math.floor(10000 * easeOut),
+          teachers: Math.floor(200 * easeOut),
+          students: Math.floor(3500 * easeOut),
           satisfaction: Math.floor(99 * easeOut),
         });
 
@@ -157,8 +150,14 @@ const AboutSection = () => {
               <div className="relative bg-card rounded-3xl p-8 border border-border shadow-2xl hover:shadow-3xl transition-shadow duration-500">
                 {/* Header */}
                 <div className="flex items-center gap-4 mb-8">
-                  <div className="w-18 h-18 rounded-2xl gradient-primary flex items-center justify-center shadow-lg animate-pulse-slow p-4">
-                    <Building2 className="w-10 h-10 text-primary-foreground" />
+                  <div className="w-18 h-18">
+                    <Image
+                      src="/logo-icon.png"
+                      alt="Aerophantom Logo"
+                      width={60}
+                      height={60}
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                   <div>
                     <h3 className="font-display text-2xl font-bold text-foreground">

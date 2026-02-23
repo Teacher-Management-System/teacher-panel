@@ -5,6 +5,7 @@ import {
   Bell,
   Settings,
   User,
+  Sparkles,
 } from "lucide-react";
 
 export const navData = {
@@ -12,6 +13,11 @@ export const navData = {
     {
       title: "",
       items: [
+        {
+          title: "Aero",
+          url: "/aero",
+          icon: Sparkles,
+        },
         {
           title: "Dashboard",
           url: "/dashboard",

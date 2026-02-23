@@ -289,7 +289,7 @@ export const createColumns = (
               returnUrl: `${window.location.origin}/students`,
               redirectTarget: "_self",
               onClose: () => {
-                router.refresh();
+                window.location.reload();
               },
             };
             cashfree.checkout(checkoutOptions);
@@ -344,7 +344,7 @@ export const createColumns = (
               returnUrl: `${window.location.origin}/students`,
               redirectTarget: "_self",
               onClose: () => {
-                router.refresh();
+                window.location.reload();
               },
             };
 

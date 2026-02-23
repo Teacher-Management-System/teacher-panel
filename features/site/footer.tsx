@@ -111,6 +111,8 @@ const Footer = () => {
                 { href: "#services", label: "Services" },
                 { href: "#how-it-works", label: "How It Works" },
                 { href: "#about", label: "About Us" },
+                { href: "/privacy", label: "Privacy Policy" },
+                { href: "/faq", label: "FAQ" },
               ].map((link) => (
                 <li key={link.href}>
                   <a
@@ -132,9 +134,9 @@ const Footer = () => {
             </h4>
             <ul className="space-y-4">
               {[
-                { href: "/login", label: "Login" },
-                { href: "/signup", label: "Sign Up" },
-                { href: "/panel", label: "Dashboard" },
+                { href: "/auth/login", label: "Login" },
+                { href: "/auth/signup", label: "Sign Up" },
+                { href: "/dashboard", label: "Dashboard" },
               ].map((link) => (
                 <li key={link.href}>
                   <Link
@@ -157,20 +159,6 @@ const Footer = () => {
             <Heart className="w-4 h-4 text-primary fill-primary animate-pulse" />
             in India
           </p>
-          <div className="flex gap-6">
-            <a
-              href="https://www.aerophantom.com/privacypolicy"
-              className="text-background/60 hover:text-primary text-sm transition-colors"
-            >
-              Privacy Policy
-            </a>
-            <a
-              href="https://www.aerophantom.com/faq"
-              className="text-background/60 hover:text-primary text-sm transition-colors"
-            >
-              FAQ
-            </a>
-          </div>
         </div>
       </div>
 

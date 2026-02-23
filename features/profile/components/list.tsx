@@ -3,13 +3,30 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { User, MapPin, FileText } from "lucide-react";
+import { User, MapPin, FileText, Lock } from "lucide-react";
 import ProfileForm from "./basic";
 import AddressDetails from "@/features/profile/components/AddressDetails";
 import DocumentDetails from "@/features/profile/components/DocumentDetails";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("basic");
+  const { user, refreshUser } = useAuth();
+  const isCompleted = !!user?.is_completed;
+
+  const handleTabClick = (value: string) => {
+    if ((value === "address" || value === "documents") && !isCompleted) {
+      toast.info("Please fill and save your Basic Details first");
+      return;
+    }
+    setActiveTab(value);
+  };
+
+  const handleBasicSuccess = async () => {
+    await refreshUser();
+    setActiveTab("address");
+  };
 
   return (
     <div className="container-fluid">
@@ -22,7 +39,7 @@ export default function ProfilePage() {
 
       <Tabs
         value={activeTab}
-        onValueChange={setActiveTab}
+        onValueChange={handleTabClick}
         className="w-full mt-5"
       >
         <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-muted/50 rounded-xl">
@@ -35,16 +52,26 @@ export default function ProfilePage() {
           </TabsTrigger>
           <TabsTrigger
             value="address"
-            className="flex items-center gap-2 py-3 rounded-lg data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all"
+            disabled={!isCompleted}
+            className="flex items-center gap-2 py-3 rounded-lg data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <MapPin className="w-4 h-4" />
+            {isCompleted ? (
+              <MapPin className="w-4 h-4" />
+            ) : (
+              <Lock className="w-4 h-4 opacity-70" />
+            )}
             <span className="hidden sm:inline">Address Details</span>
           </TabsTrigger>
           <TabsTrigger
             value="documents"
-            className="flex items-center gap-2 py-3 rounded-lg data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all"
+            disabled={!isCompleted}
+            className="flex items-center gap-2 py-3 rounded-lg data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <FileText className="w-4 h-4" />
+            {isCompleted ? (
+              <FileText className="w-4 h-4" />
+            ) : (
+              <Lock className="w-4 h-4 opacity-70" />
+            )}
             <span className="hidden sm:inline">Document Details</span>
           </TabsTrigger>
         </TabsList>
@@ -53,7 +80,7 @@ export default function ProfilePage() {
           <TabsContent value="basic" className="m-0 focus-visible:ring-0">
             <Card className="border-border/50 shadow-sm">
               <CardContent className="p-6">
-                <ProfileForm onSuccess={() => setActiveTab("address")} />
+                <ProfileForm onSuccess={handleBasicSuccess} />
               </CardContent>
             </Card>
           </TabsContent>

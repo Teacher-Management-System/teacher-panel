@@ -59,6 +59,7 @@ import courseService from "../course.service";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import CompleteProfilePopup from "@/components/CompleteProfilePopup";
 
 const studentSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -92,6 +93,8 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
   const [categories, setCategories] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [isDataLoading, setIsDataLoading] = useState(false);
+  const [showCompleteProfileModal, setShowCompleteProfileModal] =
+    useState(false);
   const { isPendingOrInactive } = useAuth();
   const router = useRouter();
 
@@ -203,7 +206,7 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
         } else {
           toast.info("Please complete your profile details to add students");
         }
-        router.push("/profile");
+        setShowCompleteProfileModal(true);
         return;
       }
 
@@ -595,6 +598,10 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
           </form>
         </Form>
       </DialogContent>
+      <CompleteProfilePopup
+        open={showCompleteProfileModal}
+        onOpenChange={setShowCompleteProfileModal}
+      />
     </Dialog>
   );
 }

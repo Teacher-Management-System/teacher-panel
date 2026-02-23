@@ -6,7 +6,12 @@ export function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
   const isAuthRoute = pathname.startsWith("/auth");
-  const isPublicRoute = pathname === "/" || pathname.startsWith("/website");
+  const isPublicRoute =
+    pathname === "/" ||
+    pathname.startsWith("/website") ||
+    pathname.startsWith("/privacy") ||
+    pathname.startsWith("/faq") ||
+    pathname.startsWith("/inquiry");
   const isProtectedButNotAuthRoute = !isAuthRoute && !isPublicRoute;
 
   if (authToken && isAuthRoute) {

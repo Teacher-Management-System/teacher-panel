@@ -3,6 +3,7 @@ import Script from "next/script";
 import Header from "@/components/sidebar/header";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { Metadata } from "next";
+import { JoinNowPopup } from "@/components/JoinNowPopup";
 
 export const metadata: Metadata = {
   title: "Aerophantom - Teacher Panel",
@@ -23,6 +24,7 @@ export default function DashboardLayout({
           {children}
         </main>
       </SidebarInset>
+      <JoinNowPopup />
     </SidebarProvider>
   );
 }

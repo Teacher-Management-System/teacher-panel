@@ -129,7 +129,7 @@ export default function StudentList() {
         returnUrl: `${window.location.origin}/students`,
         redirectTarget: "_self",
         onClose: () => {
-          router.refresh();
+          window.location.reload();
         },
       };
 

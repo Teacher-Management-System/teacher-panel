@@ -110,8 +110,8 @@ const Navbar = () => {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.3 }}
                     >
-                      <Button variant="ghost" asChild className="font-medium">
-                        <Link href="/auth/login">Login</Link>
+                      <Button variant="outline" asChild className="font-medium">
+                        <Link href="/inquiry">Inquire Now</Link>
                       </Button>
                     </motion.div>
                     <motion.div
@@ -126,7 +126,7 @@ const Navbar = () => {
                         asChild
                         className="shadow-lg shadow-primary/25"
                       >
-                        <Link href="/auth/login">Get Started</Link>
+                        <Link href="/auth/login">Login</Link>
                       </Button>
                     </motion.div>
                   </>

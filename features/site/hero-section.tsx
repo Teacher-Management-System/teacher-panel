@@ -6,9 +6,9 @@ import { motion } from "framer-motion";
 
 const HeroSection = () => {
   const features = [
-    "Student Management",
-    "Payment Tracking",
-    "Secure Dashboard",
+    "Complete Educator Training",
+    "Ready Curriculum & Teaching System",
+    "Marketing & Growth Support",
   ];
 
   const containerVariants = {
@@ -123,7 +123,7 @@ const HeroSection = () => {
                 <Sparkles className="w-4 h-4" />
               </motion.div>
               <span className="text-sm font-medium">
-                Trusted by 500+ Teachers
+                Trusted by 200+ Teachers
               </span>
             </motion.div>
 
@@ -132,9 +132,9 @@ const HeroSection = () => {
               variants={itemVariants}
               className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6"
             >
-              Create a Robotics
+              Start your own
               <span className="text-gradient block mt-2">
-                Training Center Today
+                Robotics and AI Training Center
               </span>
             </motion.h1>
 
@@ -176,13 +176,13 @@ const HeroSection = () => {
                 whileTap={{ scale: 0.98 }}
               >
                 <Button
-                  variant="default"
+                  variant="outline"
                   size="lg"
                   asChild
                   className="shadow-lg shadow-primary/25"
                 >
-                  <Link href="/auth/login">
-                    Get Started Free
+                  <Link href="/inquiry">
+                    Inquire Now{" "}
                     <motion.div
                       animate={{ x: [0, 5, 0] }}
                       transition={{ duration: 1.5, repeat: Infinity }}
@@ -197,7 +197,7 @@ const HeroSection = () => {
                 whileTap={{ scale: 0.98 }}
               >
                 <Button
-                  variant="outline"
+                  variant="default"
                   size="lg"
                   asChild
                   className="border-2"
@@ -212,8 +212,8 @@ const HeroSection = () => {
               variants={itemVariants}
               className="mt-8 text-sm text-muted-foreground"
             >
-              ✓ No franchise fee &nbsp;&nbsp; ✓ Complete training & kits
-              &nbsp;&nbsp; ✓ Central academic team
+              ✓ Affordable &nbsp;&nbsp; ✓ Ready to Start &nbsp;&nbsp; ✓ Hustle
+              Free
             </motion.p>
           </motion.div>
 
@@ -260,7 +260,7 @@ const HeroSection = () => {
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Students</p>
-                    <p className="text-lg font-bold text-foreground">2,847</p>
+                    <p className="text-lg font-bold text-foreground">3,500</p>
                   </div>
                 </div>
               </motion.div>
