@@ -18,8 +18,12 @@ import { useEffect, useState } from "react";
 import paymentService from "../api.service";
 import { Payment } from "../model";
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
+import { useAuth } from "@/hooks/useAuth";
+import { ExportButton } from "@/components/export-button";
 
 export default function PaymentList() {
+  const { user } = useAuth();
+  const isPending = user?.status === "pending";
   const [data, setData] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(false);
   const [pageCount, setPageCount] = useState(1);
@@ -104,13 +108,19 @@ export default function PaymentList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold tracking-tight">
-          Earnings & Payments
-        </h1>
-        <p className="text-muted-foreground">
-          Track your earnings and payment history
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-bold tracking-tight">
+            Earnings & Payments
+          </h1>
+          <p className="text-muted-foreground">
+            Track your earnings and payment history
+          </p>
+        </div>
+        <ExportButton
+          onExport={() => paymentService.exportData()}
+          title="Export Payments"
+        />
       </div>
 
       {/* Main Hero Card */}
@@ -234,7 +244,11 @@ export default function PaymentList() {
             />
           </div>
           <div className="rounded-md bg-background overflow-hidden">
-            <DataTable table={table} isLoading={loading} />
+            <DataTable
+              table={table}
+              isLoading={loading}
+              isPending={isPending}
+            />
           </div>
         </CardContent>
       </Card>

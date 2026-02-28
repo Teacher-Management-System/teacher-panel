@@ -60,6 +60,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import CompleteProfilePopup from "@/components/CompleteProfilePopup";
+import { JoinNowPopup } from "@/components/JoinNowPopup";
 
 const studentSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -95,7 +96,8 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [showCompleteProfileModal, setShowCompleteProfileModal] =
     useState(false);
-  const { isPendingOrInactive } = useAuth();
+  const [showJoinNowModal, setShowJoinNowModal] = useState(false);
+  const { user: currentUser, status } = useAuth();
   const router = useRouter();
 
   const form = useForm<StudentFormValues>({
@@ -177,6 +179,11 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
   }
 
   const handleAddStudentClick = async () => {
+    if (status === "pending") {
+      setShowJoinNowModal(true);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await profileService.getProfile();
@@ -601,6 +608,10 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
       <CompleteProfilePopup
         open={showCompleteProfileModal}
         onOpenChange={setShowCompleteProfileModal}
+      />
+      <JoinNowPopup
+        externalOpen={showJoinNowModal}
+        onOpenChange={setShowJoinNowModal}
       />
     </Dialog>
   );

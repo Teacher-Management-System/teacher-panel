@@ -25,14 +25,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { ExportButton } from "@/components/export-button";
 
 import { useEffect, useState } from "react";
 import studentService from "../api.service";
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
-import { toast } from "sonner";
 import { load, CheckoutOptions } from "@cashfreepayments/cashfree-js";
 import { useAuth } from "@/hooks/useAuth";
-import { PaymentSession } from "@/features/profile/model";
 import { useRouter } from "next/navigation";
 
 export default function StudentList() {
@@ -51,7 +50,8 @@ export default function StudentList() {
   const [sort] = useQueryState("sort", parseAsString);
   const [status, setStatus] = useQueryState("status", parseAsString);
   const [isFree, setIsFree] = useState(false);
-  const { refreshUser } = useAuth();
+  const { user, refreshUser } = useAuth();
+  const isPending = user?.status === "pending";
 
   // Re-fetch when URL params change (or mounts) or when refreshKey changes
   const [refreshKey, setRefreshKey] = useState(0);
@@ -152,7 +152,13 @@ export default function StudentList() {
             Manage student records and information
           </p>
         </div>
-        <AddStudentDialog onSuccess={refreshData} />
+        <div className="flex items-center gap-2">
+          <ExportButton
+            onExport={() => studentService.exportData()}
+            title="Export Students"
+          />
+          <AddStudentDialog onSuccess={refreshData} />
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -320,7 +326,11 @@ export default function StudentList() {
           </div>
 
           <div className="rounded-md bg-background overflow-hidden">
-            <DataTable table={table} isLoading={loading} />
+            <DataTable
+              table={table}
+              isLoading={loading}
+              isPending={isPending}
+            />
           </div>
         </CardContent>
       </Card>

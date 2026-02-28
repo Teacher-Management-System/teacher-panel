@@ -1,6 +1,8 @@
 export interface Message {
   role: "user" | "assistant" | "system";
   content: string;
+  timestamp: number;
+  tokens?: number;
 }
 
 class AeroChatService {
@@ -33,7 +35,7 @@ class AeroChatService {
             content:
               "You are Aero, a helpful AI assistant for the Aerophantom Teacher Management System. You help teachers manage students, courses, and answer their questions concisely and professionally.",
           },
-          ...messages,
+          ...messages.map(({ role, content }) => ({ role, content })),
         ],
       }),
     });
@@ -46,7 +48,10 @@ class AeroChatService {
     }
 
     const data = await response.json();
-    return data.choices[0].message.content;
+    return {
+      content: data.choices[0].message.content,
+      tokens: data.usage?.total_tokens || 0,
+    };
   }
 }
 

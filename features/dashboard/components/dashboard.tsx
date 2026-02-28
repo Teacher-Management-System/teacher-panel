@@ -11,6 +11,8 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { DateRange } from "react-day-picker";
+import { cookieService } from "@/lib/cookie";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Users,
   CreditCard,
@@ -25,6 +27,7 @@ import {
   Sparkles,
   CalendarIcon,
   Filter,
+  AlertCircle,
 } from "lucide-react";
 import {
   AreaChart,
@@ -52,8 +55,20 @@ const Dashboard = () => {
 
   const [data, setData] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userStatus, setUserStatus] = useState<string | null>(null);
 
   useEffect(() => {
+    // Get user status from cookie
+    const userCookie = cookieService.getCookie("user");
+    if (userCookie) {
+      try {
+        const user = JSON.parse(userCookie);
+        setUserStatus(user.status);
+      } catch (e) {
+        console.error("Failed to parse user cookie", e);
+      }
+    }
+
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
@@ -217,6 +232,14 @@ const Dashboard = () => {
           <p className="text-muted-foreground">
             Welcome back! Here's your performance overview.
           </p>
+          {userStatus === "pending" && (
+            <div className="flex items-center gap-2 mt-2 px-3 py-1.5 bg-amber-50 border border-amber-100 rounded-lg w-fit animate-in fade-in slide-in-from-left-2 duration-700">
+              <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+              <p className="text-xs font-semibold text-amber-700">
+                Note: This is demo data to show how your dashboard will look.
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-2 bg-background/50 p-1 rounded-lg border shadow-sm">

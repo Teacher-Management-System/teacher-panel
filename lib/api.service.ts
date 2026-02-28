@@ -24,8 +24,23 @@ export default class BaseService {
     this.endpoint = endpoint;
   }
 
-  private getUrl(path: string = ""): string {
+  protected getUrl(path: string = ""): string {
     return [this.endpoint, path].filter(Boolean).join("/");
+  }
+
+  /**
+   * Handles downloading files by requesting a blob and returning it.
+   */
+  public async download(
+    path: string = "",
+    params?: any,
+    config?: AxiosRequestConfig,
+  ): Promise<Blob> {
+    return (await apiClient.get(this.getUrl(path), {
+      params,
+      ...config,
+      responseType: "blob",
+    })) as unknown as Blob;
   }
 
   /**
@@ -37,6 +52,16 @@ export default class BaseService {
     try {
       const response = await promise;
       console.log(response, "response");
+
+      // If the response is not an object or doesn't have a status, it's not a standard ApiResponse
+      if (
+        typeof response !== "object" ||
+        response === null ||
+        !("status" in response)
+      ) {
+        return response as any;
+      }
+
       if (!response.status) {
         return Promise.reject(new Error(response.message || "Request failed"));
       }

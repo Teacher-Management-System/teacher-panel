@@ -30,15 +30,27 @@ export default function AeroChatUI() {
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
-    const userMessage: Message = { role: "user", content: input.trim() };
+    const userMessage: Message = {
+      role: "user",
+      content: input.trim(),
+      timestamp: Date.now(),
+    };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setInput("");
     setIsLoading(true);
 
     try {
-      const aiResponse = await aeroChatService.sendMessage(newMessages);
-      setMessages([...newMessages, { role: "assistant", content: aiResponse }]);
+      const response = await aeroChatService.sendMessage(newMessages);
+      setMessages([
+        ...newMessages,
+        {
+          role: "assistant",
+          content: response.content,
+          timestamp: Date.now(),
+          tokens: response.tokens,
+        },
+      ]);
     } catch (error: any) {
       console.error("Aero AI Error:", error);
       toast.error(
@@ -50,25 +62,9 @@ export default function AeroChatUI() {
   };
 
   return (
-    <Card className="flex flex-col h-[calc(100vh-12rem)] w-full max-w-4xl mx-auto shadow-2xl border-none bg-white/50 backdrop-blur-xl dark:bg-zinc-950/50">
-      <CardHeader className="border-b border-zinc-100 dark:border-zinc-800 pb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/20">
-            <Sparkles className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <CardTitle className="text-xl font-bold bg-gradient-to-br from-zinc-900 to-zinc-600 dark:from-zinc-50 dark:to-zinc-400 bg-clip-text text-transparent">
-              Aero AI Assistant
-            </CardTitle>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
-              Powered by Aerophantom
-            </p>
-          </div>
-        </div>
-      </CardHeader>
-
+    <Card className="flex flex-col h-[calc(100vh-8rem)] w-full shadow-none border-none bg-transparent">
       <CardContent
-        className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar"
+        className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar"
         ref={scrollRef}
       >
         {messages.length === 0 && (
@@ -107,13 +103,41 @@ export default function AeroChatUI() {
 
             <div
               className={cn(
-                "max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm",
-                msg.role === "user"
-                  ? "bg-primary text-primary-foreground rounded-tr-none"
-                  : "bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-tl-none text-zinc-800 dark:text-zinc-200",
+                "flex flex-col gap-1",
+                msg.role === "user" ? "items-end" : "items-start",
               )}
             >
-              {msg.content}
+              <div
+                className={cn(
+                  "max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm",
+                  msg.role === "user"
+                    ? "bg-primary text-primary-foreground rounded-tr-none"
+                    : "bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-tl-none text-zinc-800 dark:text-zinc-200",
+                )}
+              >
+                {msg.content}
+              </div>
+              <div
+                className={cn(
+                  "flex items-center gap-2 px-1 text-[10px] text-zinc-400 font-medium",
+                  msg.role === "user"
+                    ? "flex-row-reverse text-right"
+                    : "flex-row text-left",
+                )}
+              >
+                <span>
+                  {new Date(msg.timestamp).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+                {msg.tokens !== undefined && (
+                  <>
+                    <div className="w-1 h-1 rounded-full bg-zinc-300" />
+                    <span>{msg.tokens} tokens</span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         ))}
@@ -130,9 +154,9 @@ export default function AeroChatUI() {
         )}
       </CardContent>
 
-      <CardFooter className="p-6 pt-0 border-t border-zinc-100 dark:border-zinc-800 mt-4">
+      <CardFooter className="p-0 border-none mt-auto">
         <form
-          className="flex w-full items-center gap-2 pt-6"
+          className="flex w-full items-center gap-2"
           onSubmit={(e) => {
             e.preventDefault();
             handleSend();

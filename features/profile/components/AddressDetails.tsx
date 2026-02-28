@@ -4,10 +4,25 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { MapPin, Home, Building, Globe } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { MapPin, Home, Building, Check, ChevronsUpDown } from "lucide-react";
 import profileService from "../api.service";
 import { Address } from "@/features/profile/model";
+import { INDIAN_STATES, getStateCities } from "@/lib/constants/india-locations";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export default function AddressDetails({
   onSuccess,
@@ -15,6 +30,8 @@ export default function AddressDetails({
   onSuccess?: () => void;
 }) {
   const [loading, setLoading] = useState(false);
+  const [stateOpen, setStateOpen] = useState(false);
+  const [cityOpen, setCityOpen] = useState(false);
   const [formData, setFormData] = useState<Address>({
     address_line1: "",
     address_line2: "",
@@ -36,7 +53,6 @@ export default function AddressDetails({
     } else if (!/^\d{6}$/.test(formData.pincode)) {
       newErrors.pincode = "Pincode must be 6 digits";
     }
-    if (!formData.country?.trim()) newErrors.country = "Country is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -53,7 +69,7 @@ export default function AddressDetails({
           city: data.city || "",
           state: data.state || "",
           pincode: data.pincode || "",
-          country: data.country || "India",
+          country: "India", // Always India
         });
       } catch (error) {
         console.error("Failed to fetch address:", error);
@@ -63,7 +79,20 @@ export default function AddressDetails({
   }, []);
 
   const handleInputChange = (field: keyof Address, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (field === "pincode") {
+      // Only allow digits and max 6 characters
+      const numericValue = value.replace(/\D/g, "").slice(0, 6);
+      setFormData((prev) => ({ ...prev, [field]: numericValue }));
+    } else {
+      setFormData((prev) => {
+        const newData = { ...prev, [field]: value };
+        if (field === "state") {
+          newData.city = ""; // Reset city when state changes
+        }
+        return newData;
+      });
+    }
+
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
@@ -80,12 +109,11 @@ export default function AddressDetails({
       city: formData.city,
       state: formData.state,
       pincode: formData.pincode,
-      country: formData.country,
+      country: "India",
     };
 
     try {
       await profileService.updateAddress(payload);
-      toast.success("Address updated successfully");
       if (onSuccess) onSuccess();
     } catch (error) {
       console.error("Address update failed:", error);
@@ -115,9 +143,10 @@ export default function AddressDetails({
               <Input
                 id="addressLine1"
                 placeholder="House No., Building Name"
-                className={`pl-9 bg-background/50 focus:bg-background ${
-                  errors.address_line1 ? "border-red-500" : ""
-                }`}
+                className={cn(
+                  "pl-9 bg-background/50 focus:bg-background",
+                  errors.address_line1 && "border-red-500",
+                )}
                 value={formData.address_line1}
                 onChange={(e) =>
                   handleInputChange("address_line1", e.target.value)
@@ -145,43 +174,137 @@ export default function AddressDetails({
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="state">State</Label>
+            <Popover open={stateOpen} onOpenChange={setStateOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={stateOpen}
+                  className={cn(
+                    "w-full justify-between bg-background/50",
+                    !formData.state && "text-muted-foreground",
+                    errors.state && "border-red-500",
+                  )}
+                >
+                  {formData.state ? formData.state : "Select state..."}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                <Command>
+                  <CommandInput placeholder="Search state..." />
+                  <CommandList>
+                    <CommandEmpty>No state found.</CommandEmpty>
+                    <CommandGroup>
+                      {INDIAN_STATES.map((state) => (
+                        <CommandItem
+                          key={state}
+                          value={state}
+                          onSelect={(currentValue) => {
+                            handleInputChange(
+                              "state",
+                              currentValue === formData.state
+                                ? ""
+                                : currentValue,
+                            );
+                            setStateOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              formData.state === state
+                                ? "opacity-100"
+                                : "opacity-0",
+                            )}
+                          />
+                          {state}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            {errors.state && (
+              <p className="text-sm text-red-500">{errors.state}</p>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-2">
             <Label htmlFor="city">City</Label>
-            <Input
-              id="city"
-              placeholder="City"
-              className={`bg-background/50 focus:bg-background ${
-                errors.city ? "border-red-500" : ""
-              }`}
-              value={formData.city}
-              onChange={(e) => handleInputChange("city", e.target.value)}
-            />
+            <Popover open={cityOpen} onOpenChange={setCityOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={cityOpen}
+                  disabled={!formData.state}
+                  className={cn(
+                    "w-full justify-between bg-background/50",
+                    !formData.city && "text-muted-foreground",
+                    errors.city && "border-red-500",
+                  )}
+                >
+                  {formData.city
+                    ? formData.city
+                    : formData.state
+                      ? "Select city..."
+                      : "Select state first"}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                <Command>
+                  <CommandInput placeholder="Search city..." />
+                  <CommandList>
+                    <CommandEmpty>No city found.</CommandEmpty>
+                    <CommandGroup>
+                      {getStateCities(formData.state || "").map((city) => (
+                        <CommandItem
+                          key={city}
+                          value={city}
+                          onSelect={(currentValue) => {
+                            handleInputChange(
+                              "city",
+                              currentValue === formData.city
+                                ? ""
+                                : currentValue,
+                            );
+                            setCityOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              formData.city === city
+                                ? "opacity-100"
+                                : "opacity-0",
+                            )}
+                          />
+                          {city}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
             {errors.city && (
               <p className="text-sm text-red-500">{errors.city}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="state">State</Label>
-            <Input
-              id="state"
-              placeholder="State"
-              className={`bg-background/50 focus:bg-background ${
-                errors.state ? "border-red-500" : ""
-              }`}
-              value={formData.state}
-              onChange={(e) => handleInputChange("state", e.target.value)}
-            />
-            {errors.state && (
-              <p className="text-sm text-red-500">{errors.state}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="pincode">Pincode</Label>
+            <Label htmlFor="pincode">Pincode (6 digits)</Label>
             <Input
               id="pincode"
-              placeholder="Pincode"
+              type="text"
+              inputMode="numeric"
+              maxLength={6}
+              placeholder="e.g. 110001"
               className={`bg-background/50 focus:bg-background ${
                 errors.pincode ? "border-red-500" : ""
               }`}
@@ -190,25 +313,6 @@ export default function AddressDetails({
             />
             {errors.pincode && (
               <p className="text-sm text-red-500">{errors.pincode}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="country">Country</Label>
-            <div className="relative">
-              <Globe className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="country"
-                placeholder="Country"
-                className={`pl-9 bg-background/50 focus:bg-background ${
-                  errors.country ? "border-red-500" : ""
-                }`}
-                value={formData.country}
-                onChange={(e) => handleInputChange("country", e.target.value)}
-              />
-            </div>
-            {errors.country && (
-              <p className="text-sm text-red-500">{errors.country}</p>
             )}
           </div>
         </div>

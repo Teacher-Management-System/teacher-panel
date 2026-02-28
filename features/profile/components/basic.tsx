@@ -147,11 +147,9 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
     try {
       await profileService.updateProfile(payload);
-      toast.success("Profile updated successfully");
       if (onSuccess) onSuccess();
     } catch (error) {
       console.error("Profile update failed:", error);
-      toast.error("Failed to update profile");
     } finally {
       setLoading(false);
     }

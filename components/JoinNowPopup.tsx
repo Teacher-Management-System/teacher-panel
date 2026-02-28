@@ -24,19 +24,32 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
-export function JoinNowPopup() {
+interface JoinNowPopupProps {
+  externalOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function JoinNowPopup({
+  externalOpen,
+  onOpenChange,
+}: JoinNowPopupProps) {
   const { user, status, isLoading } = useAuth();
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Sync internal state with external prop if provided
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = onOpenChange || setInternalOpen;
+
   useEffect(() => {
+    if (externalOpen !== undefined) return;
     if (!isLoading && user && status === "pending") {
       setOpen(true);
     } else {
       setOpen(false);
     }
-  }, [isLoading, user, status]);
+  }, [isLoading, user, status, externalOpen]);
 
   // Logic to show popup every 10 seconds if it's closed
   useEffect(() => {
@@ -45,7 +58,7 @@ export function JoinNowPopup() {
     if (!isLoading && user && status === "pending" && !open) {
       interval = setInterval(() => {
         setOpen(true);
-      }, 10000);
+      }, 40000);
     }
 
     return () => {

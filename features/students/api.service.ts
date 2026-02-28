@@ -28,6 +28,10 @@ class StudentService extends BaseService {
   async verifyPaymentStatus(orderId: string) {
     return await this.get(`payment-status/${orderId}`);
   }
+
+  async exportData() {
+    return await this.download("export");
+  }
 }
 
 const studentService = new StudentService();

@@ -13,6 +13,8 @@ import {
   Sparkles,
   CheckCircle2,
   Loader2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -47,6 +49,8 @@ export function SignupForm() {
   const [showOtp, setShowOtp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const form = useForm<RegisterValues>({
     resolver: zodResolver(RegisterSchema),
@@ -441,11 +445,22 @@ export function SignupForm() {
                             <div className="relative group">
                               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                               <Input
-                                type="password"
+                                type={showPassword ? "text" : "password"}
                                 placeholder="••••••••"
-                                className="pl-10 h-11 rounded-lg border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-300 hover:border-primary/50"
+                                className="pl-10 pr-10 h-11 rounded-lg border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-300 hover:border-primary/50"
                                 {...field}
                               />
+                              <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors focus:outline-none"
+                              >
+                                {showPassword ? (
+                                  <EyeOff className="w-4 h-4" />
+                                ) : (
+                                  <Eye className="w-4 h-4" />
+                                )}
+                              </button>
                             </div>
                           </FormControl>
                           <FormMessage />
@@ -468,11 +483,24 @@ export function SignupForm() {
                             <div className="relative group">
                               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                               <Input
-                                type="password"
+                                type={showConfirmPassword ? "text" : "password"}
                                 placeholder="••••••••"
-                                className="pl-10 h-11 rounded-lg border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-300 hover:border-primary/50"
+                                className="pl-10 pr-10 h-11 rounded-lg border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-300 hover:border-primary/50"
                                 {...field}
                               />
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setShowConfirmPassword(!showConfirmPassword)
+                                }
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors focus:outline-none"
+                              >
+                                {showConfirmPassword ? (
+                                  <EyeOff className="w-4 h-4" />
+                                ) : (
+                                  <Eye className="w-4 h-4" />
+                                )}
+                              </button>
                             </div>
                           </FormControl>
                           <FormMessage />

@@ -14,6 +14,10 @@ class PaymentService extends BaseService {
   private buildUrl(path: string = ""): string {
     return ["payments", path].filter(Boolean).join("/");
   }
+
+  async exportData() {
+    return await this.download("export");
+  }
 }
 
 const paymentService = new PaymentService();

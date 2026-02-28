@@ -19,6 +19,8 @@ interface DataTableProps<TData> extends React.ComponentProps<"div"> {
   table: TanstackTable<TData>;
   actionBar?: React.ReactNode;
   isLoading?: boolean;
+  containerClassName?: string;
+  isPending?: boolean;
 }
 
 export function DataTable<TData>({
@@ -27,6 +29,8 @@ export function DataTable<TData>({
   children,
   isLoading,
   className,
+  containerClassName,
+  isPending,
   ...props
 }: DataTableProps<TData>) {
   return (
@@ -35,77 +39,96 @@ export function DataTable<TData>({
       {...props}
     >
       {children}
-      <div className="overflow-hidden rounded-md bg-white">
-        <Table>
-          <TableHeader className="bg-gray-50/50">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow
-                key={headerGroup.id}
-                className="hover:bg-transparent border-b border-gray-100"
-              >
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    colSpan={header.colSpan}
-                    style={{
-                      ...getCommonPinningStyles({ column: header.column }),
-                    }}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody className="relative">
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
+      <div
+        className={cn(
+          "relative overflow-hidden rounded-md transition-colors duration-300",
+          isPending ? "bg-zinc-100/90 border-zinc-200" : "bg-white",
+          containerClassName,
+        )}
+      >
+        {isPending && (
+          <div className="absolute top-2 right-2 z-20">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 bg-zinc-200/50 px-2 py-0.5 rounded-full border border-zinc-300/50">
+              Demo Data
+            </span>
+          </div>
+        )}
+        <div
+          className={cn(
+            isPending && "grayscale opacity-60 pointer-events-none select-none",
+          )}
+        >
+          <Table>
+            <TableHeader className="bg-gray-50/50">
+              {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
+                  key={headerGroup.id}
+                  className="hover:bg-transparent border-b border-gray-100"
                 >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
+                  {headerGroup.headers.map((header) => (
+                    <TableHead
+                      key={header.id}
+                      colSpan={header.colSpan}
                       style={{
-                        ...getCommonPinningStyles({ column: cell.column }),
+                        ...getCommonPinningStyles({ column: header.column }),
                       }}
                     >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                    </TableHead>
                   ))}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={table.getAllColumns().length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-            {isLoading && (
-              <div className="bg-background/80 absolute inset-0 flex items-center justify-center backdrop-blur-sm">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Loader className="size-5 animate-spin" />
-                  <span className="text-sm font-medium">
-                    Loading, please wait...
-                  </span>
+              ))}
+            </TableHeader>
+            <TableBody className="relative">
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell
+                        key={cell.id}
+                        style={{
+                          ...getCommonPinningStyles({ column: cell.column }),
+                        }}
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={table.getAllColumns().length}
+                    className="h-24 text-center"
+                  >
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+              {isLoading && (
+                <div className="bg-background/80 absolute inset-0 flex items-center justify-center backdrop-blur-sm">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Loader className="size-5 animate-spin" />
+                    <span className="text-sm font-medium">
+                      Loading, please wait...
+                    </span>
+                  </div>
                 </div>
-              </div>
-            )}
-          </TableBody>
-        </Table>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
       <div className="flex flex-col gap-2.5">
         <DataTablePagination table={table} />
