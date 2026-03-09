@@ -51,6 +51,8 @@ export default function StudentList() {
   const [search, setSearch] = useQueryState("search", parseAsString);
   const [sort] = useQueryState("sort", parseAsString);
   const [status, setStatus] = useQueryState("status", parseAsString);
+  const [batchFilter, setBatchFilter] = useQueryState("batch", parseAsString);
+  const [batches, setBatches] = useState<any[]>([]);
   const [isFree, setIsFree] = useState(false);
   const { user, refreshUser } = useAuth();
   const isPending = user?.status === "pending";
@@ -78,6 +80,26 @@ export default function StudentList() {
   });
 
   useEffect(() => {
+    const fetchBatchesList = async () => {
+      try {
+        const response: any = await studentService.getBatches();
+        if (response?.data?.batches) {
+          setBatches(response.data.batches);
+        } else if (response?.batches) {
+          setBatches(response.batches);
+        } else if (Array.isArray(response)) {
+          setBatches(response);
+        } else if (response?.data && Array.isArray(response.data)) {
+          setBatches(response.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch batches:", error);
+      }
+    };
+    fetchBatchesList();
+  }, []);
+
+  useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
@@ -87,6 +109,7 @@ export default function StudentList() {
           search: search || undefined,
           sort: sort || undefined,
           status: status || undefined,
+          batch: batchFilter || undefined,
         };
 
         // Note: Assuming api.service.ts handles the 'status' param correctly in the query string
@@ -111,14 +134,15 @@ export default function StudentList() {
     };
 
     fetchData();
-  }, [page, perPage, search, sort, status, refreshKey]);
+  }, [page, perPage, search, sort, status, batchFilter, refreshKey]);
 
   const clearFilters = () => {
     setSearch(null);
     setStatus(null);
+    setBatchFilter(null);
   };
 
-  const hasFilters = !!search || !!status;
+  const hasFilters = !!search || !!status || !!batchFilter;
   const selectedRows = table.getFilteredSelectedRowModel().rows;
   const selectedStudents = selectedRows.map((row) => row.original);
   const hasSelectedStudents = selectedStudents.length > 0;
@@ -313,7 +337,7 @@ export default function StudentList() {
                 />
               </div>
               <Select
-                value={status ?? undefined}
+                value={status || "all"}
                 onValueChange={(val) => setStatus(val === "all" ? null : val)}
               >
                 <SelectTrigger className="w-[140px] h-9 border-dashed">
@@ -327,6 +351,27 @@ export default function StudentList() {
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="complete">Complete</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select
+                value={batchFilter || "all"}
+                onValueChange={(val) =>
+                  setBatchFilter(val === "all" ? null : val)
+                }
+              >
+                <SelectTrigger className="w-[140px] h-9 border-dashed text-muted-foreground whitespace-nowrap">
+                  <div className="flex items-center gap-2 overflow-hidden">
+                    <BookOpen className="h-3.5 w-3.5 flex-shrink-0" />
+                    <SelectValue placeholder="Batch" className="truncate" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Batches</SelectItem>
+                  {batches.map((b) => (
+                    <SelectItem key={b.id} value={b.id.toString()}>
+                      {b.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               {hasFilters && (

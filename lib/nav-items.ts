@@ -49,11 +49,11 @@ export const navData = {
           url: "/profile",
           icon: User,
         },
-        {
-          title: "Ticket",
-          url: "/ticket",
-          icon: Ticket,
-        },
+        // {
+        //   title: "Ticket",
+        //   url: "/ticket",
+        //   icon: Ticket,
+        // },
       ],
     },
   ],
