@@ -3,7 +3,7 @@ export interface Student {
   name: string;
   email: string;
   mobile: string;
-  status: "active" | "inactive" | "pending";
+  status: "active" | "inactive" | "pending" | "complete" | "completed";
   fathers_name?: string;
   category_id?: string;
   course_id?: string;

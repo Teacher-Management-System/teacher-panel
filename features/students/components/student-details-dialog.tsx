@@ -76,7 +76,10 @@ export function StudentDetailsDialog({
                       ? "bg-green-100 text-green-800"
                       : student.status === "pending"
                         ? "bg-yellow-100 text-yellow-800"
-                        : "bg-gray-100 text-gray-800"
+                        : student.status === "complete" ||
+                            student.status === "completed"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-gray-100 text-gray-800"
                   }`}
                 >
                   {student.status}
@@ -165,7 +168,9 @@ export function StudentDetailsDialog({
                   label="Category"
                   // @ts-ignore
                   value={
-                    student.category?.name || student.category || "Not provided"
+                    Array.isArray(student.category)
+                      ? student.category[0]?.name || "-"
+                      : student.category?.name || student.category || "-"
                   }
                 />
                 <DetailItem

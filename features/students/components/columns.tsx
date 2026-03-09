@@ -102,25 +102,20 @@ export const createColumns = (
         );
       },
       cell: ({ row }) => (
-        <div className="font-medium text-foreground">
-          {row.getValue("name")}
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-full bg-slate-100 flex flex-shrink-0 items-center justify-center text-sm font-medium text-slate-700 uppercase">
+            {row.original.name?.charAt(0) || "-"}
+          </div>
+          <div className="flex flex-col">
+            <span className="font-medium text-foreground">
+              {row.getValue("name")}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {row.original.email || "-"}
+            </span>
+          </div>
         </div>
       ),
-    },
-    {
-      accessorKey: "email",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="hover:bg-transparent pl-0 text-left font-medium text-muted-foreground"
-          >
-            Email
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
     },
     {
       accessorKey: "mobile",
@@ -141,26 +136,6 @@ export const createColumns = (
       ),
     },
     {
-      accessorKey: "category",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="hover:bg-transparent pl-0 w-full justify-center font-medium text-muted-foreground"
-          >
-            Category
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => (
-        <div className="text-center font-medium">
-          {row.original.category?.name || "-"}
-        </div>
-      ),
-    },
-    {
       accessorKey: "course",
       header: ({ column }) => {
         return (
@@ -174,11 +149,46 @@ export const createColumns = (
           </Button>
         );
       },
-      cell: ({ row }) => (
-        <div className="text-center font-medium">
-          {row.original.course?.title || row.original.course?.name || "-"}
-        </div>
-      ),
+      cell: ({ row }) => {
+        const categoryName = Array.isArray(row.original.category)
+          ? row.original.category[0]?.name || "-"
+          : (row.original.category as any)?.name || "-";
+        return (
+          <div className="flex flex-col items-center">
+            <span className="font-medium text-foreground">
+              {row.original.course?.title || row.original.course?.name || "-"}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {categoryName}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "batch",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="hover:bg-transparent pl-0 w-full justify-center font-medium text-muted-foreground"
+          >
+            Batch
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        const batch = (row.original as any).batch;
+        return (
+          <div className="flex flex-col items-center">
+            <span className="font-medium text-foreground">
+              {batch?.name || "-"}
+            </span>
+          </div>
+        );
+      },
     },
     {
       accessorKey: "created_at",
@@ -317,6 +327,19 @@ export const createColumns = (
       cell: ({ row }) => {
         const student = row.original;
         const [isLoading, setIsLoading] = useState(false);
+
+        if (student.status === "active") {
+          return (
+            <div className="flex justify-center">
+              <Badge
+                variant="outline"
+                className="bg-emerald-50 text-emerald-600 border-emerald-100 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800"
+              >
+                Paid
+              </Badge>
+            </div>
+          );
+        }
 
         if (student.status !== "pending") return null;
 

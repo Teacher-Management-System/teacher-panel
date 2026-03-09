@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
+import NotificationListener from "@/components/notification-listener";
 
 const fontSans = Geist({
   variable: "--font-geist-sans",
@@ -29,7 +30,10 @@ export default async function RootLayout({
       <body
         className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased `}
       >
-        <Providers>{children}</Providers>
+        <Providers>
+          <NotificationListener />
+          {children}
+        </Providers>
         <Toaster richColors closeButton={true} />
       </body>
     </html>

@@ -2,14 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
-  GraduationCap,
   Mail,
   Lock,
   User,
   Phone,
   ArrowRight,
+  ArrowLeft,
   Sparkles,
   CheckCircle2,
   Loader2,
@@ -150,8 +149,6 @@ export function SignupForm() {
     <div className="min-h-screen flex relative overflow-hidden bg-white">
       {/* ... Left Side Content (Keep as is) ... */}
       <div className="hidden lg:flex flex-1 bg-primary items-center justify-center p-12 relative overflow-hidden">
-        {/* ... (Keep existing left side content) ... */}
-        {/* Decorative Elements */}
         <div className="absolute top-20 left-20 w-32 h-32 bg-white/10 rounded-full animate-float" />
         <div
           className="absolute bottom-32 right-20 w-24 h-24 bg-white/10 rounded-full animate-float"
@@ -212,6 +209,14 @@ export function SignupForm() {
 
       {/* Right Side - Form */}
       <div className="flex-1 flex items-center justify-center p-4 md:p-8 relative z-10 bg-white">
+        {/* Back to Home Button */}
+        <Link
+          href="/"
+          className="absolute top-8 left-8 flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors group"
+        >
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+          <span className="font-medium text-sm">Back to Home</span>
+        </Link>
         <div className="w-full max-w-xl animate-slide-up">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 mb-10 group">

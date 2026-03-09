@@ -21,6 +21,22 @@ class StudentService extends BaseService {
     return await this.delete(id);
   }
 
+  async getBatches() {
+    return await this.get("batches");
+  }
+
+  async sendOtp(data: { email: string; event: string }) {
+    return await this.post("send-otp", data);
+  }
+
+  async verifyOtp(data: {
+    verification_id: string;
+    otp: string;
+    email: string;
+  }) {
+    return await this.post("verify-otp", data);
+  }
+
   async processPayment(studentIds: string[]) {
     return await this.post("payments", { student_id: studentIds });
   }

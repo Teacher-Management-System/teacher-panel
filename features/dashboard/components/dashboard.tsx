@@ -46,6 +46,7 @@ import {
 import dashboardService from "../api.service";
 import { DashboardResponse } from "../model";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/useAuth";
 
 const Dashboard = () => {
   const [date, setDate] = useState<DateRange | undefined>({
@@ -55,20 +56,9 @@ const Dashboard = () => {
 
   const [data, setData] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [userStatus, setUserStatus] = useState<string | null>(null);
+  const { status: userStatus, isLoading: authLoading } = useAuth();
 
   useEffect(() => {
-    // Get user status from cookie
-    const userCookie = cookieService.getCookie("user");
-    if (userCookie) {
-      try {
-        const user = JSON.parse(userCookie);
-        setUserStatus(user.status);
-      } catch (e) {
-        console.error("Failed to parse user cookie", e);
-      }
-    }
-
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
@@ -195,7 +185,7 @@ const Dashboard = () => {
     },
   ];
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="space-y-6">
         <div className="flex justify-between">

@@ -187,7 +187,10 @@ export function EditStudentDialog({
         class: student.class || "",
         // @ts-ignore
         category_id:
-          (student.category?.id || student.category_id)?.toString() || "",
+          (Array.isArray(student.category)
+            ? student.category[0]?.id
+            : student.category?.id || student.category_id
+          )?.toString() || "",
         // @ts-ignore
         course_id: (student.course?.id || student.course_id)?.toString() || "",
       });

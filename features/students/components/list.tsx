@@ -15,8 +15,10 @@ import {
   Filter,
   X,
   CreditCard,
+  BookOpen,
 } from "lucide-react";
 import { AddStudentDialog } from "./add-student-dialog";
+import { JoinNowPopup } from "@/components/JoinNowPopup";
 import {
   Select,
   SelectContent,
@@ -52,6 +54,15 @@ export default function StudentList() {
   const [isFree, setIsFree] = useState(false);
   const { user, refreshUser } = useAuth();
   const isPending = user?.status === "pending";
+  const [showJoinNowModal, setShowJoinNowModal] = useState(false);
+
+  const handleBatchesClick = () => {
+    if (isPending) {
+      setShowJoinNowModal(true);
+      return;
+    }
+    router.push("/batches");
+  };
 
   // Re-fetch when URL params change (or mounts) or when refreshKey changes
   const [refreshKey, setRefreshKey] = useState(0);
@@ -157,6 +168,14 @@ export default function StudentList() {
             onExport={() => studentService.exportData()}
             title="Export Students"
           />
+          <Button
+            variant="outline"
+            onClick={handleBatchesClick}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-600 hover:text-white flex items-center gap-2 rounded-xl px-4 py-2 h-10 transition-all shadow-sm"
+          >
+            <BookOpen className="h-4 w-4" />
+            <span className="font-semibold">Batches</span>
+          </Button>
           <AddStudentDialog onSuccess={refreshData} />
         </div>
       </div>
@@ -307,7 +326,7 @@ export default function StudentList() {
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="complete">Complete</SelectItem>
                 </SelectContent>
               </Select>
               {hasFilters && (
@@ -334,6 +353,10 @@ export default function StudentList() {
           </div>
         </CardContent>
       </Card>
+      <JoinNowPopup
+        externalOpen={showJoinNowModal}
+        onOpenChange={setShowJoinNowModal}
+      />
     </div>
   );
 }

@@ -28,6 +28,10 @@ class authService extends BaseService {
   async register(data: any) {
     return await this.post("register", data);
   }
+
+  async sendOtp(data: { email: string; event: string }) {
+    return await this.post("send-otp", data);
+  }
 }
 
 export default new authService();

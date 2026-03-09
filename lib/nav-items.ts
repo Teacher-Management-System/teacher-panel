@@ -6,6 +6,7 @@ import {
   Settings,
   User,
   Sparkles,
+  Ticket,
 } from "lucide-react";
 
 export const navData = {
@@ -47,6 +48,11 @@ export const navData = {
           title: "Profile",
           url: "/profile",
           icon: User,
+        },
+        {
+          title: "Ticket",
+          url: "/ticket",
+          icon: Ticket,
         },
       ],
     },

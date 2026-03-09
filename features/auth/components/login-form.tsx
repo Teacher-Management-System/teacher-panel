@@ -18,6 +18,7 @@ import {
   Mail,
   Lock,
   ArrowRight,
+  ArrowLeft,
   Eye,
   EyeOff,
 } from "lucide-react";
@@ -86,6 +87,14 @@ export function LoginForm({
 
       {/* Left Side - Form */}
       <div className="flex-1 flex items-center justify-center p-8 relative z-10 bg-white">
+        {/* Back to Home Button */}
+        <Link
+          href="/"
+          className="absolute top-8 left-8 flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors group"
+        >
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+          <span className="font-medium text-sm">Back to Home</span>
+        </Link>
         <div className="w-full max-w-md animate-slide-up">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 mb-10 group">

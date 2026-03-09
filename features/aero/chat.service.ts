@@ -28,7 +28,7 @@ class AeroChatService {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-3.5-turbo", // Default model
+        model: "openai/gpt-3.5-turbo",
         messages: [
           {
             role: "system",
