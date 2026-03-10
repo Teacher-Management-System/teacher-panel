@@ -16,6 +16,7 @@ import {
   X,
   CreditCard,
   BookOpen,
+  ChevronDown,
 } from "lucide-react";
 import { AddStudentDialog } from "./add-student-dialog";
 import { JoinNowPopup } from "@/components/JoinNowPopup";
@@ -26,12 +27,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ExportButton } from "@/components/export-button";
 
 import { useEffect, useState } from "react";
 import studentService from "../api.service";
-import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
+import {
+  useQueryState,
+  parseAsInteger,
+  parseAsString,
+  parseAsArrayOf,
+} from "nuqs";
 import { load, CheckoutOptions } from "@cashfreepayments/cashfree-js";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
@@ -51,7 +67,18 @@ export default function StudentList() {
   const [search, setSearch] = useQueryState("search", parseAsString);
   const [sort] = useQueryState("sort", parseAsString);
   const [status, setStatus] = useQueryState("status", parseAsString);
-  const [batchFilter, setBatchFilter] = useQueryState("batch", parseAsString);
+  const [batchFilter, setBatchFilter] = useQueryState(
+    "batch",
+    parseAsArrayOf(parseAsString),
+  );
+
+  const selectedBatches = batchFilter || [];
+  const toggleBatch = (batchId: string) => {
+    const newBatches = selectedBatches.includes(batchId)
+      ? selectedBatches.filter((id) => id !== batchId)
+      : [...selectedBatches, batchId];
+    setBatchFilter(newBatches.length > 0 ? newBatches : null);
+  };
   const [batches, setBatches] = useState<any[]>([]);
   const [isFree, setIsFree] = useState(false);
   const { user, refreshUser } = useAuth();
@@ -109,7 +136,7 @@ export default function StudentList() {
           search: search || undefined,
           sort: sort || undefined,
           status: status || undefined,
-          batch: batchFilter || undefined,
+          batch: batchFilter?.join(",") || undefined,
         };
 
         // Note: Assuming api.service.ts handles the 'status' param correctly in the query string
@@ -353,27 +380,48 @@ export default function StudentList() {
                   <SelectItem value="complete">Complete</SelectItem>
                 </SelectContent>
               </Select>
-              <Select
-                value={batchFilter || "all"}
-                onValueChange={(val) =>
-                  setBatchFilter(val === "all" ? null : val)
-                }
-              >
-                <SelectTrigger className="w-[140px] h-9 border-dashed text-muted-foreground whitespace-nowrap">
-                  <div className="flex items-center gap-2 overflow-hidden">
-                    <BookOpen className="h-3.5 w-3.5 flex-shrink-0" />
-                    <SelectValue placeholder="Batch" className="truncate" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Batches</SelectItem>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-[140px] h-9 px-3 border-dashed text-muted-foreground whitespace-nowrap justify-between font-normal"
+                  >
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <BookOpen className="h-3.5 w-3.5 flex-shrink-0" />
+                      <span className="truncate">
+                        {selectedBatches.length > 0
+                          ? `${selectedBatches.length} selected`
+                          : "Batch"}
+                      </span>
+                    </div>
+                    <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[200px]">
+                  <DropdownMenuLabel>Filter by Batch</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
                   {batches.map((b) => (
-                    <SelectItem key={b.id} value={b.id.toString()}>
+                    <DropdownMenuCheckboxItem
+                      key={b.id}
+                      checked={selectedBatches.includes(b.id.toString())}
+                      onCheckedChange={() => toggleBatch(b.id.toString())}
+                    >
                       {b.name}
-                    </SelectItem>
+                    </DropdownMenuCheckboxItem>
                   ))}
-                </SelectContent>
-              </Select>
+                  {selectedBatches.length > 0 && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onSelect={() => setBatchFilter(null)}
+                        className="justify-center text-center"
+                      >
+                        Clear filters
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
               {hasFilters && (
                 <Button
                   variant="ghost"
