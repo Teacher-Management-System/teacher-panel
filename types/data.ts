@@ -1,5 +1,6 @@
 import { Student } from "@/features/students/model";
 import { User } from "./user";
+import { Ticket } from "@/features/ticket/model";
 
 export interface Data {
   user?: User;
@@ -19,6 +20,7 @@ export interface Data {
 
   user_documents?: any[];
   message?: string;
+  tickets?: Ticket[];
 }
 
 export interface Meta {

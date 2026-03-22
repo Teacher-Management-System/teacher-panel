@@ -1,3 +1,5 @@
+import { Batch } from "../batches/model";
+
 export interface Student {
   id: string;
   name: string;
@@ -23,6 +25,7 @@ export interface Student {
   gender?: "male" | "female" | "other";
   school_name?: string;
   class?: string;
+  batch?: Batch;
 }
 
 export interface PaymentStatusResponse {

@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { LoginSchema } from "../schema";
 import authService from "../api.service";
 import { cookieService } from "@/lib/cookie";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import {
   Loader2,
@@ -21,6 +21,7 @@ import {
   ArrowLeft,
   Eye,
   EyeOff,
+  ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
 import z from "zod";
@@ -42,6 +43,7 @@ export function LoginForm({
   ...props
 }: React.ComponentProps<"div">) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -60,16 +62,24 @@ export function LoginForm({
       .then((response: any) => {
         cookieService.setCookie("user", JSON.stringify(response?.user));
         cookieService.setCookie("authToken", response.auth_token);
-        const redirect = cookieService.getCookie("redirect");
+
+        const redirectParam = searchParams.get("redirect");
+        const redirectCookie = cookieService.getCookie("redirect");
+        const redirect = redirectParam || redirectCookie;
+
         if (redirect) {
           cookieService.deleteCookie("redirect");
-          router.push(redirect);
+          window.location.href = redirect;
         } else {
-          router.push("/dashboard");
+          window.location.href = "/dashboard";
         }
       })
-      .finally(() => {
+      .catch((error: any) => {
+        console.error("Login Error:", error);
         setLoading(false);
+      })
+      .finally(() => {
+        // setLoading(false); // Move to finally if we want it to run always, but catch handles it now
       });
   };
 
@@ -86,163 +96,165 @@ export function LoginForm({
       </div>
 
       {/* Left Side - Form */}
-      <div className="flex-1 flex items-center justify-center p-8 relative z-10 bg-white">
+      <div className="flex-1 flex items-center justify-center p-4 md:p-8 relative z-10 bg-white">
         {/* Back to Home Button */}
         <Link
           href="/"
-          className="absolute top-8 left-8 flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors group"
+          className="absolute top-8 left-8 sm:left-12 flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors group"
         >
-          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-          <span className="font-medium text-sm">Back to Home</span>
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <span className="font-semibold text-[14px]">Back to Home</span>
         </Link>
-        <div className="w-full max-w-md animate-slide-up">
+
+        <div className="w-full max-w-[440px] animate-slide-up flex flex-col items-center">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 mb-10 group">
-            <div className="w-12 h-12 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+          <Link href="/" className="flex items-center gap-3 mb-12 group justify-center">
+            <div className="w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 bg-white shadow-sm border border-slate-100 rounded-xl overflow-hidden">
               <NextImage
                 src="/logo-icon.png"
                 alt="Aerophantom Logo"
                 width={300}
                 height={300}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
                 unoptimized
               />
             </div>
-            <span className="font-display font-bold text-2xl text-foreground">
+            <span className="font-extrabold text-[22px] text-[#0f172a] tracking-tight">
               Aerophantom
             </span>
           </Link>
 
           {/* Header */}
           <div
-            className="mb-10 animate-fade-in"
+            className="mb-10 animate-fade-in flex flex-col items-center text-center w-full"
             style={{ animationDelay: "0.1s" }}
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-4">
-              <Sparkles className="w-4 h-4" />
-              <span className="text-sm font-medium">Welcome Back</span>
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary/10 text-primary mb-5">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span className="text-[11px] font-extrabold tracking-widest uppercase mt-0.5">Welcome Back</span>
             </div>
-            <h1 className="font-display text-4xl font-bold text-foreground mb-3">
+            <h1 className="text-[38px] leading-[1.1] font-extrabold text-[#0f172a] mb-3 tracking-tight">
               Sign In
             </h1>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground text-[16px] font-medium">
               Access your student management panel
             </p>
           </div>
 
           {/* Form */}
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem
-                    className="space-y-2 animate-fade-in"
-                    style={{ animationDelay: "0.2s" }}
-                  >
-                    <FormLabel className="text-sm font-medium text-gray-700">
-                      Email Address
-                    </FormLabel>
-                    <FormControl>
-                      <div className="relative group">
-                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors z-10" />
-                        <Input
-                          type="email"
-                          placeholder="you@example.com"
-                          className="pl-12 h-14 rounded-xl border border-gray-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-300"
-                          disabled={loading}
-                          {...field}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem
-                    className="space-y-2 animate-fade-in"
-                    style={{ animationDelay: "0.3s" }}
-                  >
-                    <div className="flex justify-between">
-                      <FormLabel className="text-sm font-medium text-gray-700">
-                        Password
+          <div className="w-full">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem
+                      className="space-y-1.5 animate-fade-in"
+                      style={{ animationDelay: "0.2s" }}
+                    >
+                      <FormLabel className="text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em] pl-1">
+                        Email Address
                       </FormLabel>
-                      <Link
-                        href="/auth/forgot-password"
-                        className="text-sm text-primary hover:text-primary/80 transition-colors font-medium"
-                      >
-                        Forgot password?
-                      </Link>
-                    </div>
-                    <FormControl>
-                      <div className="relative group">
-                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors z-10" />
-                        <Input
-                          type={showPassword ? "text" : "password"}
-                          placeholder="••••••••"
-                          className="pl-12 pr-12 h-14 rounded-xl border border-gray-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-300"
-                          disabled={loading}
-                          {...field}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition-colors z-10"
+                      <FormControl>
+                        <div className="relative group">
+                          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors z-10" />
+                          <Input
+                            type="email"
+                            placeholder="you@example.com"
+                            className="pl-[52px] h-[56px] bg-[#f8f9fa] border-[#f1f5f9] border-2 rounded-2xl shadow-none ring-0 focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary transition-all font-semibold text-slate-700 text-[15px]"
+                            disabled={loading}
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem
+                      className="space-y-1.5 animate-fade-in"
+                      style={{ animationDelay: "0.3s" }}
+                    >
+                      <div className="flex justify-between items-center px-1">
+                        <FormLabel className="text-[11px] font-extrabold text-muted-foreground uppercase tracking-[0.15em]">
+                          Password
+                        </FormLabel>
+                        <Link
+                          href="/auth/forgot-password"
+                          className="text-[12px] text-primary hover:text-primary/80 transition-colors font-extrabold tracking-wide"
                         >
-                          {showPassword ? (
-                            <EyeOff className="w-5 h-5" />
-                          ) : (
-                            <Eye className="w-5 h-5" />
-                          )}
-                        </button>
+                          Forgot password?
+                        </Link>
                       </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormControl>
+                        <div className="relative group">
+                          <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors z-10" />
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="••••••••"
+                            className="pl-[52px] pr-12 h-[56px] bg-[#f8f9fa] border-[#f1f5f9] border-2 rounded-2xl shadow-none ring-0 focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary transition-all font-bold text-slate-700 text-[18px] pb-1 tracking-[0.2em]"
+                            disabled={loading}
+                            {...field}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors z-10"
+                          >
+                            {showPassword ? (
+                              <EyeOff className="w-[18px] h-[18px]" />
+                            ) : (
+                              <Eye className="w-[18px] h-[18px]" />
+                            )}
+                          </button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <Button
-                type="submit"
-                size="lg"
-                className="w-full h-14 rounded-xl text-base font-semibold animate-fade-in shadow-lg hover:shadow-primary/25 bg-primary hover:bg-primary/90 text-white"
-                style={{ animationDelay: "0.4s" }}
-                disabled={loading}
-              >
-                {loading ? (
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Signing in...
-                  </div>
-                ) : (
-                  <>
-                    Sign In
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </>
-                )}
-              </Button>
-            </form>
-          </Form>
+                <Button
+                  type="submit"
+                  className="w-full h-[56px] bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl text-[16px] font-extrabold shadow-lg hover:shadow-primary/25 transition-all animate-fade-in mt-4"
+                  style={{ animationDelay: "0.4s" }}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Signing in...
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5">
+                      Sign In
+                      <ArrowRight className="w-[18px] h-[18px] mt-[1px]" />
+                    </div>
+                  )}
+                </Button>
+              </form>
+            </Form>
 
-          {/* Sign Up Link */}
-          <p
-            className="mt-8 text-center text-muted-foreground animate-fade-in"
-            style={{ animationDelay: "0.5s" }}
-          >
-            Don't have an account?{" "}
-            <Link
-              href="/auth/signup"
-              className="text-primary font-bold hover:text-primary/80 transition-colors"
+            {/* Sign Up Link */}
+            <p
+              className="mt-8 text-center text-muted-foreground font-semibold text-[15px] animate-fade-in"
+              style={{ animationDelay: "0.5s" }}
             >
-              Sign up for free
-            </Link>
-          </p>
+              Don't have an account?{" "}
+              <Link
+                href="/auth/signup"
+                className="text-primary font-extrabold hover:text-primary/80 transition-colors ml-1"
+              >
+                Sign up for free
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
 

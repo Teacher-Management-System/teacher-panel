@@ -5,6 +5,7 @@ import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { NuqsAdapter } from "nuqs/adapters/react";
 import { ModalProvider } from "@/components/modal-provider";
+import { NotificationProvider } from "@/context/notification-context";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -16,7 +17,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     >
       <TooltipProvider delayDuration={120}>
         <ModalProvider>
-          <NuqsAdapter>{children}</NuqsAdapter>
+          <NotificationProvider>
+            <NuqsAdapter>{children}</NuqsAdapter>
+          </NotificationProvider>
         </ModalProvider>
       </TooltipProvider>
     </NextThemesProvider>

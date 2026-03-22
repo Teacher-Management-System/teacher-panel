@@ -50,6 +50,8 @@ import {
   CalendarDays,
   ShieldCheck,
   CheckCircle2,
+  UserPlus,
+  Building2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, parse } from "date-fns";
@@ -76,7 +78,9 @@ const studentSchema = z.object({
   fathers_name: z
     .string()
     .min(2, "Father's name must be at least 2 characters"),
-  gender: z.enum(["male", "female", "other"]),
+  gender: z.enum(["male", "female", "other"], {
+    message: "Please select gender",
+  }),
   dob: z.string().min(1, "Date of birth is required"),
   mobile: z
     .string()
@@ -108,6 +112,7 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
   const [showCompleteProfileModal, setShowCompleteProfileModal] =
     useState(false);
   const [showJoinNowModal, setShowJoinNowModal] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const { user: currentUser, status } = useAuth();
   const router = useRouter();
 
@@ -211,7 +216,6 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
   const handleSendOtp = async () => {
     const email = form.getValues("email");
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      toast.error("Please enter a valid email address first");
       return;
     }
 
@@ -223,39 +227,48 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
       });
       if (response?.verification) {
         setVerificationId(response.verification.id);
-
         if (response.verification.is_verified) {
           setIsEmailVerified(true);
-          toast.success("Email is already verified!");
         } else {
-          toast.success(
-            response.message || "Verification code sent to " + email,
-          );
           setShowOtpModal(true);
           setResendCooldown(60);
         }
-      } else {
-        toast.error("Invalid response from server");
       }
     } catch (error: any) {
       console.error(error);
-      toast.error(error?.message || "Failed to send OTP");
     } finally {
       setIsVerifyingEmail(false);
     }
   };
 
+  const submitStudentData = async (data: StudentFormValues) => {
+    setIsLoading(true);
+    try {
+      const payload = {
+        ...data,
+        status: "pending",
+      };
+      await studentService.create(payload);
+      setOpen(false);
+      form.reset();
+      setIsEmailVerified(false); // Reset verification for next time
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleVerifyOtp = async () => {
     if (otpValue.length !== 6) {
-      toast.error("Please enter a valid 6-digit code");
       return;
     }
-
     if (!verificationId) {
-      toast.error("Verification ID not found. Please resend OTP.");
       return;
     }
-
     setIsVerifyingEmail(true);
     try {
       const email = form.getValues("email");
@@ -266,10 +279,11 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
       });
       setIsEmailVerified(true);
       setShowOtpModal(false);
-      toast.success("Email verified successfully");
+      
+      // Auto-submit the student creation upon successful OTP verification
+      await submitStudentData(form.getValues() as StudentFormValues);
     } catch (error: any) {
       console.error(error);
-      toast.error(error?.message || "Invalid OTP");
     } finally {
       setIsVerifyingEmail(false);
     }
@@ -287,34 +301,20 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
       if (response?.verification) {
         setVerificationId(response.verification.id);
       }
-      toast.success("OTP resent successfully!");
       setResendCooldown(60);
     } catch (error: any) {
       console.error(error);
-      toast.error("Failed to resend OTP");
     } finally {
       setIsResendingOtp(false);
     }
   };
 
   async function onSubmit(data: StudentFormValues) {
-    setIsLoading(true);
-    try {
-      const payload = {
-        ...data,
-        status: "pending",
-      };
-      await studentService.create(payload);
-      setOpen(false);
-      form.reset();
-      if (onSuccess) {
-        onSuccess();
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
+    if (!isEmailVerified) {
+      await handleSendOtp();
+      return;
     }
+    await submitStudentData(data);
   }
 
   const handleAddStudentClick = async () => {
@@ -366,7 +366,19 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(val) => {
+        setOpen(val);
+        if (!val) {
+          form.reset();
+          setIsEmailVerified(false);
+          setOtpValue("");
+          setVerificationId(null);
+          setResendCooldown(0);
+        }
+      }}
+    >
       <Button
         onClick={handleAddStudentClick}
         className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md"
@@ -375,17 +387,17 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
         Add Student
       </Button>
       <DialogContent className="w-[70vw] sm:max-w-[800px] p-0 overflow-hidden gap-0 border-0 shadow-2xl rounded-2xl">
-        <DialogHeader className="p-6 bg-gradient-to-br from-gray-50/50 to-white border-b">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-primary/10 rounded-xl">
-              <Users className="h-6 w-6 text-primary" />
+        <DialogHeader className="p-6 pb-2 border-b-0">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-[#e6f4ea] rounded-2xl">
+              <UserPlus className="h-6 w-6 text-emerald-600" />
             </div>
             <div>
-              <DialogTitle className="text-xl font-bold text-gray-900">
+              <DialogTitle className="text-xl font-bold text-slate-800">
                 Add New Student
               </DialogTitle>
-              <DialogDescription className="text-gray-500 mt-1">
-                Fill in the details below to add a new student to the system.
+              <DialogDescription className="text-slate-500 text-sm mt-1">
+                Fill in the details to register a new student.
               </DialogDescription>
             </div>
           </div>
@@ -396,10 +408,10 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
             onSubmit={form.handleSubmit(onSubmit)}
             className="flex flex-col"
           >
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 p-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 px-6 pb-6 pt-2 max-h-[70vh] overflow-y-auto custom-scrollbar">
               {/* Personal Information Section */}
-              <div className="md:col-span-2">
-                <h4 className="text-sm font-semibold text-primary mb-4 flex items-center gap-2">
+              <div className="md:col-span-2 mt-2">
+                <h4 className="text-[11px] font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-2">
                   <User className="h-4 w-4" />
                   Personal Information
                 </h4>
@@ -410,16 +422,14 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Student Name</FormLabel>
+                    <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Student Name</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                        <User className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
                         <Input
-                          placeholder="Enter student name"
-                          disabled={
-                            !isEmailVerified && form.getValues("email") !== ""
-                          }
-                          className="pl-9 bg-gray-50/50 border-gray-200 focus:bg-white transition-all"
+                          placeholder="Enter full name"
+                          disabled={isLoading}
+                          className="pl-10 bg-[#f8f9fa] border-0 rounded-xl h-11 !h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
                           {...field}
                         />
                       </div>
@@ -434,14 +444,14 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                 name="fathers_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Father's Name</FormLabel>
+                    <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Father's Name</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                        <User className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
                         <Input
                           placeholder="Enter father's name"
-                          disabled={!isEmailVerified}
-                          className="pl-9 bg-gray-50/50 border-gray-200 focus:bg-white transition-all"
+                          disabled={isLoading}
+                          className="pl-10 bg-[#f8f9fa] border-0 rounded-xl h-11 !h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
                           {...field}
                         />
                       </div>
@@ -456,18 +466,15 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                 name="gender"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Gender</FormLabel>
+                    <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Gender</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      disabled={!isEmailVerified}
+                      disabled={isLoading}
                     >
                       <FormControl>
-                        <SelectTrigger className="w-full bg-gray-50/50 border-gray-200 focus:bg-white transition-all">
-                          <div className="flex items-center gap-2">
-                            <Baby className="h-4 w-4 text-muted-foreground" />
-                            <SelectValue placeholder="Select gender" />
-                          </div>
+                        <SelectTrigger className="w-full bg-[#f8f9fa] border-0 rounded-xl h-11 !h-11 px-4 shadow-none focus:ring-1 focus:ring-primary/30">
+                          <SelectValue placeholder="Select gender" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -486,27 +493,27 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                 name="dob"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Date of Birth</FormLabel>
-                    <Popover>
+                    <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Date of Birth</FormLabel>
+                    <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
                             variant={"outline"}
-                            disabled={!isEmailVerified}
+                            disabled={isLoading}
                             className={cn(
-                              "w-full pl-3 text-left font-normal bg-gray-50/50 border-gray-200 focus:bg-white transition-all",
+                              "w-full h-11 !h-11 px-4 text-left font-normal bg-[#f8f9fa] border-0 rounded-xl shadow-none hover:bg-slate-100 flex justify-between",
                               !field.value && "text-muted-foreground",
                             )}
                           >
-                            <CalendarDays className="mr-2 h-4 w-4 text-muted-foreground" />
                             {field.value ? (
                               format(
                                 parse(field.value, "yyyy-MM-dd", new Date()),
-                                "PPP",
+                                "dd-MM-yyyy",
                               )
                             ) : (
-                              <span>Pick a date</span>
+                              <span>dd-mm-yyyy</span>
                             )}
+                            <CalendarDays className="h-4 w-4 text-slate-500" />
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
@@ -518,11 +525,12 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                               ? parse(field.value, "yyyy-MM-dd", new Date())
                               : undefined
                           }
-                          onSelect={(date) =>
+                          onSelect={(date) => {
                             field.onChange(
                               date ? format(date, "yyyy-MM-dd") : "",
-                            )
-                          }
+                            );
+                            setIsCalendarOpen(false);
+                          }}
                           disabled={{ after: new Date() }}
                           initialFocus
                           fromYear={1950}
@@ -536,9 +544,8 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                 )}
               />
 
-              <div className="md:col-span-2 mt-2">
-                <Separator className="mb-6 bg-gray-100" />
-                <h4 className="text-sm font-semibold text-primary mb-4 flex items-center gap-2">
+              <div className="md:col-span-2 mt-4">
+                <h4 className="text-[11px] font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-2">
                   <Phone className="h-4 w-4" />
                   Contact Details
                 </h4>
@@ -549,16 +556,16 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                 name="mobile"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Mobile (WhatsApp)</FormLabel>
+                    <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Mobile (WhatsApp)</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                        <Phone className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
                         <Input
                           type="tel"
-                          placeholder="Enter 10-digit mobile number"
+                          placeholder="Enter 10-digit number"
                           maxLength={10}
-                          disabled={!isEmailVerified}
-                          className="pl-9 bg-gray-50/50 border-gray-200 focus:bg-white transition-all"
+                          disabled={isLoading}
+                          className="pl-10 bg-[#f8f9fa] border-0 rounded-xl h-11 !h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
                           {...field}
                           onChange={(e) => {
                             const value = e.target.value.replace(/\D/g, "");
@@ -577,37 +584,22 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Email Address</FormLabel>
                     <div className="flex gap-2">
                       <FormControl className="flex-1">
                         <div className="relative">
-                          <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                          <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
                           <Input
                             type="email"
                             placeholder="Enter email address"
-                            disabled={isEmailVerified}
-                            className="pl-9 bg-gray-50/50 border-gray-200 focus:bg-white transition-all"
+                            disabled={isEmailVerified || isLoading}
+                            className="pl-10 bg-[#f8f9fa] border-0 rounded-xl h-11 !h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
                             {...field}
                           />
                         </div>
                       </FormControl>
-                      {!isEmailVerified ? (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="h-10 border-primary/20 text-primary hover:bg-primary/5 font-medium min-w-[80px]"
-                          onClick={handleSendOtp}
-                          disabled={isVerifyingEmail}
-                        >
-                          {isVerifyingEmail ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            "Verify"
-                          )}
-                        </Button>
-                      ) : (
-                        <div className="flex items-center gap-1.5 px-3 bg-emerald-50 text-emerald-600 rounded-md border border-emerald-100 h-10">
+                      {isEmailVerified && (
+                        <div className="flex items-center gap-1.5 px-3 bg-emerald-50 text-emerald-600 rounded-md border border-emerald-100 h-11">
                           <CheckCircle2 className="h-4 w-4" />
                           <span className="text-xs font-bold uppercase tracking-wider">
                             Verified
@@ -620,10 +612,9 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                 )}
               />
 
-              <div className="md:col-span-2 mt-2">
-                <Separator className="mb-6 bg-gray-100" />
-                <h4 className="text-sm font-semibold text-primary mb-4 flex items-center gap-2">
-                  <School className="h-4 w-4" />
+              <div className="md:col-span-2 mt-4">
+                <h4 className="text-[11px] font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-2">
+                  <BookOpen className="h-4 w-4" />
                   Academic Information
                 </h4>
               </div>
@@ -633,14 +624,14 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                 name="school_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>School Name</FormLabel>
+                    <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">School Name</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <School className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                        <Building2 className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
                         <Input
                           placeholder="Enter school name"
-                          disabled={!isEmailVerified}
-                          className="pl-9 bg-gray-50/50 border-gray-200 focus:bg-white transition-all"
+                          disabled={isLoading}
+                          className="pl-10 bg-[#f8f9fa] border-0 rounded-xl h-11 !h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
                           {...field}
                         />
                       </div>
@@ -652,21 +643,47 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
 
               <FormField
                 control={form.control}
+                name="category_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Category</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      disabled={isDataLoading || isLoading}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-full bg-[#f8f9fa] border-0 rounded-xl h-11 !h-11 px-4 shadow-none focus:ring-1 focus:ring-primary/30">
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.id.toString()}>
+                            {cat.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="class"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Class</FormLabel>
+                    <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Class</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      disabled={!isEmailVerified}
+                      disabled={isLoading}
                     >
                       <FormControl>
-                        <SelectTrigger className="w-full bg-gray-50/50 border-gray-200 focus:bg-white transition-all">
-                          <div className="flex items-center gap-2">
-                            <GraduationCap className="h-4 w-4 text-muted-foreground" />
-                            <SelectValue placeholder="Select class" />
-                          </div>
+                        <SelectTrigger className="w-full bg-[#f8f9fa] border-0 rounded-xl h-11 !h-11 px-4 shadow-none focus:ring-1 focus:ring-primary/30">
+                          <SelectValue placeholder="Select class" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -686,55 +703,20 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
 
               <FormField
                 control={form.control}
-                name="category_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Category</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                      disabled={isDataLoading || !isEmailVerified}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="w-full bg-gray-50/50 border-gray-200 focus:bg-white transition-all">
-                          <div className="flex items-center gap-2">
-                            <BookOpen className="h-4 w-4 text-muted-foreground" />
-                            <SelectValue placeholder="Select category" />
-                          </div>
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {categories.map((cat) => (
-                          <SelectItem key={cat.id} value={cat.id.toString()}>
-                            {cat.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
                 name="course_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Course</FormLabel>
+                    <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Course</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value}
                       disabled={
-                        isDataLoading || !selectedCategoryId || !isEmailVerified
+                        isDataLoading || !selectedCategoryId || isLoading
                       }
                     >
                       <FormControl>
-                        <SelectTrigger className="w-full bg-gray-50/50 border-gray-200 focus:bg-white transition-all">
-                          <div className="flex items-center gap-2">
-                            <BookOpen className="h-4 w-4 text-muted-foreground" />
-                            <SelectValue placeholder="Select course" />
-                          </div>
+                        <SelectTrigger className="w-full bg-[#f8f9fa] border-0 rounded-xl h-11 !h-11 px-4 shadow-none focus:ring-1 focus:ring-primary/30">
+                          <SelectValue placeholder="Select course" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -758,19 +740,16 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                 name="batch_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Batch</FormLabel>
+                    <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Batch</FormLabel>
                     <div className="flex gap-2">
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
-                        disabled={!isEmailVerified}
+                        disabled={isLoading}
                       >
                         <FormControl className="flex-1">
-                          <SelectTrigger className="w-full bg-gray-50/50 border-gray-200 focus:bg-white transition-all h-10">
-                            <div className="flex items-center gap-2">
-                              <BookOpen className="h-4 w-4 text-muted-foreground" />
-                              <SelectValue placeholder="Select batch" />
-                            </div>
+                          <SelectTrigger className="w-full bg-[#f8f9fa] border-0 rounded-xl h-11 !h-11 px-4 shadow-none focus:ring-1 focus:ring-primary/30">
+                            <SelectValue placeholder="Select batch" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -791,8 +770,8 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                             type="button"
                             variant="outline"
                             size="icon"
-                            disabled={!isEmailVerified}
-                            className="shrink-0 h-10 w-10 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-700 border-emerald-100 transition-colors"
+                            disabled={isLoading}
+                            className="shrink-0 h-11 !h-11 w-11 !w-11 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-700 border-0 rounded-xl transition-colors"
                           >
                             <Plus className="h-5 w-5" />
                           </Button>
@@ -805,24 +784,19 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
               />
             </div>
 
-            <div className="p-6 bg-gray-50/80 border-t flex justify-end gap-3">
+            <div className="pt-6 pb-6 px-6 bg-white flex justify-end gap-4 border-t border-slate-100">
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 onClick={() => setOpen(false)}
-                className="hover:bg-gray-100"
+                className="hover:bg-transparent hover:text-slate-800 text-slate-500 font-bold"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                disabled={isLoading || !isEmailVerified}
-                onClick={() => {
-                  if (!isEmailVerified) {
-                    toast.info("Please verify email");
-                  }
-                }}
-                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md transition-all min-w-[120px]"
+                disabled={isLoading}
+                className="bg-[#85e0c5] hover:bg-[#76cca8] text-white shadow-sm rounded-xl px-8 h-11 font-bold min-w-[140px]"
               >
                 {isLoading ? (
                   <>
@@ -830,7 +804,7 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                     Adding...
                   </>
                 ) : (
-                  "Add Student"
+                  "Register Student"
                 )}
               </Button>
             </div>
@@ -838,81 +812,76 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
         </Form>
 
         {/* OTP Verification Modal */}
-        <Dialog open={showOtpModal} onOpenChange={setShowOtpModal}>
-          <DialogContent className="sm:max-w-[400px]">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <ShieldCheck className="h-5 w-5 text-primary" />
-                Email Verification
+        <Dialog
+          open={showOtpModal}
+          onOpenChange={(val) => {
+            setShowOtpModal(val);
+            if (!val) {
+              setOtpValue("");
+            }
+          }}
+        >
+          <DialogContent className="sm:max-w-[440px] p-10 border-0 shadow-2xl rounded-[32px] overflow-hidden bg-white">
+            <DialogHeader className="space-y-0 text-center flex flex-col items-center">
+              <div className="h-[88px] w-[88px] bg-[#e0f8eb] rounded-[28px] flex items-center justify-center mb-6 mt-2">
+                <ShieldCheck className="h-11 w-11 text-[#0bd38d]" />
+              </div>
+              <DialogTitle className="text-[28px] font-extrabold text-[#1f2937] mb-2 tracking-tight">
+                Verify Email
               </DialogTitle>
-              <DialogDescription>
-                We've sent a 6-digit verification code to{" "}
-                <span className="font-semibold text-foreground">
+              <DialogDescription className="text-[#64748b] text-[15px] font-medium leading-relaxed max-w-[300px] text-center">
+                We've sent a 6-digit verification code to
+                <br />
+                <span className="font-extrabold text-[#111827] text-[15px] mt-1.5 block flex justify-center w-full">
                   {form.getValues("email")}
                 </span>
-                .
               </DialogDescription>
             </DialogHeader>
-            <div className="flex flex-col items-center gap-6 py-6">
+
+            <div className="flex flex-col items-center pt-8 pb-6 w-full gap-0">
               <InputOTP
                 maxLength={6}
                 value={otpValue}
-                onChange={(value) => setOtpValue(value)}
+                onChange={(value) => setOtpValue(value.replace(/\D/g, ""))}
                 autoFocus
               >
-                <InputOTPGroup className="gap-2">
-                  <InputOTPSlot
-                    index={0}
-                    className="w-12 h-12 text-lg border-2"
-                  />
-                  <InputOTPSlot
-                    index={1}
-                    className="w-12 h-12 text-lg border-2"
-                  />
-                  <InputOTPSlot
-                    index={2}
-                    className="w-12 h-12 text-lg border-2"
-                  />
-                  <InputOTPSlot
-                    index={3}
-                    className="w-12 h-12 text-lg border-2"
-                  />
-                  <InputOTPSlot
-                    index={4}
-                    className="w-12 h-12 text-lg border-2"
-                  />
-                  <InputOTPSlot
-                    index={5}
-                    className="w-12 h-12 text-lg border-2"
-                  />
+                <InputOTPGroup className="gap-2 sm:gap-3">
+                  {[0, 1, 2, 3, 4, 5].map((idx) => (
+                    <InputOTPSlot
+                      key={idx}
+                      index={idx}
+                      className="w-11 h-14 sm:w-12 sm:h-14 text-xl sm:text-2xl font-bold bg-[#f8f9fa] border-[#f1f5f9] border-2 rounded-[14px] shadow-none ring-0 focus-visible:ring-1 focus-visible:ring-[#83e9c5] focus-visible:border-[#83e9c5] transition-all"
+                    />
+                  ))}
                 </InputOTPGroup>
               </InputOTP>
+            </div>
 
-              <div className="text-center w-full space-y-2">
+            <div className="text-center w-full space-y-7">
+              <Button
+                className="w-full h-14 bg-[#83e9c5] hover:bg-[#72dbb6] text-white rounded-2xl text-[16px] font-extrabold shadow-[0_8px_20px_-6px_rgba(131,233,197,0.5)] transition-all"
+                onClick={handleVerifyOtp}
+                disabled={isVerifyingEmail || otpValue.length !== 6}
+              >
+                {isVerifyingEmail ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  "Verify & Continue"
+                )}
+              </Button>
+              
+              <div className="flex flex-col items-center justify-center gap-4">
                 <Button
-                  className="w-full shadow-lg"
-                  onClick={handleVerifyOtp}
-                  disabled={isVerifyingEmail || otpValue.length !== 6}
+                  variant="link"
+                  size="sm"
+                  className="text-[#83e9c5] font-bold text-[14px] h-auto p-0"
+                  onClick={handleResendOtp}
+                  disabled={isResendingOtp || resendCooldown > 0}
                 >
-                  {isVerifyingEmail ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    "Verify Email"
-                  )}
+                  {resendCooldown > 0
+                    ? `Resend code in ${resendCooldown}s`
+                    : "Resend Code"}
                 </Button>
-                <div className="flex justify-center">
-                  <Button
-                    variant="link"
-                    size="sm"
-                    className="text-primary font-medium"
-                    onClick={handleResendOtp}
-                    disabled={isResendingOtp || resendCooldown > 0}
-                  >
-                    {resendCooldown > 0
-                      ? `Resend code in ${resendCooldown}s`
-                      : "Resend Code"}
-                  </Button>
-                </div>
               </div>
             </div>
           </DialogContent>
@@ -929,3 +898,4 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
     </Dialog>
   );
 }
+

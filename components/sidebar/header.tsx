@@ -3,7 +3,8 @@
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Profile } from "./profile";
-import { Search, User, Settings } from "lucide-react";
+import { Search, User, Settings, Bell } from "lucide-react";
+import { NotificationDropdown } from "../notification-dropdown";
 import {
   CommandDialog,
   CommandEmpty,
@@ -18,27 +19,12 @@ import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { navData } from "@/lib/nav-items";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Header() {
   const [open, setOpen] = React.useState(false);
-  const [user, setUser] = React.useState<any>(null);
+  const { user } = useAuth();
   const router = useRouter();
-
-  React.useEffect(() => {
-    const user = cookieService.getCookie("user");
-    if (user) {
-      setUser(JSON.parse(user));
-    }
-
-    // const down = (e: KeyboardEvent) => {
-    //   if (e.key === "s" && (e.metaKey || e.ctrlKey)) {
-    //     e.preventDefault();
-    //     setOpen((open) => !open);
-    //   }
-    // };
-    // document.addEventListener("keydown", down);
-    // return () => document.removeEventListener("keydown", down);
-  }, []);
 
   return (
     <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
@@ -104,8 +90,8 @@ export default function Header() {
           </CommandDialog>
         </div>
         <div className="flex items-center gap-2 px-4">
-          {/* <ThemeSwitcher /> */}
-          <Profile user={user} />
+          <NotificationDropdown />
+          {user && <Profile user={user} />}
         </div>
       </div>
     </header>

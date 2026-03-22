@@ -14,6 +14,7 @@ import {
   Loader2,
   Eye,
   EyeOff,
+  ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -147,7 +148,7 @@ export function SignupForm() {
 
   return (
     <div className="min-h-screen flex relative overflow-hidden bg-white">
-      {/* ... Left Side Content (Keep as is) ... */}
+      {/* Left Side - Decorative */}
       <div className="hidden lg:flex flex-1 bg-primary items-center justify-center p-12 relative overflow-hidden">
         <div className="absolute top-20 left-20 w-32 h-32 bg-white/10 rounded-full animate-float" />
         <div
@@ -214,107 +215,91 @@ export function SignupForm() {
           href="/"
           className="absolute top-8 left-8 flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors group"
         >
-          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-          <span className="font-medium text-sm">Back to Home</span>
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <span className="font-semibold text-[14px]">Back to Home</span>
         </Link>
-        <div className="w-full max-w-xl animate-slide-up">
+        <div className="w-full max-w-[480px] animate-slide-up flex flex-col items-center">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 mb-10 group">
-            <div className="w-15 h-15 flex items-center justify-center transition-all duration-300 group-hover:scale-105">
-              <NextImage
-                src="/logo-icon.png"
-                alt="Aerophantom Logo"
-                width={300}
-                height={300}
-                className="w-full h-full object-contain"
-                unoptimized
-              />
-            </div>
-            <span className="font-display font-bold text-2xl text-foreground">
-              Aerophantom
-            </span>
-          </Link>
+          {!showOtp && (
+            <Link href="/" className="flex items-center gap-3 mb-10 group justify-center">
+              <div className="w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 bg-white shadow-sm border border-slate-100 rounded-xl overflow-hidden">
+                <NextImage
+                  src="/logo-icon.png"
+                  alt="Aerophantom Logo"
+                  width={300}
+                  height={300}
+                  className="w-full h-full object-cover"
+                  unoptimized
+                />
+              </div>
+              <span className="font-extrabold text-[22px] text-[#0f172a] tracking-tight">
+                Aerophantom
+              </span>
+            </Link>
+          )}
 
           {showOtp ? (
-            <div className="animate-fade-in w-full max-w-md mx-auto">
-              <div className="text-center mb-8">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-6 ring-1 ring-primary/20 bg-white/50 backdrop-blur-sm">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="text-sm font-medium">
-                    Verification Pending
-                  </span>
-                </div>
-                <h1 className="font-display text-3xl font-bold text-foreground mb-3 tracking-tight">
-                  Enter Verification Code
-                </h1>
-                <p className="text-muted-foreground text-lg max-w-sm mx-auto leading-relaxed">
-                  We have sent a 6-digit code to your email <br />
-                  <span className="font-semibold text-foreground">
-                    {registeredEmail}
-                  </span>
-                </p>
+            <div className="animate-fade-in w-full flex flex-col items-center mt-6">
+              <div className="h-[88px] w-[88px] bg-primary/10 rounded-[28px] flex items-center justify-center mb-6">
+                <ShieldCheck className="h-11 w-11 text-primary" />
               </div>
+              <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary/10 text-primary mb-5">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span className="text-[11px] font-extrabold tracking-widest uppercase mt-0.5">
+                  Verification Pending
+                </span>
+              </div>
+              <h1 className="text-[38px] leading-[1.1] font-extrabold text-[#0f172a] mb-3 tracking-tight text-center">
+                Enter Verification Code
+              </h1>
+              <p className="text-[#64748b] text-[16px] font-medium text-center mb-10 max-w-sm">
+                We have sent a 6-digit code to your email <br />
+                <span className="font-extrabold text-[#0f172a] mt-1.5 block">
+                  {registeredEmail}
+                </span>
+              </p>
 
-              <form onSubmit={handleVerifyOtp} className="space-y-8">
-                <div className="flex justify-center">
-                  <InputOTP
-                    maxLength={6}
-                    value={otp}
-                    onChange={(value) => setOtp(value)}
-                  >
-                    <InputOTPGroup className="gap-2 sm:gap-4">
+              <form onSubmit={handleVerifyOtp} className="w-full space-y-10 flex flex-col items-center">
+                <InputOTP
+                  maxLength={6}
+                  value={otp}
+                  onChange={(value) => setOtp(value.replace(/\D/g, ""))}
+                  autoFocus
+                >
+                  <InputOTPGroup className="gap-2 sm:gap-4">
+                    {[0,1,2,3,4,5].map(i => (
                       <InputOTPSlot
-                        index={0}
-                        className="w-10 h-10 sm:w-12 sm:h-12 border-2 rounded-lg text-lg font-semibold focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-300"
+                        key={i}
+                        index={i}
+                        className="w-12 h-[60px] sm:w-[60px] sm:h-[72px] text-2xl sm:text-[32px] font-extrabold bg-[#f8f9fa] border-[#f1f5f9] border-2 rounded-[18px] shadow-none ring-0 focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary transition-all"
                       />
-                      <InputOTPSlot
-                        index={1}
-                        className="w-10 h-10 sm:w-12 sm:h-12 border-2 rounded-lg text-lg font-semibold focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-300"
-                      />
-                      <InputOTPSlot
-                        index={2}
-                        className="w-10 h-10 sm:w-12 sm:h-12 border-2 rounded-lg text-lg font-semibold focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-300"
-                      />
-                      <InputOTPSlot
-                        index={3}
-                        className="w-10 h-10 sm:w-12 sm:h-12 border-2 rounded-lg text-lg font-semibold focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-300"
-                      />
-                      <InputOTPSlot
-                        index={4}
-                        className="w-10 h-10 sm:w-12 sm:h-12 border-2 rounded-lg text-lg font-semibold focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-300"
-                      />
-                      <InputOTPSlot
-                        index={5}
-                        className="w-10 h-10 sm:w-12 sm:h-12 border-2 rounded-lg text-lg font-semibold focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-300"
-                      />
-                    </InputOTPGroup>
-                  </InputOTP>
-                </div>
+                    ))}
+                  </InputOTPGroup>
+                </InputOTP>
 
                 <Button
                   type="submit"
-                  size="lg"
-                  className="w-full h-14 rounded-xl text-base font-semibold shadow-lg hover:shadow-primary/25 bg-primary hover:bg-primary/90 text-white transition-all duration-300 transform active:scale-[0.98]"
+                  className="w-full h-[56px] bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl text-[16px] font-extrabold shadow-lg hover:shadow-primary/25 transition-all flex items-center justify-center gap-2"
                   disabled={isLoading}
                 >
                   {isLoading ? (
                     <div className="flex items-center gap-2">
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Verifying Code...
+                      Verifying...
                     </div>
                   ) : (
-                    <>
+                    <div className="flex items-center gap-1.5">
                       Verify & Proceed
-                      <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </>
+                      <ArrowRight className="w-[18px] h-[18px] mt-[1px]" />
+                    </div>
                   )}
                 </Button>
 
-                <p className="text-center text-sm text-muted-foreground">
+                <p className="text-center text-[15px] text-muted-foreground font-semibold">
                   Didn't receive the code?{" "}
                   <button
                     type="button"
-                    className="text-primary font-semibold hover:text-primary/80 transition-colors underline-offset-4 hover:underline disabled:opacity-50 disabled:no-underline"
+                    className="text-primary font-extrabold hover:text-primary/80 transition-colors disabled:opacity-50 ml-0.5"
                     onClick={handleResendOtp}
                     disabled={resendCooldown > 0 || isLoading}
                   >
@@ -326,22 +311,21 @@ export function SignupForm() {
               </form>
             </div>
           ) : (
-            <>
-              {/* Header and Signup Form */}
+            <div className="w-full flex flex-col items-center">
               <div
-                className="mb-6 animate-fade-in"
+                className="mb-10 animate-fade-in flex flex-col items-center text-center w-full"
                 style={{ animationDelay: "0.1s" }}
               >
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary mb-3">
+                <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary/10 text-primary mb-5">
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span className="text-xs font-semibold uppercase tracking-wide">
+                  <span className="text-[11px] font-extrabold tracking-widest uppercase mt-0.5">
                     Get Started Free
                   </span>
                 </div>
-                <h1 className="font-display text-3xl font-bold text-foreground mb-2">
+                <h1 className="text-[38px] leading-[1.1] font-extrabold text-[#0f172a] mb-3 tracking-tight">
                   Create Account
                 </h1>
-                <p className="text-muted-foreground text-sm">
+                <p className="text-[#64748b] text-[16px] font-medium">
                   Fill in your details to get started
                 </p>
               </div>
@@ -349,25 +333,25 @@ export function SignupForm() {
               <Form {...form}>
                 <form
                   onSubmit={form.handleSubmit(onSignupSubmit)}
-                  className="space-y-5"
+                  className="space-y-4 w-full"
                 >
                   <FormField
                     control={form.control}
                     name="name"
                     render={({ field }) => (
                       <FormItem
-                        className="space-y-2 animate-fade-in"
+                        className="space-y-1.5 animate-fade-in"
                         style={{ animationDelay: "0.15s" }}
                       >
-                        <FormLabel className="text-sm font-medium text-gray-700">
+                        <FormLabel className="text-[11px] font-extrabold text-[#7489a2] uppercase tracking-[0.15em] pl-1">
                           Full Name
                         </FormLabel>
                         <FormControl>
                           <div className="relative group">
-                            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors" />
+                            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors z-10" />
                             <Input
                               placeholder="John Doe"
-                              className="pl-12 h-14 rounded-xl border border-gray-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-300 hover:border-gray-300"
+                              className="pl-[52px] h-[56px] bg-[#f8f9fa] border-[#f1f5f9] border-2 rounded-2xl shadow-none ring-0 focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary transition-all font-semibold text-slate-700 text-[15px]"
                               {...field}
                             />
                           </div>
@@ -377,7 +361,7 @@ export function SignupForm() {
                     )}
                   />
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
                       name="email"
@@ -386,16 +370,16 @@ export function SignupForm() {
                           className="space-y-1.5 animate-fade-in"
                           style={{ animationDelay: "0.2s" }}
                         >
-                          <FormLabel className="text-sm font-medium text-foreground/80">
+                          <FormLabel className="text-[11px] font-extrabold text-[#7489a2] uppercase tracking-[0.15em] pl-1">
                             Email
                           </FormLabel>
                           <FormControl>
                             <div className="relative group">
-                              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors z-10" />
                               <Input
                                 type="email"
                                 placeholder="you@example.com"
-                                className="pl-10 h-11 rounded-lg border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-300 hover:border-primary/50"
+                                className="pl-[52px] h-[56px] bg-[#f8f9fa] border-[#f1f5f9] border-2 rounded-2xl shadow-none ring-0 focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary transition-all font-semibold text-slate-700 text-[15px]"
                                 {...field}
                               />
                             </div>
@@ -413,17 +397,17 @@ export function SignupForm() {
                           className="space-y-1.5 animate-fade-in"
                           style={{ animationDelay: "0.25s" }}
                         >
-                          <FormLabel className="text-sm font-medium text-foreground/80">
+                          <FormLabel className="text-[11px] font-extrabold text-[#7489a2] uppercase tracking-[0.15em] pl-1">
                             Mobile Number
                           </FormLabel>
                           <FormControl>
                             <div className="relative group">
-                              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors z-10" />
                               <Input
                                 maxLength={10}
                                 type="tel"
                                 placeholder="+91 98765 43210"
-                                className="pl-10 h-11 rounded-lg border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-300 hover:border-primary/50"
+                                className="pl-[52px] h-[56px] bg-[#f8f9fa] border-[#f1f5f9] border-2 rounded-2xl shadow-none ring-0 focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary transition-all font-semibold text-slate-700 text-[15px]"
                                 {...field}
                               />
                             </div>
@@ -434,7 +418,7 @@ export function SignupForm() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-2">
                     <FormField
                       control={form.control}
                       name="password"
@@ -443,27 +427,27 @@ export function SignupForm() {
                           className="space-y-1.5 animate-fade-in"
                           style={{ animationDelay: "0.3s" }}
                         >
-                          <FormLabel className="text-sm font-medium text-foreground/80">
+                          <FormLabel className="text-[11px] font-extrabold text-[#7489a2] uppercase tracking-[0.15em] pl-1">
                             Password
                           </FormLabel>
                           <FormControl>
                             <div className="relative group">
-                              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                              <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors z-10" />
                               <Input
                                 type={showPassword ? "text" : "password"}
                                 placeholder="••••••••"
-                                className="pl-10 pr-10 h-11 rounded-lg border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-300 hover:border-primary/50"
+                                className="pl-[52px] pr-11 h-[56px] bg-[#f8f9fa] border-[#f1f5f9] border-2 rounded-2xl shadow-none ring-0 focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary transition-all font-bold text-slate-700 text-[18px] pb-1 tracking-[0.2em]"
                                 {...field}
                               />
                               <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors focus:outline-none"
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors z-10"
                               >
                                 {showPassword ? (
-                                  <EyeOff className="w-4 h-4" />
+                                  <EyeOff className="w-[18px] h-[18px]" />
                                 ) : (
-                                  <Eye className="w-4 h-4" />
+                                  <Eye className="w-[18px] h-[18px]" />
                                 )}
                               </button>
                             </div>
@@ -481,16 +465,16 @@ export function SignupForm() {
                           className="space-y-1.5 animate-fade-in"
                           style={{ animationDelay: "0.35s" }}
                         >
-                          <FormLabel className="text-sm font-medium text-foreground/80">
+                          <FormLabel className="text-[11px] font-extrabold text-[#7489a2] uppercase tracking-[0.15em] pl-1">
                             Confirm Password
                           </FormLabel>
                           <FormControl>
                             <div className="relative group">
-                              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                              <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors z-10" />
                               <Input
                                 type={showConfirmPassword ? "text" : "password"}
                                 placeholder="••••••••"
-                                className="pl-10 pr-10 h-11 rounded-lg border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-300 hover:border-primary/50"
+                                className="pl-[52px] pr-11 h-[56px] bg-[#f8f9fa] border-[#f1f5f9] border-2 rounded-2xl shadow-none ring-0 focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary transition-all font-bold text-slate-700 text-[18px] pb-1 tracking-[0.2em]"
                                 {...field}
                               />
                               <button
@@ -498,12 +482,12 @@ export function SignupForm() {
                                 onClick={() =>
                                   setShowConfirmPassword(!showConfirmPassword)
                                 }
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors focus:outline-none"
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors z-10"
                               >
                                 {showConfirmPassword ? (
-                                  <EyeOff className="w-4 h-4" />
+                                  <EyeOff className="w-[18px] h-[18px]" />
                                 ) : (
-                                  <Eye className="w-4 h-4" />
+                                  <Eye className="w-[18px] h-[18px]" />
                                 )}
                               </button>
                             </div>
@@ -516,39 +500,38 @@ export function SignupForm() {
 
                   <Button
                     type="submit"
-                    size="lg"
-                    className="w-full h-12 rounded-lg text-base font-semibold mt-4 animate-slide-up shadow-md hover:shadow-lg bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white transition-all duration-300 transform active:scale-[0.98]"
+                    className="w-full h-[56px] bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl text-[16px] font-extrabold shadow-[0_8px_20px_-6px_rgba(var(--primary),0.5)] transition-all animate-fade-in"
                     style={{ animationDelay: "0.4s" }}
                     disabled={isLoading}
                   >
                     {isLoading ? (
                       <div className="flex items-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <Loader2 className="w-5 h-5 animate-spin" />
                         Creating Account...
                       </div>
                     ) : (
-                      <>
+                      <div className="flex items-center gap-1.5">
                         Create Account
-                        <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                      </>
+                        <ArrowRight className="w-[18px] h-[18px] mt-[1px]" />
+                      </div>
                     )}
                   </Button>
                 </form>
               </Form>
 
               <p
-                className="mt-6 text-center text-sm text-muted-foreground animate-fade-in"
+                className="mt-8 text-center text-muted-foreground font-semibold text-[15px] animate-fade-in"
                 style={{ animationDelay: "0.5s" }}
               >
                 Already have an account?{" "}
                 <Link
                   href="/auth/login"
-                  className="text-primary font-bold hover:text-primary/80 transition-colors"
+                  className="text-primary font-extrabold hover:text-primary/80 transition-colors ml-1"
                 >
                   Sign in
                 </Link>
               </p>
-            </>
+            </div>
           )}
         </div>
       </div>

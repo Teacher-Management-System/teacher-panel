@@ -11,6 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { DateRange } from "react-day-picker";
+import Link from "next/link";
 import { cookieService } from "@/lib/cookie";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -232,47 +233,61 @@ const Dashboard = () => {
           )}
         </div>
 
-        <div className="flex items-center gap-2 bg-background/50 p-1 rounded-lg border shadow-sm">
-          <div className="flex items-center gap-2 px-3 text-muted-foreground border-r">
-            <Filter className="w-4 h-4" />
-            <span className="text-sm font-medium">Filter:</span>
-          </div>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                id="date"
-                variant={"ghost"}
-                className={cn(
-                  "justify-start text-left font-normal hover:bg-transparent",
-                  !date && "text-muted-foreground",
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {date?.from ? (
-                  date.to ? (
-                    <>
-                      {format(date.from, "LLL dd, y")} -{" "}
-                      {format(date.to, "LLL dd, y")}
-                    </>
+        <div className="flex items-center gap-3">
+          {userStatus === "active" && (
+            <Button
+              asChild
+              className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-100/50 rounded-lg flex items-center gap-2 px-4 transition-all"
+            >
+              <Link href="/aero">
+                <Sparkles className="w-4 h-4" />
+                <span className="font-semibold">Access Panel</span>
+              </Link>
+            </Button>
+          )}
+
+          <div className="flex items-center gap-2 bg-background/50 p-1 rounded-lg border shadow-sm">
+            <div className="flex items-center gap-2 px-3 text-muted-foreground border-r">
+              <Filter className="w-4 h-4" />
+              <span className="text-sm font-medium">Filter:</span>
+            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  id="date"
+                  variant={"ghost"}
+                  className={cn(
+                    "justify-start text-left font-normal hover:bg-transparent",
+                    !date && "text-muted-foreground",
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date?.from ? (
+                    date.to ? (
+                      <>
+                        {format(date.from, "LLL dd, y")} -{" "}
+                        {format(date.to, "LLL dd, y")}
+                      </>
+                    ) : (
+                      format(date.from, "LLL dd, y")
+                    )
                   ) : (
-                    format(date.from, "LLL dd, y")
-                  )
-                ) : (
-                  <span>Pick a date</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
-              <CalendarComponent
-                initialFocus
-                mode="range"
-                defaultMonth={date?.from}
-                selected={date}
-                onSelect={setDate}
-                numberOfMonths={2}
-              />
-            </PopoverContent>
-          </Popover>
+                    <span>Pick a date</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <CalendarComponent
+                  initialFocus
+                  mode="range"
+                  defaultMonth={date?.from}
+                  selected={date}
+                  onSelect={setDate}
+                  numberOfMonths={2}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
       </div>
 

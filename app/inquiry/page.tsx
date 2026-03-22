@@ -16,8 +16,6 @@ import {
   User,
   Mail,
   Phone,
-  MapPin,
-  Globe,
   GraduationCap,
   TrendingUp,
 } from "lucide-react";
@@ -146,93 +144,53 @@ export default function InquiryPage() {
                 <div className="grid md:grid-cols-2 gap-6">
                   {/* Name */}
                   <div className="space-y-2">
-                    <Label htmlFor="name" className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-primary" /> Full Name
+                    <Label htmlFor="name" className="flex items-center gap-2 font-bold mb-2 text-[#0f3444] dark:text-slate-200">
+                      <User className="w-5 h-5 text-[#00bdae]" /> Full Name
                     </Label>
                     <Input
                       id="name"
                       placeholder="Enter your full name"
                       required
-                      className="rounded-xl border-zinc-200 dark:border-zinc-800 h-12"
+                      className="rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-0 ring-1 ring-inset ring-zinc-100 dark:ring-zinc-800 focus-visible:ring-2 focus-visible:ring-primary focus-visible:bg-white h-[60px] text-[15px] px-6"
                     />
                   </div>
                   {/* Email */}
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-primary" /> Email
+                    <Label htmlFor="email" className="flex items-center gap-2 font-bold mb-2 text-[#0f3444] dark:text-slate-200">
+                      <Mail className="w-5 h-5 text-[#00bdae]" /> Email
                     </Label>
                     <Input
                       id="email"
                       type="email"
                       placeholder="you@example.com"
                       required
-                      className="rounded-xl border-zinc-200 dark:border-zinc-800 h-12"
+                      className="rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-0 ring-1 ring-inset ring-zinc-100 dark:ring-zinc-800 focus-visible:ring-2 focus-visible:ring-primary focus-visible:bg-white h-[60px] text-[15px] px-6"
                     />
                   </div>
                 </div>
 
                 {/* Mobile */}
                 <div className="space-y-2">
-                  <Label htmlFor="mobile" className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-primary" /> Mobile Number
+                  <Label htmlFor="mobile" className="flex items-center gap-2 font-bold mb-2 text-[#0f3444] dark:text-slate-200">
+                    <Phone className="w-5 h-5 text-[#00bdae]" /> Mobile Number
                   </Label>
                   <Input
                     id="mobile"
                     placeholder="Enter your 10-digit mobile number"
                     required
-                    className="rounded-xl border-zinc-200 dark:border-zinc-800 h-12"
+                    className="rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-0 ring-1 ring-inset ring-zinc-100 dark:ring-zinc-800 focus-visible:ring-2 focus-visible:ring-primary focus-visible:bg-white h-[60px] text-[15px] px-6"
                   />
-                </div>
-
-                <div className="grid md:grid-cols-3 gap-6">
-                  {/* Country */}
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="country"
-                      className="flex items-center gap-2"
-                    >
-                      <Globe className="w-4 h-4 text-primary" /> Country
-                    </Label>
-                    <Input
-                      id="country"
-                      placeholder="Country"
-                      required
-                      className="rounded-xl border-zinc-200 dark:border-zinc-800 h-12"
-                    />
-                  </div>
-                  {/* State */}
-                  <div className="space-y-2">
-                    <Label htmlFor="state" className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-primary" /> State
-                    </Label>
-                    <Input
-                      id="state"
-                      placeholder="State"
-                      required
-                      className="rounded-xl border-zinc-200 dark:border-zinc-800 h-12"
-                    />
-                  </div>
-                  {/* City */}
-                  <div className="space-y-2">
-                    <Label htmlFor="city" className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-primary" /> City
-                    </Label>
-                    <Input
-                      id="city"
-                      placeholder="City"
-                      required
-                      className="rounded-xl border-zinc-200 dark:border-zinc-800 h-12"
-                    />
-                  </div>
                 </div>
 
                 {/* Question */}
                 <div className="space-y-2">
-                  <Label htmlFor="question">Write your question here</Label>
+                  <Label htmlFor="question" className="font-bold mb-2 text-[#0f3444] dark:text-slate-200 block">
+                    Write your question here
+                  </Label>
                   <Textarea
                     id="question"
                     placeholder="Tell us a bit about your interests or ask anything..."
-                    className="rounded-xl border-zinc-200 dark:border-zinc-800 min-h-[120px] resize-none p-4"
+                    className="rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-0 ring-1 ring-inset ring-zinc-100 dark:ring-zinc-800 focus-visible:ring-2 focus-visible:ring-primary focus-visible:bg-white min-h-[140px] resize-none px-6 py-5 text-[15px]"
                     required
                   />
                 </div>

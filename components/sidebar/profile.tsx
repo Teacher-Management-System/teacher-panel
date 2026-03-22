@@ -10,12 +10,7 @@ import { UserDropdownContent } from "./user-dropdown-content";
 export function Profile({
   user,
 }: {
-  user: {
-    first_name: string;
-    last_name: string;
-    email: string;
-    avatar: string;
-  };
+  user: any; // Allow the user object as passed from useAuth
 }) {
   const getDisplayName = () => {
     if (user?.first_name && user?.last_name) {

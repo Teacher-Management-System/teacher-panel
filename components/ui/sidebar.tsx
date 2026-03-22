@@ -474,7 +474,7 @@ function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
 }
 
 const sidebarMenuButtonVariants = cva(
-  "peer/menu-button flex w-full items-center gap-3 overflow-hidden rounded-xl p-3 text-left text-base font-medium outline-hidden ring-sidebar-ring transition-all duration-200 hover:bg-gray-50 focus-visible:ring-2 active:bg-gray-100 disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-teal-500 data-[active=true]:font-bold data-[active=true]:text-white data-[active=true]:shadow-md data-[active=true]:shadow-teal-500/20 data-[state=open]:hover:bg-gray-50 group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-5 [&>svg]:shrink-0",
+  "peer/menu-button flex w-full items-center gap-3 overflow-hidden rounded-xl p-3 text-left text-base font-medium outline-hidden ring-sidebar-ring transition-all duration-200 hover:bg-gray-50 focus-visible:ring-2 active:bg-gray-100 disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-gradient-to-br data-[active=true]:from-[#1394f9] data-[active=true]:via-[#1fc0c7] data-[active=true]:to-[#1394f9] data-[active=true]:font-bold data-[active=true]:text-white data-[active=true]:shadow-md data-[active=true]:shadow-primary/20 data-[state=open]:hover:bg-gray-50 group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-5 [&>svg]:shrink-0",
   {
     variants: {
       variant: {

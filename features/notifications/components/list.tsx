@@ -173,15 +173,17 @@ export default function NotificationList() {
             Stay updated with your latest activities
           </p>
         </div>
-        <Button
-          variant="outline"
-          className="border-cyan-200 text-cyan-600 hover:bg-cyan-50 hover:text-cyan-700"
-          onClick={() => handleMarkAsReadClick()}
-          disabled={counts.unread === 0}
-        >
-          <CheckCircle2 className="mr-2 h-4 w-4" />
-          Mark All as Read
-        </Button>
+        {notifications.length > 0 && (
+          <Button
+            variant="outline"
+            className="border-cyan-200 text-cyan-600 hover:bg-cyan-50 hover:text-cyan-700"
+            onClick={() => handleMarkAsReadClick()}
+            disabled={counts.unread === 0}
+          >
+            <CheckCircle2 className="mr-2 h-4 w-4" />
+            Mark All as Read
+          </Button>
+        )}
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">

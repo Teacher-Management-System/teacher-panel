@@ -2,6 +2,7 @@ export type UserStatus = "pending" | "inactive" | "active";
 
 export interface User {
   id: number;
+  teacher_id?: string;
   name: string;
   email: string;
   status: UserStatus;

@@ -1,12 +1,49 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Eye, ArrowUpDown } from "lucide-react";
+import { Eye, ArrowUpDown, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { PaymentViewDialog } from "./payment-view-dialog";
 import { Payment } from "../model";
 import { formatDate } from "@/lib/format";
+import { toast } from "sonner";
+
+const TransactionIdCell = ({ transactionId }: { transactionId?: string }) => {
+  const [copied, setCopied] = useState(false);
+
+  if (!transactionId) return <div className="text-center text-muted-foreground">-</div>;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(transactionId);
+    toast.success("Transaction ID copied to clipboard");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="flex items-center justify-center gap-2 group">
+      <div
+        className="font-mono text-xs text-muted-foreground truncate max-w-[120px]"
+        title={transactionId}
+      >
+        {transactionId}
+      </div>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+        onClick={handleCopy}
+      >
+        {copied ? (
+          <Check className="h-3 w-3 text-emerald-500" />
+        ) : (
+          <Copy className="h-3 w-3 text-muted-foreground" />
+        )}
+      </Button>
+    </div>
+  );
+};
 
 export const columns: ColumnDef<Payment>[] = [
   {
@@ -127,12 +164,7 @@ export const columns: ColumnDef<Payment>[] = [
       );
     },
     cell: ({ row }) => (
-      <div
-        className="text-center font-mono text-xs text-muted-foreground w-32 truncate"
-        title={row.original.transaction_id}
-      >
-        {row.original.transaction_id || "-"}
-      </div>
+      <TransactionIdCell transactionId={row.original.transaction_id} />
     ),
   },
   {

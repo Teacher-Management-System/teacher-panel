@@ -17,6 +17,7 @@ import {
   School,
   GraduationCap,
   BookOpen,
+  Layout,
 } from "lucide-react";
 import { Student } from "../model";
 
@@ -183,6 +184,11 @@ export function StudentDetailsDialog({
                     student.course ||
                     "Not provided"
                   }
+                />
+                <DetailItem
+                  icon={Layout}
+                  label="Batch"
+                  value={student.batch?.name || "Not provided"}
                 />
               </div>
             </section>

@@ -19,12 +19,7 @@ import { ChangePasswordForm } from "@/features/profile/components/change-passwor
 export function UserDropdownContent({
   user,
 }: {
-  user: {
-    first_name: string;
-    last_name: string;
-    email: string;
-    avatar: string;
-  };
+  user: any;
 }) {
   const router = useRouter();
   const confirm = useConfirm();
@@ -69,6 +64,11 @@ export function UserDropdownContent({
           <div className="grid flex-1 text-left text-sm leading-tight">
             <span className="truncate font-medium">{displayName}</span>
             <span className="truncate text-xs">{user?.email}</span>
+            {user?.teacher_id && (
+              <span className="truncate text-[10px] font-medium text-muted-foreground uppercase tracking-wider mt-0.5">
+                Teacher ID: {user.teacher_id}
+              </span>
+            )}
           </div>
         </div>
       </DropdownMenuLabel>

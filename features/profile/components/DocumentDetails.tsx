@@ -14,6 +14,8 @@ import {
   ImageIcon,
   Loader2,
   PartyPopper,
+  ShieldCheck,
+  Check,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -150,223 +152,247 @@ export default function DocumentDetails() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <section className="space-y-6">
-        <div className="flex items-center gap-2 pb-2 border-b border-border/50">
-          <FileText className="w-5 h-5 text-primary" />
-          <h3 className="text-lg font-semibold text-foreground">
-            Aadhar Card Verification
+    <div className="space-y-10 animate-in fade-in duration-500">
+      <section>
+        <div className="flex items-center gap-2 mb-6">
+          <ShieldCheck className="w-4 h-4 text-primary" />
+          <h3 className="text-xs font-bold text-primary uppercase tracking-widest">
+            Identity Verification
           </h3>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
           {/* Front Side */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label className="text-base font-medium">Front Side</Label>
-              {aadharFront.isUploaded && !aadharFront.isUploading && (
-                <Badge
-                  variant="outline"
-                  className="bg-green-500/10 text-green-600 hover:bg-green-500/20 border-green-200"
-                >
-                  <CheckCircle2 className="w-3 h-3 mr-1" /> Uploaded
-                </Badge>
-              )}
-            </div>
+          <div className="space-y-1.5 border border-dashed border-slate-200 rounded-2xl p-6 bg-[#f8f9fa]/50 hover:bg-[#f8f9fa] transition-colors relative group text-center flex flex-col items-center justify-center min-h-[160px]">
+            {!aadharFront.isUploading && !aadharFront.isUploaded && (
+              <input
+                ref={frontInputRef}
+                type="file"
+                accept="image/*,.pdf"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                onChange={(e) =>
+                  handleFileChange(e, "aadhar_front", setAadharFront)
+                }
+              />
+            )}
 
-            <div
-              className={cn(
-                "relative group h-64 rounded-xl border-2 border-dashed transition-all duration-300 overflow-hidden bg-muted/30",
-                aadharFront.preview || aadharFront.existingUrl
-                  ? "border-primary/50 bg-primary/5"
-                  : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50",
-                aadharFront.isUploading && "opacity-70 cursor-not-allowed",
-              )}
-            >
-              {!aadharFront.isUploading && !aadharFront.isUploaded && (
-                <input
-                  ref={frontInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                  onChange={(e) =>
-                    handleFileChange(e, "aadhar_front", setAadharFront)
-                  }
+            {aadharFront.isUploading ? (
+              <div className="flex flex-col items-center">
+                <Loader2 className="w-6 h-6 text-primary animate-spin mb-2" />
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                  Uploading...
+                </p>
+              </div>
+            ) : aadharFront.preview || aadharFront.existingUrl ? (
+              <div className="relative w-full h-[250px] rounded-lg overflow-hidden border border-slate-200">
+                <img
+                  src={aadharFront.preview || aadharFront.existingUrl!}
+                  alt="Aadhar Front"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
-              )}
-
-              {aadharFront.isUploading ? (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/50 backdrop-blur-sm z-20">
-                  <Loader2 className="w-8 h-8 text-primary animate-spin mb-2" />
-                  <p className="text-sm font-medium">Uploading Front Side...</p>
-                </div>
-              ) : aadharFront.preview || aadharFront.existingUrl ? (
-                <>
-                  <img
-                    src={aadharFront.preview || aadharFront.existingUrl!}
-                    alt="Aadhar Front"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  {!aadharFront.isUploaded && (
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20 pointer-events-none">
-                      <p className="text-white font-medium flex items-center">
-                        <Upload className="w-4 h-4 mr-2" /> Change Image
-                      </p>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
-                  <div className="bg-background/80 backdrop-blur-sm p-4 rounded-full mb-4 shadow-sm group-hover:scale-110 transition-transform duration-300">
-                    <ImageIcon className="w-8 h-8 text-muted-foreground group-hover:text-primary transition-colors" />
+                {!aadharFront.isUploaded && (
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20 pointer-events-none">
+                    <p className="text-white font-medium flex items-center text-sm">
+                      <Upload className="w-4 h-4 mr-2" /> Change
+                    </p>
                   </div>
-                  <p className="text-sm font-medium text-foreground mb-1">
-                    Click or drag to upload front side
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    SVG, PNG, JPG or GIF (max. 5MB)
-                  </p>
+                )}
+                {aadharFront.isUploaded && !aadharFront.isUploading && (
+                  <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1 z-30">
+                    <CheckCircle2 className="w-4 h-4" />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center pointer-events-none">
+                <div className="bg-white border border-slate-100 p-3 rounded-2xl shadow-sm mb-3 group-hover:scale-110 transition-transform duration-300">
+                  <Upload className="w-5 h-5 text-slate-400 group-hover:text-primary transition-colors" />
                 </div>
-              )}
-            </div>
+                <p className="text-[11px] font-bold text-slate-700 uppercase tracking-widest mb-1">
+                  Upload Front Side
+                </p>
+                <p className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">
+                  JPG, PNG or PDF (Max 5MB)
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Back Side */}
           <div
             className={cn(
-              "space-y-4",
-              !aadharFront.isUploaded &&
-                "opacity-50 grayscale pointer-events-none",
+              "space-y-1.5 border border-dashed border-slate-200 rounded-2xl p-6 bg-[#f8f9fa]/50 hover:bg-[#f8f9fa] transition-colors relative group text-center flex flex-col items-center justify-center min-h-[160px]",
+              !aadharFront.isUploaded && "opacity-50 grayscale",
             )}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Label className="text-base font-medium">Back Side</Label>
-                {!aadharFront.isUploaded && (
-                  <Badge
-                    variant="outline"
-                    className="text-[10px] uppercase font-bold py-0 h-4 border-amber-200 text-amber-600 bg-amber-50"
-                  >
-                    Front Required First
-                  </Badge>
+            {aadharFront.isUploaded &&
+              !aadharBack.isUploading &&
+              !aadharBack.isUploaded && (
+                <input
+                  ref={backInputRef}
+                  type="file"
+                  accept="image/*,.pdf"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  onChange={(e) =>
+                    handleFileChange(e, "aadhar_back", setAadharBack)
+                  }
+                />
+              )}
+
+            {aadharBack.isUploading ? (
+              <div className="flex flex-col items-center">
+                <Loader2 className="w-6 h-6 text-primary animate-spin mb-2" />
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                  Uploading...
+                </p>
+              </div>
+            ) : aadharBack.preview || aadharBack.existingUrl ? (
+              <div className="relative w-full h-[180px] rounded-lg overflow-hidden border border-slate-200">
+                <img
+                  src={aadharBack.preview || aadharBack.existingUrl!}
+                  alt="Aadhar Back"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                {!aadharBack.isUploaded && (
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20 pointer-events-none">
+                    <p className="text-white font-medium flex items-center text-sm">
+                      <Upload className="w-4 h-4 mr-2" /> Change
+                    </p>
+                  </div>
+                )}
+                {aadharBack.isUploaded && !aadharBack.isUploading && (
+                  <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1 z-30">
+                    <CheckCircle2 className="w-4 h-4" />
+                  </div>
                 )}
               </div>
-              {aadharBack.isUploaded && !aadharBack.isUploading && (
-                <Badge
-                  variant="outline"
-                  className="bg-green-500/10 text-green-600 hover:bg-green-500/20 border-green-200"
-                >
-                  <CheckCircle2 className="w-3 h-3 mr-1" /> Uploaded
-                </Badge>
-              )}
-            </div>
-
-            <div
-              className={cn(
-                "relative group h-64 rounded-xl border-2 border-dashed transition-all duration-300 overflow-hidden bg-muted/30",
-                aadharBack.preview || aadharBack.existingUrl
-                  ? "border-primary/50 bg-primary/5"
-                  : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50",
-                (aadharBack.isUploading || !aadharFront.isUploaded) &&
-                  "opacity-70 cursor-not-allowed",
-              )}
-            >
-              {aadharFront.isUploaded &&
-                !aadharBack.isUploading &&
-                !aadharBack.isUploaded && (
-                  <input
-                    ref={backInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                    onChange={(e) =>
-                      handleFileChange(e, "aadhar_back", setAadharBack)
-                    }
-                  />
-                )}
-
-              {aadharBack.isUploading ? (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/50 backdrop-blur-sm z-20">
-                  <Loader2 className="w-8 h-8 text-primary animate-spin mb-2" />
-                  <p className="text-sm font-medium">Uploading Back Side...</p>
+            ) : (
+              <div className="flex flex-col items-center pointer-events-none">
+                <div className="bg-white border border-slate-100 p-3 rounded-2xl shadow-sm mb-3 group-hover:scale-110 transition-transform duration-300">
+                  <Upload className="w-5 h-5 text-slate-400 group-hover:text-primary transition-colors" />
                 </div>
-              ) : aadharBack.preview || aadharBack.existingUrl ? (
-                <>
-                  <img
-                    src={aadharBack.preview || aadharBack.existingUrl!}
-                    alt="Aadhar Back"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  {!aadharBack.isUploaded && (
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20 pointer-events-none">
-                      <p className="text-white font-medium flex items-center">
-                        <Upload className="w-4 h-4 mr-2" /> Change Image
-                      </p>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
-                  <div className="bg-background/80 backdrop-blur-sm p-4 rounded-full mb-4 shadow-sm group-hover:scale-110 transition-transform duration-300">
-                    <ImageIcon className="w-8 h-8 text-muted-foreground group-hover:text-primary transition-colors" />
-                  </div>
-                  <p className="text-sm font-medium text-foreground mb-1">
-                    Click or drag to upload back side
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    SVG, PNG, JPG or GIF (max. 5MB)
-                  </p>
-                </div>
-              )}
-            </div>
+                <p className="text-[11px] font-bold text-slate-700 uppercase tracking-widest mb-1">
+                  Upload Back Side
+                </p>
+                <p className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">
+                  JPG, PNG or PDF (Max 5MB)
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Verification Note Alert */}
+        <div className="mt-6 flex items-start gap-3 p-4 bg-amber-50 rounded-2xl border border-amber-100/50 text-amber-800">
+          <div className="bg-white rounded-full p-1 shadow-sm mt-0.5 border border-amber-100">
+            <AlertCircle className="w-4 h-4 text-amber-500" strokeWidth={2.5} />
+          </div>
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-widest text-amber-700 mb-1">
+              Verification Note
+            </h4>
+            <p className="text-xs text-amber-700/80 font-medium">
+              Your documents will be verified by our team within 24-48 hours.
+              Please ensure the uploaded images are clear and all details are
+              visible.
+            </p>
           </div>
         </div>
       </section>
 
-      <div className="flex items-start gap-2 p-4 bg-amber-500/10 text-amber-600 rounded-lg text-sm">
-        <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-        <p>
-          Please ensure that your Aadhar card images are clear and strictly
-          readable. Blurry or cut-off images may lead to verification issues.
-          <strong>
-            {" "}
-            Note: Upload the Front side first to enable the Back side upload.
-          </strong>
-        </p>
+      {/* Footer actions */}
+      <div className="pt-8 mt-2 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-primary" />
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+            All changes are auto-saved
+          </span>
+        </div>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full sm:w-auto px-6 h-12 rounded-xl border-slate-200 text-slate-600 font-semibold shadow-none hover:bg-slate-50"
+            onClick={() =>
+              document
+                .querySelector<HTMLElement>(
+                  '[data-state="active"][value="address"]',
+                )
+                ?.click()
+            }
+          >
+            Previous Step
+          </Button>
+          <Button
+            type="button"
+            className="w-full sm:w-auto px-8 h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-none transition-all hover:-translate-y-0.5 flex items-center gap-2"
+            onClick={() => {
+              if (aadharFront.isUploaded && aadharBack.isUploaded) {
+                setShowSuccessModal(true);
+              } else {
+                toast.error("Please upload both sides of Aadhar card first");
+              }
+            }}
+          >
+            <CheckCircle2 className="w-4 h-4" /> Save & Complete Profile
+          </Button>
+        </div>
       </div>
 
       <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader className="flex flex-col items-center justify-center text-center space-y-4 pt-4">
-            <div className="bg-primary/10 p-4 rounded-full">
-              <PartyPopper className="w-12 h-12 text-primary animate-bounce transition-transform" />
+        <DialogContent className="sm:max-w-[440px] w-[calc(100%-2rem)] mx-auto rounded-[32px] p-8 pb-10 border-0 shadow-2xl overflow-hidden [&>button]:hidden bg-white">
+          {/* Top gradient accent */}
+          <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 opacity-90" />
+          
+          <div className="flex flex-col items-center justify-center text-center mt-4">
+            {/* Custom squircle icon */}
+            <div className="relative mb-10 mt-2">
+              <div className="absolute inset-0 bg-[#0bb882] rounded-[32px] rotate-6 blur-xl opacity-40 scale-110" />
+              <div className="relative bg-[#0bb882] text-white w-28 h-28 rounded-[36px] flex items-center justify-center rotate-[-3deg] shadow-lg">
+                <div className="bg-white rounded-full p-2.5 flex items-center justify-center rotate-[3deg] shadow-sm">
+                  <Check className="w-10 h-10 text-[#0bb882] stroke-[4]" />
+                </div>
+              </div>
             </div>
-            <DialogTitle className="text-2xl font-bold">
-              Profile Update
-            </DialogTitle>
-            <DialogDescription className="text-base">
-              Your Aadhar card back side has been uploaded successfully. Your
-              profile documents are now complete!
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:justify-center">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full sm:w-auto"
-              asChild
-            >
-              <Link href="/dashboard">Back to Dashboard</Link>
-            </Button>
-            <Button
-              type="button"
-              variant="default"
-              className="w-full sm:w-auto px-10"
-              onClick={() => setShowSuccessModal(false)}
-            >
-              Close
-            </Button>
-          </DialogFooter>
+
+            <h2 className="text-3xl font-extrabold text-[#1e293b] tracking-tight mb-4 font-display">
+              Profile Completed!
+            </h2>
+            
+            <p className="text-[15px] font-medium text-[#64748b] leading-relaxed mb-10 px-2">
+              Great job! Your profile is now 100% complete. <br className="hidden sm:block"/>
+              You've unlocked all the features of the <br className="hidden sm:block"/>
+              <span className="font-bold text-[#5b21b6]">Aerophantom Academy</span> panel.
+            </p>
+
+            <div className="flex flex-col w-full gap-3 mb-10">
+              <Button
+                asChild
+                className="w-full h-[56px] rounded-2xl bg-[#0f172a] hover:bg-[#1e293b] text-white font-bold text-[15px] shadow-[0_8px_30px_rgb(15,23,42,0.15)] transition-all hover:-translate-y-0.5"
+              >
+                <Link href="/dashboard">Go to Dashboard</Link>
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full h-[56px] rounded-2xl bg-[#f8fafc] hover:bg-[#f1f5f9] text-[#475569] hover:text-[#334155] font-bold text-[15px] transition-colors"
+                onClick={() => window.location.reload()}
+              >
+                View My Profile
+              </Button>
+            </div>
+
+            {/* Footer avatars */}
+            <div className="flex flex-row items-center justify-center gap-3">
+              <div className="flex -space-x-3">
+                <img className="w-8 h-8 rounded-full border-2 border-white bg-slate-200 object-cover" src="https://i.pravatar.cc/100?img=68" alt="Student" />
+                <img className="w-8 h-8 rounded-full border-2 border-white bg-slate-200 object-cover" src="https://i.pravatar.cc/100?img=32" alt="Student" />
+                <img className="w-8 h-8 rounded-full border-2 border-white bg-slate-200 object-cover" src="https://i.pravatar.cc/100?img=47" alt="Student" />
+              </div>
+              <span className="text-[11px] font-bold text-[#94a3b8] uppercase tracking-[0.10em]">
+                Joined 2k+ Students
+              </span>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

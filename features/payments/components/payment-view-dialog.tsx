@@ -7,7 +7,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Payment } from "../model";
-import { CheckCircle2, Receipt } from "lucide-react";
+import { CheckCircle2, Receipt, Copy, Check } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 interface PaymentViewDialogProps {
   open: boolean;
@@ -101,9 +104,14 @@ export function PaymentViewDialog({
           {/* UTR Section */}
           <div className="rounded-xl bg-gray-50 p-4">
             <p className="text-sm font-medium text-gray-500">Transaction ID</p>
-            <p className="mt-1 font-mono text-base font-medium text-gray-900">
-              {payment.transaction_id}
-            </p>
+            <div className="mt-1 flex items-center justify-between">
+              <p className="font-mono text-base font-medium text-gray-900">
+                {payment.transaction_id || "-"}
+              </p>
+              {payment.transaction_id && (
+                <TransactionCopyButton text={payment.transaction_id} />
+              )}
+            </div>
           </div>
 
           {/* Verification Status */}
@@ -116,3 +124,29 @@ export function PaymentViewDialog({
     </Dialog>
   );
 }
+
+const TransactionCopyButton = ({ text }: { text: string }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text);
+    toast.success("Transaction ID copied to clipboard");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="h-8 w-8 text-gray-400 hover:text-gray-900"
+      onClick={handleCopy}
+    >
+      {copied ? (
+        <Check className="h-4 w-4 text-emerald-500" />
+      ) : (
+        <Copy className="h-4 w-4" />
+      )}
+    </Button>
+  );
+};

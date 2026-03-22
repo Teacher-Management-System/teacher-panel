@@ -16,6 +16,10 @@ const nextConfig: NextConfig = {
         source: "/api/:path*",
         destination: `${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/:path*`,
       },
+      {
+        source: "/broadcasting/:path*",
+        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL}/broadcasting/:path*`,
+      },
     ];
   },
 
@@ -28,7 +32,7 @@ const nextConfig: NextConfig = {
           {
             key: "Permissions-Policy",
             value:
-              "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=*, usb=()",
+              "accelerometer=(), camera=(), gyroscope=(), magnetometer=(), microphone=(), payment=*, usb=()",
           },
         ],
       },

@@ -22,9 +22,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Loader2, MapPin, CalendarDays, BookOpen } from "lucide-react";
+import { Plus, Loader2, MapPin, CalendarDays, BookOpen, School, Calendar } from "lucide-react";
 import { format, parse } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
+import { Calendar as CalendarPicker } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
@@ -72,6 +72,7 @@ export function AddBatchDialog({
   };
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const form = useForm<BatchFormValues>({
     resolver: zodResolver(batchSchema),
@@ -122,38 +123,46 @@ export function AddBatchDialog({
         {trigger ? (
           trigger
         ) : (
-          <Button size="sm" className="h-9">
+          <Button size="sm" className="h-9 bg-[#5f5ceb] hover:bg-[#4d4ac6] text-white rounded-xl shadow-sm">
             <Plus className="mr-2 h-4 w-4" />
             Add Batch
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>{batch ? "Edit Batch" : "Add New Batch"}</DialogTitle>
-          <DialogDescription>
-            {batch
-              ? "Update the details of the batch below."
-              : "Create a new batch by filling in the details below."}
-          </DialogDescription>
+      <DialogContent className="sm:max-w-[480px] p-8 border-0 shadow-2xl rounded-[32px] overflow-hidden bg-white">
+        <DialogHeader className="p-0 space-y-0 text-left flex flex-row items-center gap-4 mb-2 border-b border-slate-100 pb-6">
+          <div className="h-[60px] w-[60px] bg-[#eef0ff] rounded-[20px] flex items-center justify-center shrink-0">
+            <BookOpen className="h-7 w-7 text-[#6b5cd8]" />
+          </div>
+          <div className="flex flex-col">
+            <DialogTitle className="text-xl font-extrabold text-[#1f2937] tracking-tight">
+              {batch ? "Edit Batch" : "Add New Batch"}
+            </DialogTitle>
+            <DialogDescription className="text-[#64748b] text-[13px] font-medium mt-1">
+              {batch
+                ? "Update the details of the batch below."
+                : "Create a new course schedule."}
+            </DialogDescription>
+          </div>
         </DialogHeader>
+
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4 pt-4"
+            className="space-y-5 pt-2"
           >
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Batch Name</FormLabel>
+                  <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Batch Name</FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <BookOpen className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <BookOpen className="absolute left-3.5 top-[14px] h-[18px] w-[18px] text-slate-400" />
                       <Input
-                        placeholder="Enter batch name"
-                        className="pl-9"
+                        placeholder="e.g. Morning AI Batch"
+                        className="pl-11 h-12 bg-[#f8f9fa] border-[#f1f5f9] border-2 rounded-2xl shadow-none ring-0 focus-visible:ring-1 focus-visible:ring-[#6b5cd8] focus-visible:border-[#6b5cd8] transition-all font-semibold text-slate-700"
                         {...field}
                       />
                     </div>
@@ -167,13 +176,13 @@ export function AddBatchDialog({
               name="location"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Location</FormLabel>
+                  <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Location</FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <School className="absolute left-3.5 top-[14px] h-[18px] w-[18px] text-slate-400" />
                       <Input
-                        placeholder="Enter location"
-                        className="pl-9"
+                        placeholder="e.g. Room 101 or Online"
+                        className="pl-11 h-12 bg-[#f8f9fa] border-[#f1f5f9] border-2 rounded-2xl shadow-none ring-0 focus-visible:ring-1 focus-visible:ring-[#6b5cd8] focus-visible:border-[#6b5cd8] transition-all font-semibold text-slate-700"
                         {...field}
                       />
                     </div>
@@ -187,40 +196,44 @@ export function AddBatchDialog({
               name="start_date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Start Date</FormLabel>
-                  <Popover>
+                  <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Start Date</FormLabel>
+                  <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground",
-                          )}
-                        >
-                          {field.value ? (
-                            format(
-                              parse(field.value, "yyyy-MM-dd", new Date()),
-                              "PPP",
-                            )
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                          <CalendarDays className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
+                        <div className="relative">
+                          <Calendar className="absolute left-3.5 top-[14px] h-[18px] w-[18px] text-slate-400 z-10 pointer-events-none" />
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full h-12 pl-11 pr-4 text-left font-semibold bg-[#f8f9fa] border-[#f1f5f9] border-2 rounded-2xl shadow-none hover:bg-slate-50 focus:ring-1 focus:ring-[#6b5cd8] flex items-center justify-between transition-all",
+                              !field.value && "text-slate-400 font-normal",
+                            )}
+                          >
+                            {field.value ? (
+                              <span className="text-slate-700 font-semibold">{format(
+                                parse(field.value, "yyyy-MM-dd", new Date()),
+                                "dd - MM - yyyy"
+                              )}</span>
+                            ) : (
+                              <span>dd - mm - yyyy</span>
+                            )}
+                            <CalendarDays className="h-[18px] w-[18px] text-slate-700 opacity-100" />
+                          </Button>
+                        </div>
                       </FormControl>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
+                      <CalendarPicker
                         mode="single"
                         selected={
                           field.value
                             ? parse(field.value, "yyyy-MM-dd", new Date())
                             : undefined
                         }
-                        onSelect={(date) =>
-                          field.onChange(date ? format(date, "yyyy-MM-dd") : "")
-                        }
+                        onSelect={(date) => {
+                          field.onChange(date ? format(date, "yyyy-MM-dd") : "");
+                          setIsCalendarOpen(false);
+                        }}
                         disabled={(date) =>
                           date < new Date(new Date().setHours(0, 0, 0, 0))
                         }
@@ -232,15 +245,20 @@ export function AddBatchDialog({
                 </FormItem>
               )}
             />
-            <div className="flex justify-end gap-3 pt-4">
+            <div className="flex justify-end gap-3 pt-6 mt-4 border-t border-slate-100">
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 onClick={() => setOpen(false)}
+                className="hover:bg-transparent hover:text-slate-800 text-slate-500 font-bold"
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button 
+                type="submit" 
+                disabled={isLoading}
+                className="bg-[#5f5ceb] hover:bg-[#4d4ac6] text-white shadow-[0_4px_14px_0_rgba(95,92,235,0.39)] rounded-2xl px-8 h-12 font-bold transition-all"
+              >
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

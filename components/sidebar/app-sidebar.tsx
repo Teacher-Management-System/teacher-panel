@@ -15,16 +15,10 @@ import {
 import { cookieService } from "@/lib/cookie";
 import { navData } from "@/lib/nav-items";
 import NextImage from "next/image";
+import { useAuth } from "@/hooks/useAuth";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const [user, setUser] = React.useState<any>(null);
-
-  React.useEffect(() => {
-    const user = cookieService.getCookie("user");
-    if (user) {
-      setUser(JSON.parse(user));
-    }
-  }, []);
+  const { user } = useAuth();
 
   return (
     <Sidebar collapsible="icon" {...props} className="bg-white">
@@ -45,6 +39,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <span className="font-display font-bold text-lg text-gray-900 tracking-tight">
                 Aerophantom
               </span>
+              {user?.teacher_id && (
+                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                  ID: {user.teacher_id}
+                </span>
+              )}
             </div>
           </div>
         </SidebarHeader>
