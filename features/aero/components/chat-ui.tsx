@@ -143,15 +143,22 @@ export default function AeroChatUI() {
         setConversationId(response.user_message.conversation_id);
       }
 
-      // If the response already contains the assistant message, we don't need to poll
-      if (response?.assistant_message) {
+      // Re-fetch messages to get the server-side state (and possible immediate response)
+      const updatedMessages = await fetchMessages();
+      
+      // Determine if we need to poll for an AI response
+      // If the latest message is from the assistant, we stop polling
+      const lastMsg = updatedMessages[updatedMessages.length - 1];
+      if (lastMsg?.role === "assistant") {
         setIsPolling(false);
-        await fetchMessages();
       } else {
+        // If the AI hasn't responded yet, start polling
         setIsPolling(true);
       }
     } catch (error: any) {
       console.error("Aero AI Error:", error);
+      toast.error("Failed to send message to Aero AI");
+      setIsPolling(false);
     } finally {
       setIsLoading(false);
     }

@@ -1,6 +1,10 @@
 import { LoginForm } from "@/features/auth/components/login-form";
-import Image from "next/image";
+import { Suspense } from "react";
 
 export default function LoginPage() {
-  return <LoginForm />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginForm />
+    </Suspense>
+  );
 }

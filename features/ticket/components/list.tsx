@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Search,
@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { ticketService } from "../api.service";
 import { Ticket as ApiTicket } from "../model";
 import { getEcho } from "@/lib/echo";
+import { stripHtml } from "@/lib/utils";
 
 interface Message {
   id: string;
@@ -45,7 +46,7 @@ interface Ticket {
   messages: Message[];
 }
 
-export function TicketList() {
+function TicketListContent() {
   const { user } = useAuth();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
@@ -610,7 +611,7 @@ export function TicketList() {
                       {ticket.ticketId}
                     </p>
                     <p className="text-[13px] text-slate-500 line-clamp-2 mb-4 pl-2 leading-relaxed font-medium">
-                      {ticket.lastMessage}
+                      {stripHtml(ticket.lastMessage)}
                     </p>
 
                     <div className="flex justify-between items-center pt-4 border-t border-slate-50 pl-2">
@@ -748,9 +749,8 @@ export function TicketList() {
                             ? "bg-white text-slate-700 border border-slate-100 rounded-tl-none shadow-slate-200/20"
                             : "bg-primary text-white rounded-tr-none shadow-primary/20"
                         }`}
-                      >
-                        {message.text}
-                      </div>
+                        dangerouslySetInnerHTML={{ __html: message.text }}
+                      />
                     </div>
                   </div>
                 ))}
@@ -825,5 +825,13 @@ export function TicketList() {
         )}
       </div>
     </div>
+  );
+}
+
+export function TicketList() {
+  return (
+    <Suspense fallback={<div>Loading tickets...</div>}>
+      <TicketListContent />
+    </Suspense>
   );
 }

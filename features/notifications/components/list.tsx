@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { NotificationItem } from "../model";
 import notificationService from "../api.service";
+import { cn, stripHtml, parseDate } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
 
@@ -270,11 +271,11 @@ export default function NotificationList() {
                         )}
                       </div>
                       <p className="text-sm text-gray-500">
-                        {notification.description}
+                        {stripHtml(notification.description)}
                       </p>
                       <p className="text-xs text-gray-400">
                         {formatDistanceToNow(
-                          new Date(notification.created_at),
+                          parseDate(notification.created_at),
                           { addSuffix: true },
                         )}
                       </p>

@@ -1,4 +1,5 @@
 "use client";
+import React, { Suspense } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -30,7 +31,7 @@ import { z } from "zod";
 
 type ResetPasswordFormValues = z.infer<typeof ResetPasswordSchema>;
 
-export function ResetPasswordForm({
+function ResetPasswordFormContent({
   className,
   ...props
 }: React.ComponentProps<"div">) {
@@ -142,5 +143,13 @@ export function ResetPasswordForm({
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export function ResetPasswordForm(props: React.ComponentProps<"div">) {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ResetPasswordFormContent {...props} />
+    </Suspense>
   );
 }

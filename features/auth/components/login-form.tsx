@@ -1,4 +1,5 @@
 "use client";
+import React, { Suspense } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cn } from "@/lib/utils";
@@ -38,7 +39,7 @@ import {
 
 type LoginFormValues = z.infer<typeof LoginSchema>;
 
-export function LoginForm({
+function LoginFormContent({
   className,
   ...props
 }: React.ComponentProps<"div">) {
@@ -312,5 +313,13 @@ export function LoginForm({
         </div>
       </div>
     </div>
+  );
+}
+
+export function LoginForm(props: React.ComponentProps<"div">) {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginFormContent {...props} />
+    </Suspense>
   );
 }
