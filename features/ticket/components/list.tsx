@@ -48,14 +48,21 @@ interface Ticket {
 
 function TicketListContent() {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
+  const ticketIdParam = searchParams.get("ticketId");
+
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [listLoading, setListLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
-  const searchParams = useSearchParams();
-  const ticketIdParam = searchParams.get("ticketId");
-
-  const [activeTab, setActiveTab] = useState<Ticket["status"]>("open");
+  const [activeTab, setActiveTab] = useState<Ticket["status"]>(() => {
+    const statusParam = searchParams.get("status") as Ticket["status"];
+    if (statusParam) return statusParam;
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("activeTab") as Ticket["status"]) || "open";
+    }
+    return "open";
+  });
   const [activeTicket, setActiveTicket] = useState<Ticket | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [stats, setStats] = useState({ pending: 0, open: 0, closed: 0 });
@@ -65,19 +72,14 @@ function TicketListContent() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollHeightRef = useRef<number>(0);
   const isInitialLoad = useRef<boolean>(true);
+  const shouldScrollToBottomRef = useRef<boolean>(true);
 
   // Auto-select ticket from URL parameter
   useEffect(() => {
     const autoSelectTicket = async () => {
       if (ticketIdParam && !activeTicket) {
-        // First look in current list
         let ticket = tickets.find((t) => t.id === ticketIdParam);
-
         if (ticket) {
-          // If ticket was fetched and not in current list, add it to the list
-          if (!tickets.find((t) => t.id === ticket.id)) {
-            setTickets((prev) => [ticket, ...prev]);
-          }
           setActiveTicket(ticket);
         }
       }
@@ -144,8 +146,10 @@ function TicketListContent() {
             !activeTicket ||
             !mappedTickets.some((t) => t.id === activeTicket.id)
           ) {
-            if (mappedTickets.length > 0) {
-              setActiveTicket(mappedTickets[0]);
+            if (ticketIdParam) {
+              const targetTicket = mappedTickets.find(t => t.id === ticketIdParam);
+              if (targetTicket) setActiveTicket(targetTicket);
+              else setActiveTicket(null);
             } else {
               setActiveTicket(null);
             }
@@ -167,16 +171,23 @@ function TicketListContent() {
 
   const [messagesLoading, setMessagesLoading] = useState(false);
 
-  // Auto-scroll to bottom when messages change
+  // Auto-scroll to bottom when messages change or loading finishes
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (!messagesLoading && scrollRef.current && shouldScrollToBottomRef.current) {
+      // Use a small timeout to ensure layout is done
+      const timeout = setTimeout(() => {
+        if (scrollRef.current) {
+          scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+      }, 100);
+      return () => clearTimeout(timeout);
     }
-  }, [activeTicket?.messages.length, activeTicket?.id]);
+  }, [activeTicket?.messages.length, activeTicket?.id, messagesLoading]);
 
   // Fetch messages when a ticket is selected
   useEffect(() => {
     isInitialLoad.current = true;
+    shouldScrollToBottomRef.current = true;
   }, [activeTicket?.id]);
 
   useEffect(() => {
@@ -197,7 +208,7 @@ function TicketListContent() {
           let targetPage = total;
           let response = firstPageResponse;
 
-          if (total > 1 && isInitialLoad.current) {
+          if (total > 1) {
             response = await ticketService.getMessages(activeTicket.id, total);
           }
 
@@ -232,27 +243,48 @@ function TicketListContent() {
       }
     };
 
-    if (isInitialLoad.current) {
-      fetchMessages();
-    }
+    fetchMessages();
   }, [activeTicket?.id]);
+  
+  // Chain load: If content is too short to scroll, load more automatically
+  useEffect(() => {
+    const checkAndLoadMore = async () => {
+      if (
+        !messagesLoading &&
+        !isFetchingMore &&
+        scrollRef.current &&
+        activeTicket &&
+        currentPage > 1
+      ) {
+        const { scrollHeight, clientHeight } = scrollRef.current;
+        // If content doesn't fill the container (or is very close), load more
+        if (scrollHeight <= clientHeight + 50) { 
+           // Reuse the logic from handleScroll but as a direct call
+           await handleScroll();
+        }
+      }
+    };
+    
+    const timeout = setTimeout(checkAndLoadMore, 500);
+    return () => clearTimeout(timeout);
+  }, [activeTicket?.messages.length, messagesLoading, isFetchingMore, currentPage]);
 
   // Handle Scroll for Infinite Scroll (Load Older)
   const handleScroll = async () => {
     if (
       !scrollRef.current ||
       !activeTicket ||
-      isFetchingMore ||
       currentPage <= 1
     )
       return;
 
     const { scrollTop, scrollHeight } = scrollRef.current;
 
-    // When scrolling to the top, load previous page
-    if (scrollTop === 0) {
+    // When scrolling near the top, load previous page
+    if (scrollTop <= 5) {
       try {
         setIsFetchingMore(true);
+        shouldScrollToBottomRef.current = false; // Disable auto-scroll for pagination
         scrollHeightRef.current = scrollHeight; // Store height before loading more
 
         const prevPage = currentPage - 1;
@@ -330,6 +362,7 @@ function TicketListContent() {
     [eventName, altEventName, "MessageSent"].forEach((evt) => {
       channel.listen(evt, (data: any) => {
         console.log(`🔥 REALTIME Received [${evt}]:`, data);
+        shouldScrollToBottomRef.current = true;
 
         // Use the first valid message found in any of the events
         const messageData = data.message || data;
@@ -441,6 +474,7 @@ function TicketListContent() {
     try {
       setIsSending(true);
       await ticketService.sendMessage(activeTicket.id, messageInput.trim());
+      shouldScrollToBottomRef.current = true;
 
       const newMessage: Message = {
         id: Math.random().toString(36).substr(2, 9),
@@ -475,7 +509,7 @@ function TicketListContent() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] md:h-[calc(100vh-3rem)] bg-[#f8fafc]/60 md:p-6 space-y-6">
+    <div className="flex flex-col h-[calc(100vh-2rem)] md:h-[calc(100vh-3rem)] bg-[#f8fafc]/60 md:p-6 space-y-6 overflow-hidden">
       {/* Header Section */}
       <Card className="rounded-[20px] border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white overflow-hidden">
         <CardContent className="p-1 md:px-6 md:py-1 flex flex-col md:flex-row justify-between items-center gap-6">
@@ -546,7 +580,12 @@ function TicketListContent() {
                       ? "bg-white text-primary shadow-md shadow-primary/10 border border-slate-100"
                       : "text-slate-400 hover:text-slate-600 hover:bg-white/50"
                   }`}
-                  onClick={() => setActiveTab(tab)}
+                  onClick={() => {
+                    setActiveTab(tab);
+                    if (typeof window !== "undefined") {
+                      localStorage.setItem("activeTab", tab);
+                    }
+                  }}
                 >
                   {tab}
                   {stats[tab] > 0 && (
@@ -575,7 +614,12 @@ function TicketListContent() {
                 {filteredTickets.map((ticket) => (
                   <div
                     key={ticket.id}
-                    onClick={() => setActiveTicket(ticket)}
+                  onClick={() => {
+                    if (activeTicket?.id !== ticket.id) {
+                      setMessagesLoading(true);
+                      setActiveTicket(ticket);
+                    }
+                  }}
                     className={`p-5 rounded-[28px] cursor-pointer transition-all duration-300 border shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] relative group ${
                       activeTicket?.id === ticket.id
                         ? "bg-white border-primary/20 shadow-primary/5 scale-[1.02] z-10"
@@ -679,15 +723,6 @@ function TicketListContent() {
                 </div>
               </div>
               <div className="flex items-center gap-4">
-                {activeTicket.status === "closed" && (
-                  <Button
-                    onClick={() => updateTicketStatus(activeTicket.id, "open")}
-                    variant="outline"
-                    className="rounded-xl border-primary/20 text-primary hover:bg-primary/5 font-black text-[11px] uppercase tracking-wider px-5 h-10 shadow-sm transition-all active:scale-95"
-                  >
-                    Reopen Ticket
-                  </Button>
-                )}
               </div>
             </div>
 
@@ -695,7 +730,7 @@ function TicketListContent() {
             <div
               ref={scrollRef}
               onScroll={handleScroll}
-              className="flex-1 p-6 md:p-10 bg-[#fcfdfe] overflow-y-auto custom-scrollbar"
+              className="flex-1 p-6 md:p-10 bg-[#fcfdfe] overflow-y-auto custom-scrollbar min-h-0"
             >
               <div className="space-y-10 max-w-4xl mx-auto">
                 {isFetchingMore && (
