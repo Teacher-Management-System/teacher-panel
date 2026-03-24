@@ -22,16 +22,17 @@ export const getEcho = () => {
 
     window.Echo = new Echo({
       broadcaster: "reverb",
-      key: process.env.NEXT_PUBLIC_PUSHER_APP_KEY || "local-key",
+      key: process.env.NEXT_PUBLIC_PUSHER_APP_KEY,
 
-      wsHost: process.env.NEXT_PUBLIC_PUSHER_HOST || "147.79.68.217",
-      wsPort: Number(process.env.NEXT_PUBLIC_PUSHER_PORT || 8080),
+      wsHost: "admin.aerophantom.com", // ✅ domain
+      wssPort: 443, // ✅ https port
 
-      forceTLS: false, // ✅ MUST
+      forceTLS: true, // 🔥 MUST
+      enabledTransports: ["wss"], // 🔥 ONLY wss
+
       disableStats: true,
-      enabledTransports: ["ws"], // ✅ ONLY ws
 
-      authEndpoint: `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/broadcasting/auth`,
+      authEndpoint: `${process.env.NEXT_PUBLIC_API_BASE_URL}/broadcasting/auth`,
       auth: {
         headers: {
           Authorization: authToken ? `Bearer ${authToken}` : "",
