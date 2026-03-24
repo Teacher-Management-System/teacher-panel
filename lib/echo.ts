@@ -24,7 +24,7 @@ export const getEcho = () => {
       broadcaster: "reverb",
       key: process.env.NEXT_PUBLIC_PUSHER_APP_KEY,
 
-      wsHost: "admin.aerophantom.com", // ✅ domain
+      wsHost: "teacher.aerophantom.com", // ✅ domain
       wssPort: 443, // ✅ https port
 
       forceTLS: true, // 🔥 MUST
