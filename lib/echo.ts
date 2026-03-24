@@ -21,16 +21,17 @@ export const getEcho = () => {
     window.Pusher = Pusher;
 
     window.Echo = new Echo({
-      broadcaster: "reverb", // 🔥 FIXED
+      broadcaster: "reverb",
       key: process.env.NEXT_PUBLIC_PUSHER_APP_KEY || "local-key",
-      wsHost: process.env.NEXT_PUBLIC_PUSHER_HOST || "127.0.0.1",
-      wsPort: Number(process.env.NEXT_PUBLIC_PUSHER_PORT || 8080),
-      wssPort: Number(process.env.NEXT_PUBLIC_PUSHER_PORT || 8080),
-      forceTLS: false,
-      disableStats: true,
-      enabledTransports: ["ws", "wss"],
 
-      authEndpoint: `/broadcasting/auth`,
+      wsHost: process.env.NEXT_PUBLIC_PUSHER_HOST || "147.79.68.217",
+      wsPort: Number(process.env.NEXT_PUBLIC_PUSHER_PORT || 8080),
+
+      forceTLS: false, // ✅ MUST
+      disableStats: true,
+      enabledTransports: ["ws"], // ✅ ONLY ws
+
+      authEndpoint: `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/broadcasting/auth`,
       auth: {
         headers: {
           Authorization: authToken ? `Bearer ${authToken}` : "",
