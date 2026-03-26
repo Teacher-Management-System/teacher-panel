@@ -16,7 +16,6 @@ export const getEcho = () => {
 
   if (!window.Echo) {
     const authToken = cookieService.getCookie("authToken");
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
 
     window.Pusher = Pusher;
 
@@ -24,15 +23,20 @@ export const getEcho = () => {
       broadcaster: "reverb",
       key: process.env.NEXT_PUBLIC_PUSHER_APP_KEY,
 
-      wsHost: "teacher.aerophantom.com", // ✅ domain
-      wssPort: 443, // ✅ https port
+      // ✅ FIXED
+      wsHost: "websocket.aerophantom.com",
+      wssHost: "websocket.aerophantom.com",
 
-      forceTLS: true, // 🔥 MUST
-      enabledTransports: ["wss"], // 🔥 ONLY wss
+      wsPort: 80,
+      wssPort: 443,
+
+      forceTLS: true,
+      enabledTransports: ["ws", "wss"],
 
       disableStats: true,
 
       authEndpoint: `${process.env.NEXT_PUBLIC_API_BASE_URL}/broadcasting/auth`,
+
       auth: {
         headers: {
           Authorization: authToken ? `Bearer ${authToken}` : "",
