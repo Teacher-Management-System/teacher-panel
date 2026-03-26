@@ -31,6 +31,7 @@ interface Message {
   id: string;
   text: string;
   sender: string;
+  senderId: string;
   time: string;
   isAdmin: boolean;
 }
@@ -41,6 +42,7 @@ interface Ticket {
   lastMessage: string;
   status: "pending" | "open" | "closed";
   user: string;
+  userId: string;
   date: string;
   ticketId: string;
   messages: Message[];
@@ -120,6 +122,7 @@ function TicketListContent() {
               lastMessage: t.description,
               status: t.status,
               user: t.user?.name || "Unknown",
+              userId: t.user?.id || "",
               date: new Date(t.createdAt * 1000).toLocaleDateString("en-US", {
                 month: "short",
                 day: "numeric",
@@ -131,6 +134,7 @@ function TicketListContent() {
                   id: `m-${t.id}`,
                   text: t.description,
                   sender: t.user?.name || "User",
+                  senderId: t.user?.id || "",
                   time: new Date(t.createdAt * 1000).toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",
@@ -147,7 +151,9 @@ function TicketListContent() {
             !mappedTickets.some((t) => t.id === activeTicket.id)
           ) {
             if (ticketIdParam) {
-              const targetTicket = mappedTickets.find(t => t.id === ticketIdParam);
+              const targetTicket = mappedTickets.find(
+                (t) => t.id === ticketIdParam,
+              );
               if (targetTicket) setActiveTicket(targetTicket);
               else setActiveTicket(null);
             } else {
@@ -173,7 +179,11 @@ function TicketListContent() {
 
   // Auto-scroll to bottom when messages change or loading finishes
   useEffect(() => {
-    if (!messagesLoading && scrollRef.current && shouldScrollToBottomRef.current) {
+    if (
+      !messagesLoading &&
+      scrollRef.current &&
+      shouldScrollToBottomRef.current
+    ) {
       // Use a small timeout to ensure layout is done
       const timeout = setTimeout(() => {
         if (scrollRef.current) {
@@ -218,6 +228,7 @@ function TicketListContent() {
                 id: m.id,
                 text: m.body,
                 sender: m.sender?.name || "Unknown",
+                senderId: m.sender?.id || m.sender_id || "",
                 time: new Date(m.createdAt * 1000).toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
@@ -225,7 +236,7 @@ function TicketListContent() {
                 isAdmin:
                   m.isAdmin !== undefined
                     ? m.isAdmin
-                    : m.sender?.name !== activeTicket.user,
+                    : (m.sender?.name?.trim().toLowerCase() !== activeTicket.user?.trim().toLowerCase()),
               }),
             );
 
@@ -245,7 +256,7 @@ function TicketListContent() {
 
     fetchMessages();
   }, [activeTicket?.id]);
-  
+
   // Chain load: If content is too short to scroll, load more automatically
   useEffect(() => {
     const checkAndLoadMore = async () => {
@@ -258,25 +269,25 @@ function TicketListContent() {
       ) {
         const { scrollHeight, clientHeight } = scrollRef.current;
         // If content doesn't fill the container (or is very close), load more
-        if (scrollHeight <= clientHeight + 50) { 
-           // Reuse the logic from handleScroll but as a direct call
-           await handleScroll();
+        if (scrollHeight <= clientHeight + 50) {
+          // Reuse the logic from handleScroll but as a direct call
+          await handleScroll();
         }
       }
     };
-    
+
     const timeout = setTimeout(checkAndLoadMore, 500);
     return () => clearTimeout(timeout);
-  }, [activeTicket?.messages.length, messagesLoading, isFetchingMore, currentPage]);
+  }, [
+    activeTicket?.messages.length,
+    messagesLoading,
+    isFetchingMore,
+    currentPage,
+  ]);
 
   // Handle Scroll for Infinite Scroll (Load Older)
   const handleScroll = async () => {
-    if (
-      !scrollRef.current ||
-      !activeTicket ||
-      currentPage <= 1
-    )
-      return;
+    if (!scrollRef.current || !activeTicket || currentPage <= 1) return;
 
     const { scrollTop, scrollHeight } = scrollRef.current;
 
@@ -298,6 +309,7 @@ function TicketListContent() {
             id: m.id,
             text: m.body,
             sender: m.sender?.name || "Unknown",
+            senderId: m.sender?.id || m.sender_id || "",
             time: new Date(m.createdAt * 1000).toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",
@@ -305,7 +317,7 @@ function TicketListContent() {
             isAdmin:
               m.isAdmin !== undefined
                 ? m.isAdmin
-                : m.sender?.name !== activeTicket.user,
+                : (m.sender?.name?.trim().toLowerCase() !== activeTicket.user?.trim().toLowerCase()),
           }));
 
           setCurrentPage(prevPage);
@@ -370,23 +382,49 @@ function TicketListContent() {
           const m = messageData;
           setActiveTicket((prev) => {
             if (!prev) return null;
-            const exists = prev.messages.some((msg) => msg.id === m.id);
-            if (exists) return prev;
+
+            const sender = m.message_sender || m.sender;
+            const senderName = sender?.name || (m.isAdmin ? "Support" : prev.user);
+            const senderId = sender?.id || m.sender_id || "";
+
+            const isDuplicate = prev.messages.some(
+              (msg) =>
+                msg.id === m.id ||
+                (msg.time === "Just now" && msg.text === (m.body || m.text)),
+            );
+
+            if (isDuplicate) {
+              // If it's a duplicate, update the ID and role if needed
+              if (m.id) {
+                return {
+                  ...prev,
+                  messages: prev.messages.map((msg) =>
+                    msg.time === "Just now" && msg.text === (m.body || m.text)
+                      ? {
+                          ...msg,
+                          id: m.id,
+                          senderId: senderId,
+                          isAdmin: senderName?.trim().toLowerCase() !== prev.user?.trim().toLowerCase(),
+                        }
+                      : msg,
+                  ),
+                };
+              }
+              return prev;
+            }
 
             const newMessage: Message = {
               id: m.id || Math.random().toString(36).substr(2, 9),
               text: m.body || m.text,
-              sender: m.sender?.name || (m.isAdmin ? "Support" : prev.user),
+              sender: senderName,
+              senderId: senderId,
               time: m.createdAt
                 ? new Date(m.createdAt * 1000).toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",
                   })
                 : "Just now",
-              isAdmin:
-                m.isAdmin !== undefined
-                  ? m.isAdmin
-                  : m.sender?.name !== prev.user,
+              isAdmin: senderName?.trim().toLowerCase() !== prev.user?.trim().toLowerCase(), 
             };
 
             return {
@@ -430,6 +468,7 @@ function TicketListContent() {
             lastMessage: t.description,
             status: t.status,
             user: t.user?.name || "Unknown",
+            userId: t.user?.id || "",
             date: new Date(t.createdAt * 1000).toLocaleDateString("en-US", {
               month: "short",
               day: "numeric",
@@ -473,15 +512,19 @@ function TicketListContent() {
 
     try {
       setIsSending(true);
-      await ticketService.sendMessage(activeTicket.id, messageInput.trim());
+      const response: any = await ticketService.sendMessage(
+        activeTicket.id,
+        messageInput.trim(),
+      );
       shouldScrollToBottomRef.current = true;
 
       const newMessage: Message = {
-        id: Math.random().toString(36).substr(2, 9),
+        id: response?.message?.id || Math.random().toString(36).substr(2, 9),
         text: messageInput.trim(),
         sender: user?.name || "User",
+        senderId: user?.id?.toString() || "",
         time: "Just now",
-        isAdmin: false,
+        isAdmin: (user?.name?.trim().toLowerCase() !== activeTicket.user?.trim().toLowerCase()), // Match by name as fallback
       };
 
       const updatedTickets = tickets.map((t) =>
@@ -614,12 +657,12 @@ function TicketListContent() {
                 {filteredTickets.map((ticket) => (
                   <div
                     key={ticket.id}
-                  onClick={() => {
-                    if (activeTicket?.id !== ticket.id) {
-                      setMessagesLoading(true);
-                      setActiveTicket(ticket);
-                    }
-                  }}
+                    onClick={() => {
+                      if (activeTicket?.id !== ticket.id) {
+                        setMessagesLoading(true);
+                        setActiveTicket(ticket);
+                      }
+                    }}
                     className={`p-5 rounded-[28px] cursor-pointer transition-all duration-300 border shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] relative group ${
                       activeTicket?.id === ticket.id
                         ? "bg-white border-primary/20 shadow-primary/5 scale-[1.02] z-10"
@@ -722,8 +765,7 @@ function TicketListContent() {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-              </div>
+              <div className="flex items-center gap-4"></div>
             </div>
 
             {/* Messages Area */}
@@ -739,56 +781,59 @@ function TicketListContent() {
                   </div>
                 )}
                 {/* Messages */}
-                {activeTicket.messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex gap-5 ${message.isAdmin ? "flex-row" : "flex-row-reverse"}`}
-                  >
-                    <div className="flex-shrink-0 relative">
-                      <div
-                        className={`w-11 h-11 rounded-full border-4 border-white shadow-md flex items-center justify-center overflow-hidden ${
-                          message.isAdmin ? "bg-slate-900" : "bg-primary"
-                        }`}
-                      >
-                        <span className="text-xs font-black text-white uppercase">
-                          {message.sender.charAt(0)}
-                        </span>
-                      </div>
-                    </div>
-
+                {activeTicket.messages.map((message) => {
+                  const isMe = message.senderId === user?.id?.toString() || message.sender === user?.name;
+                  return (
                     <div
-                      className={`flex flex-col max-w-[80%] ${message.isAdmin ? "items-start" : "items-end"}`}
+                      key={message.id}
+                      className={`flex gap-5 ${isMe ? "flex-row-reverse" : "flex-row"}`}
                     >
-                      <div
-                        className={`flex items-center gap-3 mb-2 px-1 ${message.isAdmin ? "flex-row" : "flex-row-reverse"}`}
-                      >
-                        <span className="text-[14px] font-black text-slate-800">
-                          {message.sender}
-                        </span>
-                        <span
-                          className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md ${
-                            message.isAdmin
-                              ? "bg-blue-50 text-blue-600"
-                              : "bg-primary/10 text-primary"
+                      <div className="flex-shrink-0 relative">
+                        <div
+                          className={`w-11 h-11 rounded-full border-4 border-white shadow-md flex items-center justify-center overflow-hidden ${
+                            isMe ? "bg-primary" : (message.isAdmin ? "bg-slate-900" : "bg-slate-400")
                           }`}
                         >
-                          {message.isAdmin ? "SUPPORT AGENT" : "CUSTOMER"}
-                        </span>
-                        <span className="text-[10px] font-bold text-slate-300 uppercase">
-                          {message.time}
-                        </span>
+                          <span className="text-xs font-black text-white uppercase">
+                            {message.sender.charAt(0)}
+                          </span>
+                        </div>
                       </div>
+
                       <div
-                        className={`px-5 py-3 rounded-[10px] shadow-sm text-[15px] font-medium leading-relaxed ${
-                          message.isAdmin
-                            ? "bg-white text-slate-700 border border-slate-100 rounded-tl-none shadow-slate-200/20"
-                            : "bg-primary text-white rounded-tr-none shadow-primary/20"
-                        }`}
-                        dangerouslySetInnerHTML={{ __html: message.text }}
-                      />
+                        className={`flex flex-col max-w-[80%] ${isMe ? "items-end" : "items-start"}`}
+                      >
+                        <div
+                          className={`flex items-center gap-3 mb-2 px-1 ${isMe ? "flex-row-reverse" : "flex-row"}`}
+                        >
+                          <span className="text-[14px] font-black text-slate-800">
+                            {message.sender}
+                          </span>
+                          <span
+                            className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md ${
+                              message.isAdmin
+                                ? "bg-blue-50 text-blue-600"
+                                : "bg-primary/10 text-primary"
+                            }`}
+                          >
+                            {message.isAdmin ? "SUPPORT AGENT" : "CUSTOMER"}
+                          </span>
+                          <span className="text-[10px] font-bold text-slate-300 uppercase">
+                            {message.time}
+                          </span>
+                        </div>
+                        <div
+                          className={`px-5 py-3 rounded-[10px] shadow-sm text-[15px] font-medium leading-relaxed ${
+                            isMe
+                              ? `bg-primary text-white rounded-tr-none shadow-primary/20`
+                              : `bg-white text-slate-700 border border-slate-100 rounded-tl-none shadow-slate-200/20`
+                          }`}
+                          dangerouslySetInnerHTML={{ __html: message.text }}
+                        />
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
