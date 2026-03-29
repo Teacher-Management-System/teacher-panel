@@ -88,7 +88,15 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
       setFormData({
         fullName: data.name || "",
         fatherName: data.father_name || "",
-        gender: data.gender || "",
+        gender: data.gender 
+          ? (() => {
+              const g = String(data.gender).toLowerCase().trim();
+              if (g === "male" || g === "m") return "male";
+              if (g === "female" || g === "f") return "female";
+              if (g === "other" || g === "o") return "other";
+              return "";
+            })()
+          : "",
         dob: data.dob
           ? new Date(
               !isNaN(Number(data.dob)) &&
@@ -97,7 +105,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 : data.dob,
             )
           : undefined,
-        contactNumber: data.mobile || "",
+        contactNumber: data.mobile ? data.mobile.replace(/^\+91/, "") : "",
         email: data.email || "",
         qualification: (data.qualification_level as Qualification) || "",
         currentStatus: (data.current_status as CurrentStatus) || "",
@@ -130,6 +138,28 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Basic Validation
+    if (!formData.fullName.trim()) return toast.error("Full Name is required");
+    if (!formData.fatherName.trim()) return toast.error("Father's Name is required");
+    if (!formData.gender) return toast.error("Gender is required");
+    if (!formData.dob) return toast.error("Date of Birth is required");
+    if (!formData.contactNumber.trim()) return toast.error("Mobile Number is required");
+    if (!formData.qualification) return toast.error("Highest Qualification is required");
+    if (!formData.currentStatus) return toast.error("Current Status is required");
+
+    // Dynamic Validation based on Current Status
+    if (formData.currentStatus === "college_student") {
+      if (!formData.collegeName.trim()) return toast.error("College Name is required");
+      if (!formData.course.trim()) return toast.error("Course is required");
+      if (!formData.year) return toast.error("Year of study is required");
+    } else if (formData.currentStatus === "employed") {
+      if (!formData.organizationName.trim()) return toast.error("Organization Name is required");
+      if (!formData.designation.trim()) return toast.error("Current Designation is required");
+    } else if (formData.currentStatus === "unemployed") {
+      if (!formData.monthlyPaymentExpectation.trim()) return toast.error("Monthly Expectation is required");
+    }
+
     setLoading(true);
 
     const payload = {
@@ -300,7 +330,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
               <Input
                 id="contactNumber"
                 type="tel"
-                placeholder="+91 12345 67890"
+                placeholder="12345 67890"
                 className="bg-muted/50 border-border rounded-xl h-11 px-4 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
                 value={formData.contactNumber}
                 onChange={(e) =>

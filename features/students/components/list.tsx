@@ -215,20 +215,27 @@ export default function StudentList() {
             Manage student records and information
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <ExportButton
-            onExport={() => studentService.exportData()}
-            title="Export Students"
-          />
-          <Button
-            variant="outline"
-            onClick={handleBatchesClick}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-600 hover:text-white flex items-center gap-2 rounded-xl px-4 py-2 h-10 transition-all shadow-sm"
-          >
-            <BookOpen className="h-4 w-4" />
-            <span className="font-semibold">Batches</span>
-          </Button>
-          <AddStudentDialog onSuccess={refreshData} />
+        <div className="grid grid-cols-2 md:flex md:items-center gap-2 w-full md:w-auto mt-2 md:mt-0">
+          <div className="flex-1 md:flex-none">
+            <ExportButton
+              onExport={() => studentService.exportData()}
+              title="Export"
+              className="w-full h-10 md:h-11 rounded-xl font-bold bg-background text-foreground border-border"
+            />
+          </div>
+          <div className="flex-1 md:flex-none">
+            <Button
+              variant="outline"
+              onClick={handleBatchesClick}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white border-none flex items-center justify-center gap-2 rounded-xl w-full h-10 md:h-11 transition-all shadow-sm"
+            >
+              <BookOpen className="h-4 w-4" />
+              <span className="font-bold text-[13px] md:text-sm">Batches</span>
+            </Button>
+          </div>
+          <div className="col-span-2 md:col-span-1">
+            <AddStudentDialog onSuccess={refreshData} />
+          </div>
         </div>
       </div>
 
@@ -279,7 +286,7 @@ export default function StudentList() {
           <Card
             key={i}
             className={cn(
-              "relative overflow-hidden border shadow-sm hover:shadow-md transition-all duration-300 group bg-card",
+              "relative overflow-hidden border shadow-sm hover:shadow-md transition-all duration-300 group bg-card rounded-[20px] md:rounded-2xl",
               stat.border,
             )}
           >
@@ -290,10 +297,10 @@ export default function StudentList() {
 
             {/* Decorative large icon */}
             <stat.icon
-              className={`absolute -right-6 -bottom-6 h-32 w-32 ${stat.textColor} opacity-5 rotate-12 group-hover:scale-110 transition-transform duration-500`}
+              className={`absolute -right-4 -bottom-4 h-24 w-24 md:h-32 md:w-32 ${stat.textColor} opacity-5 rotate-12 group-hover:scale-110 transition-transform duration-500 shrink-0`}
             />
 
-            <CardContent className="relative p-4 sm:p-6">
+            <CardContent className="relative p-5 sm:p-6">
               <div className="flex items-start justify-between">
                 <div className="space-y-2">
                   <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
@@ -356,24 +363,24 @@ export default function StudentList() {
           )}
 
           {/* Toolbar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex flex-1 items-center gap-2 w-full sm:w-auto">
-              <div className="relative flex-1 sm:max-w-xs w-full">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="grid grid-cols-1 xs:grid-cols-2 md:flex md:flex-1 items-center gap-2 w-full">
+              <div className="relative col-span-1 xs:col-span-2 md:flex-1 md:max-w-xs w-full">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
                 <Input
                   placeholder="Search students..."
                   value={search ?? ""}
                   onChange={(event) => setSearch(event.target.value)}
-                  className="pl-9 h-9 w-full bg-background border-input focus-visible:ring-1"
+                  className="pl-10 h-10 md:h-11 w-full bg-muted/30 border-none rounded-xl focus-visible:ring-primary/20 transition-all"
                 />
               </div>
               <Select
                 value={status || "all"}
                 onValueChange={(val) => setStatus(val === "all" ? null : val)}
               >
-                <SelectTrigger className="w-[140px] h-9 border-dashed">
+                <SelectTrigger className="w-full md:w-[140px] h-10 md:h-11 border-none bg-muted/30 rounded-xl">
                   <div className="flex items-center gap-2">
-                    <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+                    <Filter className="h-3.5 w-3.5 text-muted-foreground/60" />
                     <SelectValue placeholder="Status" />
                   </div>
                 </SelectTrigger>
@@ -388,17 +395,17 @@ export default function StudentList() {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
-                    className="w-[140px] h-9 px-3 border-dashed text-muted-foreground whitespace-nowrap justify-between font-normal"
+                    className="w-full md:w-[140px] h-10 md:h-11 border-none bg-muted/30 rounded-xl px-3 text-muted-foreground whitespace-nowrap justify-between font-normal"
                   >
                     <div className="flex items-center gap-2 overflow-hidden">
-                      <BookOpen className="h-3.5 w-3.5 flex-shrink-0" />
+                      <BookOpen className="h-3.5 w-3.5 flex-shrink-0 opacity-60" />
                       <span className="truncate">
                         {selectedBatches.length > 0
                           ? `${selectedBatches.length} selected`
                           : "Batch"}
                       </span>
                     </div>
-                    <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0" />
+                    <ChevronDown className="h-4 w-4 opacity-40 flex-shrink-0" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-[200px]">

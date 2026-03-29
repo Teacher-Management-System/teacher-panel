@@ -45,9 +45,9 @@ export function AddTicketDialog({ onAddTicket }: AddTicketDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="rounded-[20px] bg-primary hover:bg-primary/90 h-12 px-6 shadow-lg shadow-primary/20 text-primary-foreground font-bold flex items-center gap-2 border-none transition-all active:scale-95">
-          <Plus className="h-5 w-5 stroke-[3]" />
-          <span className="text-[15px] tracking-tight">New Ticket</span>
+        <Button className="rounded-lg md:rounded-[20px] bg-primary hover:bg-primary/90 h-10 md:h-14 px-3 md:px-8 shadow-lg shadow-primary/20 text-primary-foreground font-black flex items-center gap-1.5 md:gap-3 border-none transition-all active:scale-95 w-full">
+          <Plus className="h-4 w-4 md:h-6 md:w-6 stroke-[3]" />
+          <span className="text-[11px] md:text-[16px] tracking-tight uppercase tracking-wider">New Ticket</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[480px] rounded-[32px] p-8 border border-border bg-card shadow-2xl">

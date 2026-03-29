@@ -218,9 +218,9 @@ export default function ProfileComplete({ onEdit }: { onEdit: () => void }) {
                 icon={User}
                 label="Gender"
                 value={
-                  profile?.gender
-                    ? profile.gender.charAt(0).toUpperCase() +
-                      profile.gender.slice(1)
+                  (profile?.gender || user?.gender)
+                    ? (profile?.gender || user?.gender).charAt(0).toUpperCase() +
+                      (profile?.gender || user?.gender).slice(1)
                     : "N/A"
                 }
               />
@@ -250,7 +250,11 @@ export default function ProfileComplete({ onEdit }: { onEdit: () => void }) {
               <InfoRow
                 icon={Phone}
                 label="Mobile Number"
-                value={profile?.mobile || "N/A"}
+                value={
+                  (profile?.mobile || user?.mobile)
+                    ? (profile?.mobile || user?.mobile).replace(/^\+91/, "")
+                    : "N/A"
+                }
               />
               <InfoRow
                 icon={Mail}

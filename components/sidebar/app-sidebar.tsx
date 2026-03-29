@@ -15,6 +15,7 @@ import {
 import { navData } from "@/lib/nav-items";
 import NextImage from "next/image";
 import { useAuth } from "@/hooks/useAuth";
+import { Profile } from "./profile";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const {
@@ -92,6 +93,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             ))}
           </nav>
         </SidebarContent>
+        <SidebarFooter className="border-t border-sidebar-border p-2">
+          {user && (
+            <div className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
+              <Profile
+                user={user}
+                showDetails={true}
+              />
+            </div>
+          )}
+        </SidebarFooter>
       </div>
     </Sidebar>
   );

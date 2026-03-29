@@ -11,6 +11,7 @@ import {
   User as UserIcon,
   Ticket,
   Calendar,
+  ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -595,58 +596,58 @@ function TicketListContent() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] md:h-[calc(100vh-3rem)] bg-background md:p-6 space-y-6 overflow-hidden">
+    <div className="flex flex-col h-auto md:h-[calc(100vh-3rem)] bg-background md:p-6 space-y-4 md:space-y-6 md:overflow-hidden">
       {/* Header Section */}
-      <Card className="rounded-[20px] border border-border shadow-sm bg-card overflow-hidden">
-        <CardContent className="p-1 md:px-6 md:py-1 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-5 w-full md:w-auto">
-            <div className="relative group">
+      <Card className="rounded-[20px] border border-border shadow-sm bg-card overflow-hidden shrink-0">
+        <CardContent className="p-4 md:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6">
+          <div className="flex items-center gap-3 md:gap-5 w-full md:w-auto">
+            <div className="relative group shrink-0">
               <div className="absolute inset-0 bg-primary/20 blur-xl opacity-20 group-hover:opacity-30 transition-opacity" />
-              <div className="relative p-4 bg-gradient-to-br from-primary to-primary/80 rounded-[22px] shadow-lg shadow-primary/20">
-                <Ticket className="h-7 w-7 text-white" />
-                <div className="absolute -bottom-1 -right-1 p-1 bg-primary rounded-lg border-2 border-white">
-                  <Plus className="h-2.5 w-2.5 text-white stroke-[3]" />
+              <div className="relative p-2.5 md:p-4 bg-gradient-to-br from-primary to-primary/80 rounded-[15px] md:rounded-[22px] shadow-lg shadow-primary/20">
+                <Ticket className="h-4 w-4 md:h-7 md:w-7 text-white" />
+                <div className="absolute -bottom-1 -right-1 p-0.5 md:p-1 bg-primary rounded-lg border-2 border-white">
+                  <Plus className="h-2 w-2 md:h-2.5 md:w-2.5 text-white stroke-[3]" />
                 </div>
               </div>
             </div>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-black text-foreground tracking-tight flex items-center gap-2">
+            <div className="min-w-0">
+              <h1 className="text-lg md:text-3xl font-black text-foreground tracking-tight flex items-center gap-2 truncate">
                 Support Center
               </h1>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
-                <p className="text-muted-foreground text-[13px] font-medium leading-none">
-                  Resolution hub for all teacher inquiries
-                </p>
-                <span className="hidden sm:inline w-1 h-1 rounded-full bg-border" />
-              </div>
+              <p className="text-muted-foreground text-[10px] md:text-[13px] font-medium leading-none mt-1 truncate">
+                Resolution hub for all teacher inquiries
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
-            <div className="flex items-center bg-muted/30 rounded-2xl p-1.5 px-4 border border-border">
-              <div className="flex items-center gap-2 pr-4 border-r border-border">
-                <div className="h-2 w-2 rounded-full bg-orange-400 shadow-[0_0_8px_rgba(251,146,60,0.5)]" />
-                <span className="text-[12px] font-bold text-muted-foreground whitespace-nowrap">
-                  {loading ? "..." : stats.pending} Pending
+          <div className="flex flex-row md:flex-row items-center gap-2 md:gap-3 w-full md:w-auto justify-between md:justify-end">
+            <div className="flex flex-1 md:flex-none items-center bg-muted/30 rounded-lg md:rounded-2xl p-1 md:p-2 px-2 md:px-6 border border-border h-10 md:h-14 overflow-hidden">
+              <div className="flex-1 md:flex-none flex items-center justify-center gap-1.5 md:gap-3 pr-2 md:pr-6 border-r border-border h-full">
+                <div className="h-1.5 w-1.5 md:h-2.5 md:w-2.5 rounded-full bg-orange-400 shadow-[0_0_8px_rgba(251,146,60,0.5)] shrink-0" />
+                <span className="text-[9px] md:text-[14px] font-black text-muted-foreground whitespace-nowrap uppercase tracking-wider">
+                  {loading ? ".." : stats.pending} <span className="hidden sm:inline ml-0.5 opacity-60">Pending</span>
                 </span>
               </div>
-              <div className="flex items-center gap-2 pl-4">
-                <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(31,192,199,0.5)]" />
-                <span className="text-[12px] font-bold text-muted-foreground whitespace-nowrap">
-                  {loading ? "..." : stats.open} Open
+              <div className="flex-1 md:flex-none flex items-center justify-center gap-1.5 md:gap-3 pl-2 md:pl-6 h-full">
+                <div className="h-1.5 w-1.5 md:h-2.5 md:w-2.5 rounded-full bg-primary shadow-[0_0_8px_rgba(31,192,199,0.5)] shrink-0" />
+                <span className="text-[9px] md:text-[14px] font-black text-muted-foreground whitespace-nowrap uppercase tracking-wider">
+                  {loading ? ".." : stats.open} <span className="hidden sm:inline ml-0.5 opacity-60">Open</span>
                 </span>
               </div>
             </div>
-            <AddTicketDialog onAddTicket={addTicket} />
+            <div className="flex-1 md:flex-none">
+              <AddTicketDialog onAddTicket={addTicket} />
+            </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col md:flex-row gap-6 min-h-0">
+      <div className={`flex-1 flex flex-col md:flex-row gap-4 md:gap-6 min-h-0 md:overflow-hidden relative ${activeTicket ? 'h-[calc(100vh-10rem)] md:h-auto' : 'h-auto'}`}>
         {/* Left Sidebar - Ticket List */}
-        <div className="w-full md:w-[360px] flex flex-col gap-4">
-          <div className="bg-card rounded-[28px] p-5 shadow-sm border border-border flex flex-col gap-5">
+        <div className={`w-full md:w-[360px] flex-1 md:flex-none flex flex-col gap-4 transition-all duration-300 ${activeTicket ? 'hidden md:flex' : 'flex'}`}>
+          <Card className="rounded-[20px] md:rounded-[28px] shadow-sm border border-border flex flex-col overflow-hidden">
+            <CardContent className="p-4 md:p-6 flex flex-col gap-4 md:gap-5">
             <div className="relative group">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
               <Input
@@ -685,9 +686,10 @@ function TicketListContent() {
                 </Button>
               ))}
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          <div className="flex-1 -mx-2 px-2 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 px-1 overflow-y-auto custom-scrollbar">
             {listLoading ? (
               <div className="flex items-center justify-center h-40">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -695,7 +697,7 @@ function TicketListContent() {
             ) : (
               <div className="space-y-4 pb-4">
                 {filteredTickets.map((ticket) => (
-                  <div
+                  <Card
                     key={ticket.id}
                     onClick={() => {
                       if (activeTicket?.id !== ticket.id) {
@@ -703,45 +705,46 @@ function TicketListContent() {
                         setActiveTicket(ticket);
                       }
                     }}
-                    className={`p-5 rounded-[28px] cursor-pointer transition-all duration-300 border shadow-sm relative group ${
+                    className={`rounded-[20px] md:rounded-[28px] cursor-pointer transition-all duration-300 border shadow-sm relative group overflow-hidden ${
                       activeTicket?.id === ticket.id
                         ? "bg-card border-primary/40 shadow-primary/5 scale-[1.02] z-10"
                         : "bg-card/40 border-border hover:border-primary/20 hover:shadow-primary/5 hover:translate-x-1"
                     }`}
                   >
-                    {activeTicket?.id === ticket.id && (
-                      <div className="absolute left-0 top-6 bottom-6 w-1.5 bg-primary rounded-r-full shadow-[0_0_10px_rgba(31,192,199,0.3)]" />
-                    )}
-                    <div className="flex justify-between items-start mb-1.5 pl-2">
-                      <h4
-                        className={`font-bold text-[15px] leading-tight transition-colors ${
-                          activeTicket?.id === ticket.id
-                            ? "text-primary"
-                            : "text-foreground"
-                        }`}
-                      >
-                        {ticket.subject}
-                      </h4>
-                      <Badge
-                        className={`text-[9px] uppercase font-black px-2 py-0.5 rounded-md border-transparent ${
-                          ticket.status === "pending"
-                            ? "bg-orange-500/10 text-orange-500"
-                            : ticket.status === "open"
-                              ? "bg-primary/10 text-primary border-primary/20"
-                              : "bg-muted text-muted-foreground"
-                        }`}
-                      >
-                        {ticket.status}
-                      </Badge>
-                    </div>
-                    <p className="text-[11px] text-muted-foreground/60 font-bold mb-3 pl-2 tracking-wide uppercase opacity-70">
-                      {ticket.ticketId}
-                    </p>
-                    <p className="text-[13px] text-muted-foreground line-clamp-2 mb-4 pl-2 leading-relaxed font-medium">
-                      {stripHtml(ticket.lastMessage)}
-                    </p>
+                    <CardContent className="p-4 md:p-6 relative">
+                      {activeTicket?.id === ticket.id && (
+                        <div className="absolute left-0 top-6 bottom-6 w-1.5 bg-primary rounded-r-full shadow-[0_0_10px_rgba(31,192,199,0.3)]" />
+                      )}
+                      <div className="flex justify-between items-start mb-1.5 pl-2">
+                        <h4
+                          className={`font-bold text-[15px] leading-tight transition-colors ${
+                            activeTicket?.id === ticket.id
+                              ? "text-primary"
+                              : "text-foreground"
+                          }`}
+                        >
+                          {ticket.subject}
+                        </h4>
+                        <Badge
+                          className={`text-[9px] uppercase font-black px-2 py-0.5 rounded-md border-transparent ${
+                            ticket.status === "pending"
+                              ? "bg-orange-500/10 text-orange-500"
+                              : ticket.status === "open"
+                                ? "bg-primary/10 text-primary border-primary/20"
+                                : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          {ticket.status}
+                        </Badge>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground/60 font-bold mb-3 pl-2 tracking-wide uppercase opacity-70">
+                        {ticket.ticketId}
+                      </p>
+                      <p className="text-[13px] text-muted-foreground line-clamp-2 mb-4 pl-2 leading-relaxed font-medium">
+                        {stripHtml(ticket.lastMessage)}
+                      </p>
 
-                    <div className="flex justify-between items-center pt-4 border-t border-border/30 pl-2">
+                      <div className="flex justify-between items-center pt-4 border-t border-border/30 pl-2">
                       <div className="flex items-center gap-2.5">
                         <div className="w-8 h-8 rounded-full bg-muted border border-border shadow-sm flex items-center justify-center overflow-hidden">
                           <span className="text-[10px] font-black text-muted-foreground/60 uppercase">
@@ -758,8 +761,9 @@ function TicketListContent() {
                           {ticket.date}
                         </span>
                       </div>
-                    </div>
-                  </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             )}
@@ -768,38 +772,51 @@ function TicketListContent() {
 
         {/* Right Area - Conversation */}
         {listLoading || messagesLoading ? (
-          <div className="flex-1 flex flex-col items-center justify-center bg-card rounded-[20px] border border-border shadow-sm p-10">
+          <div className={`flex-1 flex flex-col items-center justify-center bg-card md:rounded-[20px] border border-border shadow-sm p-10 ${!activeTicket ? 'hidden md:flex' : 'flex fixed inset-0 z-[100] md:relative md:z-auto'}`}>
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
             <p className="mt-4 text-muted-foreground font-medium">
               Loading messages...
             </p>
           </div>
         ) : activeTicket ? (
-          <div className="flex-1 flex flex-col min-h-0 bg-card rounded-[20px] shadow-sm border border-border overflow-hidden">
+          <div className="flex-1 flex flex-col min-h-0 bg-card md:rounded-[20px] shadow-sm border border-border overflow-hidden fixed inset-0 md:relative z-[100] md:z-auto">
             {/* Conversation Header */}
-            <div className="p-6 md:p-8 border-b border-border/50 flex justify-between items-center bg-card/50 backdrop-blur-md">
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-muted rounded-xl border border-border">
-                    <MessageSquare className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-black text-foreground tracking-tight">
-                      {activeTicket.subject}
-                    </h3>
-                    <div className="flex items-center gap-4 mt-1.5 px-0.5">
-                      <div className="flex items-center gap-1.5">
-                        <UserIcon className="w-3.5 h-3.5 text-primary/60" />
-                        <span className="text-[11px] font-black text-muted-foreground/60 uppercase tracking-wider">
-                          {activeTicket.user}
-                        </span>
-                      </div>
-                      <div className="w-1 h-1 rounded-full bg-border" />
-                      <div className="flex items-center gap-1.5">
-                        <Calendar className="w-3.5 h-3.5 text-primary/60" />
-                        <span className="text-[11px] font-black text-muted-foreground/60 uppercase tracking-widest leading-none">
-                          CREATED {activeTicket.date}
-                        </span>
+            <div className="p-3 md:p-8 border-b border-border/50 flex justify-between items-center bg-card/50 backdrop-blur-md">
+              <div className="flex items-center gap-2 md:gap-3">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="md:hidden h-8 w-8 bg-muted rounded-lg border border-border"
+                  onClick={() => {
+                    setActiveTicket(null);
+                    setTicketId(null);
+                  }}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <div className="flex flex-col gap-0.5 md:gap-2">
+                  <div className="flex items-center gap-2 md:gap-3">
+                    <div className="p-1.5 md:p-2.5 bg-muted rounded-lg md:xl border border-border hidden sm:flex">
+                      <MessageSquare className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+                    </div>
+                    <div className="flex flex-col">
+                      <h3 className="text-base md:text-xl font-black text-foreground tracking-tight line-clamp-1">
+                        {activeTicket.subject}
+                      </h3>
+                      <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4 mt-0.5 md:mt-1 px-0.5">
+                        <div className="flex items-center gap-1.5">
+                          <UserIcon className="w-3 h-3 md:w-3.5 md:h-3.5 text-primary/60" />
+                          <span className="text-[9px] md:text-[11px] font-black text-muted-foreground/60 uppercase tracking-wider">
+                            {activeTicket.user}
+                          </span>
+                        </div>
+                        <div className="hidden md:block w-1 h-1 rounded-full bg-border" />
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="w-3 h-3 md:w-3.5 md:h-3.5 text-primary/60" />
+                          <span className="text-[9px] md:text-[11px] font-black text-muted-foreground/60 uppercase tracking-widest leading-none">
+                            CREATED {activeTicket.date}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -812,9 +829,9 @@ function TicketListContent() {
             <div
               ref={scrollRef}
               onScroll={handleScroll}
-              className="flex-1 p-6 md:p-10 bg-background/20 overflow-y-auto custom-scrollbar min-h-0"
+              className="flex-1 p-3 md:p-10 bg-background/20 overflow-y-auto custom-scrollbar min-h-0"
             >
-              <div className="space-y-10 max-w-4xl mx-auto">
+              <div className="space-y-6 md:space-y-10 max-w-4xl mx-auto">
                 {isFetchingMore && (
                   <div className="flex justify-center p-4">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
@@ -828,11 +845,11 @@ function TicketListContent() {
                   return (
                     <div
                       key={message.id}
-                      className={`flex gap-5 ${isMe ? "flex-row-reverse" : "flex-row"}`}
+                      className={`flex gap-2 md:gap-5 ${isMe ? "flex-row-reverse" : "flex-row"}`}
                     >
                       <div className="flex-shrink-0 relative">
                         <div
-                          className={`w-11 h-11 rounded-full border-4 border-card shadow-md flex items-center justify-center overflow-hidden ${
+                          className={`w-8 h-8 md:w-11 md:h-11 rounded-full border-2 md:border-4 border-card shadow-md flex items-center justify-center overflow-hidden ${
                             isMe
                               ? "bg-primary"
                               : message.isAdmin
@@ -840,36 +857,36 @@ function TicketListContent() {
                                 : "bg-muted/60"
                           }`}
                         >
-                          <span className="text-xs font-black text-white uppercase">
+                          <span className="text-[10px] md:text-xs font-black text-white uppercase">
                             {message.sender.charAt(0)}
                           </span>
                         </div>
                       </div>
 
                       <div
-                        className={`flex flex-col max-w-[80%] ${isMe ? "items-end" : "items-start"}`}
+                        className={`flex flex-col max-w-[85%] md:max-w-[80%] ${isMe ? "items-end" : "items-start"}`}
                       >
                         <div
-                          className={`flex items-center gap-3 mb-2 px-1 ${isMe ? "flex-row-reverse" : "flex-row"}`}
+                          className={`flex items-center gap-2 md:gap-3 mb-1 md:mb-2 px-1 ${isMe ? "flex-row-reverse" : "flex-row"}`}
                         >
-                          <span className="text-[14px] font-black text-foreground">
+                          <span className="text-[12px] md:text-[14px] font-black text-foreground truncate max-w-[100px] md:max-w-none">
                             {message.sender}
                           </span>
                           <span
-                            className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md ${
+                            className={`text-[7px] md:text-[8px] font-black uppercase tracking-tight md:tracking-widest px-1 md:px-1.5 py-0.5 rounded-md ${
                               message.isAdmin
                                 ? "bg-indigo-500/10 text-indigo-400"
                                 : "bg-primary/10 text-primary"
                             }`}
                           >
-                            {message.isAdmin ? "SUPPORT AGENT" : "TEACHER"}
+                            {message.isAdmin ? "AGENT" : "TEACHER"}
                           </span>
-                          <span className="text-[10px] font-bold text-muted-foreground/40 uppercase">
+                          <span className="text-[9px] md:text-[10px] font-bold text-muted-foreground/40 uppercase">
                             {message.time}
                           </span>
                         </div>
                         <div
-                          className={`px-5 py-3 rounded-[10px] shadow-sm text-[15px] font-medium leading-relaxed ${
+                          className={`px-4 py-2 md:px-5 md:py-3 rounded-xl md:rounded-[22px] shadow-sm text-[14px] md:text-[15px] font-medium leading-relaxed ${
                             isMe
                               ? `bg-primary text-primary-foreground rounded-tr-none shadow-primary/20`
                               : `bg-card text-foreground border border-border rounded-tl-none shadow-sm`
@@ -934,7 +951,7 @@ function TicketListContent() {
             </div>
           </div>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center bg-card rounded-[20px] border border-border shadow-sm gap-6 p-10 text-center">
+          <div className="flex-1 flex flex-col items-center justify-center bg-card rounded-[20px] border border-border shadow-sm gap-6 p-10 text-center hidden md:flex">
             <div className="w-24 h-24 rounded-[20px] bg-primary/5 flex items-center justify-center shadow-inner">
               <MessageSquare className="h-10 w-10 text-primary/40 opacity-60" />
             </div>

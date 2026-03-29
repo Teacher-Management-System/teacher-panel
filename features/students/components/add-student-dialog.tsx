@@ -381,7 +381,7 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
     >
       <Button
         onClick={handleAddStudentClick}
-        className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md"
+        className="w-full h-10 md:h-11 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md rounded-xl font-bold"
       >
         <Plus className="mr-2 h-4 w-4" />
         Add Student

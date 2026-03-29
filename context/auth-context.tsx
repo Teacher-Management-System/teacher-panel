@@ -44,9 +44,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null); // Ensure user is null if no token
         return;
       }
-      const response = await profileService.getProfile();
-      if (response?.user) {
-        setUser(response.user as User);
+      const response: any = await profileService.getProfile();
+      if (response) {
+        const userData = response?.user || response;
+        // If response.user exists, merge top-level fields into it as a fallback
+        const mergedUser = response?.user 
+          ? { ...response, ...response.user } 
+          : response;
+        setUser(mergedUser as User);
       } else {
         setUser(null);
       }
