@@ -45,21 +45,21 @@ export function AddTicketDialog({ onAddTicket }: AddTicketDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="rounded-[20px] bg-[#0f172a] hover:bg-[#1e293b] h-12 px-6 shadow-lg shadow-slate-200 text-white font-bold flex items-center gap-2 border-none transition-all active:scale-95">
+        <Button className="rounded-[20px] bg-primary hover:bg-primary/90 h-12 px-6 shadow-lg shadow-primary/20 text-primary-foreground font-bold flex items-center gap-2 border-none transition-all active:scale-95">
           <Plus className="h-5 w-5 stroke-[3]" />
           <span className="text-[15px] tracking-tight">New Ticket</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[480px] rounded-[32px] p-8 border-none shadow-2xl">
+      <DialogContent className="sm:max-w-[480px] rounded-[32px] p-8 border border-border bg-card shadow-2xl">
         <DialogHeader className="flex flex-row items-center gap-5 space-y-0 text-left mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
             <Ticket className="h-7 w-7 text-primary" />
           </div>
           <div className="flex flex-col gap-1">
-            <DialogTitle className="text-2xl font-black text-slate-800 tracking-tight">
+            <DialogTitle className="text-2xl font-black text-foreground tracking-tight">
               Create New Ticket
             </DialogTitle>
-            <p className="text-[13px] font-medium text-slate-400">
+            <p className="text-[13px] font-medium text-muted-foreground/60">
               Fill in the details to open a support ticket
             </p>
           </div>
@@ -68,14 +68,14 @@ export function AddTicketDialog({ onAddTicket }: AddTicketDialogProps) {
           <div className="flex flex-col gap-3">
             <Label
               htmlFor="subject"
-              className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1"
+              className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/60 ml-1"
             >
               Subject
             </Label>
             <Input
               id="subject"
               placeholder="What's the issue about?"
-              className="h-14 rounded-[22px] border-none bg-slate-50/80 px-6 text-[15px] font-medium placeholder:text-slate-300 focus-visible:ring-primary/20 transition-all shadow-inner"
+              className="h-14 rounded-[22px] border border-border bg-muted/50 px-6 text-[15px] font-medium placeholder:text-muted-foreground/40 focus-visible:ring-primary/20 transition-all shadow-none"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
             />
@@ -83,14 +83,14 @@ export function AddTicketDialog({ onAddTicket }: AddTicketDialogProps) {
           <div className="flex flex-col gap-3">
             <Label
               htmlFor="message"
-              className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1"
+              className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/60 ml-1"
             >
               Description
             </Label>
             <Textarea
               id="message"
               placeholder="Describe your problem in detail..."
-              className="min-h-[160px] rounded-[22px] border-none bg-slate-50/80 p-6 text-[15px] font-medium placeholder:text-slate-300 focus-visible:ring-primary/20 transition-all resize-none shadow-inner"
+              className="min-h-[160px] rounded-[22px] border border-border bg-muted/50 p-6 text-[15px] font-medium placeholder:text-muted-foreground/40 focus-visible:ring-primary/20 transition-all resize-none shadow-none"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
             />
@@ -100,17 +100,17 @@ export function AddTicketDialog({ onAddTicket }: AddTicketDialogProps) {
           <Button
             variant="ghost"
             onClick={() => setOpen(false)}
-            className="h-14 rounded-[22px] bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold text-[15px] border-none transition-all active:scale-95"
+            className="h-14 rounded-[22px] bg-muted/50 hover:bg-muted text-muted-foreground font-bold text-[15px] border-none transition-all active:scale-95"
           >
             Cancel
           </Button>
           <Button
             onClick={onSubmit}
             disabled={loading}
-            className="h-14 rounded-[22px] bg-primary hover:bg-primary/90 text-white font-bold text-[15px] shadow-lg shadow-primary/20 border-none transition-all active:scale-95"
+            className="h-14 rounded-[22px] bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-[15px] shadow-lg shadow-primary/20 border-none transition-all active:scale-scale-95"
           >
             {loading ? (
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-foreground"></div>
             ) : (
               "Create Ticket"
             )}

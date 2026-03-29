@@ -69,7 +69,7 @@ export function JoinNowPopup({
   const handlePayNow = async () => {
     setIsProcessing(true);
     try {
-      const response = await import("@/features/profile/api.service").then(
+      const response = await import("@/features/profile/aou.service").then(
         (mod) => mod.default.initiatePayment(),
       );
 
@@ -102,7 +102,7 @@ export function JoinNowPopup({
   const handleSupportClick = async () => {
     if (!user?.id) return;
     try {
-      const response = await import("@/features/profile/api.service").then(
+      const response = await import("@/features/profile/aou.service").then(
         (mod) => mod.default.updateStatus(user.id),
       );
       toast.success("Support requested successfully");
@@ -117,7 +117,7 @@ export function JoinNowPopup({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-[450px] p-0 overflow-hidden border-none bg-transparent">
-        <div className="relative w-full bg-white dark:bg-zinc-950 rounded-2xl shadow-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800">
+        <div className="relative w-full bg-card rounded-2xl shadow-2xl overflow-hidden border border-border">
           {/* Animated Background Gradients */}
           <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-br from-primary/20 via-primary/5 to-transparent -z-10" />
           <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-3xl animate-pulse" />
@@ -134,7 +134,7 @@ export function JoinNowPopup({
 
               <button
                 onClick={handleSupportClick}
-                className="absolute top-0 right-0 p-2 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-primary transition-colors hover:scale-110 active:scale-95"
+                className="absolute top-0 right-0 p-2 rounded-full bg-muted border border-border text-muted-foreground hover:text-primary transition-colors hover:scale-110 active:scale-95"
                 title="Support"
               >
                 <Headset className="w-5 h-5" />
@@ -142,10 +142,10 @@ export function JoinNowPopup({
             </div>
 
             <DialogHeader className="space-y-3">
-              <DialogTitle className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+              <DialogTitle className="text-2xl font-bold tracking-tight text-foreground">
                 Complete Your Registration
               </DialogTitle>
-              <DialogDescription className="text-zinc-500 dark:text-zinc-400 text-base">
+              <DialogDescription className="text-muted-foreground text-base">
                 Your account is currently{" "}
                 <span className="text-amber-500 font-semibold">Pending</span>.
                 Join our premium network of teachers to start managing your
@@ -174,10 +174,10 @@ export function JoinNowPopup({
               ].map((feature, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 transition-all hover:scale-[1.02]"
+                  className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 border border-border transition-all hover:scale-[1.02]"
                 >
                   <feature.icon className={`w-5 h-5 ${feature.color}`} />
-                  <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  <span className="text-sm font-medium text-foreground">
                     {feature.text}
                   </span>
                 </div>
@@ -204,7 +204,7 @@ export function JoinNowPopup({
               </Button>
             </DialogFooter>
 
-            <p className="mt-4 text-[10px] text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] font-bold">
+            <p className="mt-4 text-[10px] text-muted-foreground/40 uppercase tracking-[0.2em] font-bold">
               Secure Payment via Cashfree
             </p>
           </div>

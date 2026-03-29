@@ -26,6 +26,7 @@ import { ticketService } from "../api.service";
 import { Ticket as ApiTicket } from "../model";
 import { getEcho } from "@/lib/echo";
 import { stripHtml } from "@/lib/utils";
+import { useQueryState, parseAsString } from "nuqs";
 
 interface Message {
   id: string;
@@ -51,20 +52,19 @@ interface Ticket {
 function TicketListContent() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
-  const ticketIdParam = searchParams.get("ticketId");
 
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [listLoading, setListLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
-  const [activeTab, setActiveTab] = useState<Ticket["status"]>(() => {
-    const statusParam = searchParams.get("status") as Ticket["status"];
-    if (statusParam) return statusParam;
-    if (typeof window !== "undefined") {
-      return (localStorage.getItem("activeTab") as Ticket["status"]) || "open";
-    }
-    return "open";
+  const [activeTab, setActiveTab] = useQueryState("status", {
+    defaultValue: "open",
+    parse: (value) =>
+      ["pending", "open", "closed"].includes(value)
+        ? (value as Ticket["status"])
+        : "open",
   });
+  const [ticketId, setTicketId] = useQueryState("ticketId", parseAsString);
   const [activeTicket, setActiveTicket] = useState<Ticket | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [stats, setStats] = useState({ pending: 0, open: 0, closed: 0 });
@@ -75,19 +75,19 @@ function TicketListContent() {
   const scrollHeightRef = useRef<number>(0);
   const isInitialLoad = useRef<boolean>(true);
   const shouldScrollToBottomRef = useRef<boolean>(true);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // Auto-select ticket from URL parameter
+  // Auto-select ticket from URL parameter (ticketId)
   useEffect(() => {
-    const autoSelectTicket = async () => {
-      if (ticketIdParam && !activeTicket) {
-        let ticket = tickets.find((t) => t.id === ticketIdParam);
-        if (ticket) {
-          setActiveTicket(ticket);
-        }
+    if (ticketId) {
+      const ticket = tickets.find((t) => t.id === ticketId);
+      if (ticket) {
+        setActiveTicket(ticket);
       }
-    };
-    autoSelectTicket();
-  }, [ticketIdParam, tickets, !!activeTicket]);
+    } else {
+      setActiveTicket(null);
+    }
+  }, [ticketId, tickets]);
 
   // Fetch initial stats once
   useEffect(() => {
@@ -107,7 +107,7 @@ function TicketListContent() {
       }
     };
     fetchStats();
-  }, []);
+  }, [refreshTrigger]);
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -150,9 +150,9 @@ function TicketListContent() {
             !activeTicket ||
             !mappedTickets.some((t) => t.id === activeTicket.id)
           ) {
-            if (ticketIdParam) {
+            if (ticketId) {
               const targetTicket = mappedTickets.find(
-                (t) => t.id === ticketIdParam,
+                (t) => t.id === ticketId,
               );
               if (targetTicket) setActiveTicket(targetTicket);
               else setActiveTicket(null);
@@ -173,7 +173,19 @@ function TicketListContent() {
     };
 
     fetchTickets();
-  }, [activeTab]);
+  }, [activeTab, refreshTrigger]);
+
+  // Listen for ticket-updated custom events (from notification-listener.tsx)
+  useEffect(() => {
+    const handleTicketUpdate = (event: any) => {
+      console.log("📥 RECEIVED ticket-updated event:", event.detail);
+      setRefreshTrigger((prev) => prev + 1);
+    };
+
+    window.addEventListener("ticket-updated", handleTicketUpdate);
+    return () =>
+      window.removeEventListener("ticket-updated", handleTicketUpdate);
+  }, []);
 
   const [messagesLoading, setMessagesLoading] = useState(false);
 
@@ -236,7 +248,8 @@ function TicketListContent() {
                 isAdmin:
                   m.isAdmin !== undefined
                     ? m.isAdmin
-                    : (m.sender?.name?.trim().toLowerCase() !== activeTicket.user?.trim().toLowerCase()),
+                    : m.sender?.name?.trim().toLowerCase() !==
+                      activeTicket.user?.trim().toLowerCase(),
               }),
             );
 
@@ -317,7 +330,8 @@ function TicketListContent() {
             isAdmin:
               m.isAdmin !== undefined
                 ? m.isAdmin
-                : (m.sender?.name?.trim().toLowerCase() !== activeTicket.user?.trim().toLowerCase()),
+                : m.sender?.name?.trim().toLowerCase() !==
+                  activeTicket.user?.trim().toLowerCase(),
           }));
 
           setCurrentPage(prevPage);
@@ -384,7 +398,8 @@ function TicketListContent() {
             if (!prev) return null;
 
             const sender = m.message_sender || m.sender;
-            const senderName = sender?.name || (m.isAdmin ? "Support" : prev.user);
+            const senderName =
+              sender?.name || (m.isAdmin ? "Support" : prev.user);
             const senderId = sender?.id || m.sender_id || "";
 
             const isDuplicate = prev.messages.some(
@@ -404,7 +419,9 @@ function TicketListContent() {
                           ...msg,
                           id: m.id,
                           senderId: senderId,
-                          isAdmin: senderName?.trim().toLowerCase() !== prev.user?.trim().toLowerCase(),
+                          isAdmin:
+                            senderName?.trim().toLowerCase() !==
+                            prev.user?.trim().toLowerCase(),
                         }
                       : msg,
                   ),
@@ -424,7 +441,9 @@ function TicketListContent() {
                     minute: "2-digit",
                   })
                 : "Just now",
-              isAdmin: senderName?.trim().toLowerCase() !== prev.user?.trim().toLowerCase(), 
+              isAdmin:
+                senderName?.trim().toLowerCase() !==
+                prev.user?.trim().toLowerCase(),
             };
 
             return {
@@ -451,33 +470,55 @@ function TicketListContent() {
   const addTicket = async (data: { subject: string; message: string }) => {
     try {
       setLoading(true);
-      await ticketService.createTicket(data.subject, data.message);
+      const response: any = await ticketService.createTicket(
+        data.subject,
+        data.message,
+      );
       toast.success("Ticket created successfully");
+
+      // Switch to pending tab where the new ticket is
+      await setActiveTab("pending");
+
+      // Robust ID detection from response
+      const newTicketId = response?.uuid || response?.id || response?.ticket?.id || response?.ticket?.uuid;
+
+      if (newTicketId) {
+        await setTicketId(newTicketId);
+      }
 
       // Refresh list and stats
       const [ticketsResponse, statsResponse]: any = await Promise.all([
-        ticketService.getTickets(activeTab),
+        ticketService.getTickets("pending"),
         ticketService.getTickets(),
       ]);
 
       if (ticketsResponse && ticketsResponse.tickets) {
-        setTickets(
-          ticketsResponse.tickets.map((t: ApiTicket) => ({
-            id: t.id,
-            subject: t.subject,
-            lastMessage: t.description,
-            status: t.status,
-            user: t.user?.name || "Unknown",
-            userId: t.user?.id || "",
-            date: new Date(t.createdAt * 1000).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            }),
-            ticketId: `T-${t.ticket_number}`,
-            messages: [], // Will be fetched when selected
-          })),
-        );
+        const mappedTickets = ticketsResponse.tickets.map((t: ApiTicket) => ({
+          id: t.id,
+          subject: t.subject,
+          lastMessage: t.description,
+          status: t.status,
+          user: t.user?.name || "Unknown",
+          userId: t.user?.id || "",
+          date: new Date(t.createdAt * 1000).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          }),
+          ticketId: `T-${t.ticket_number}`,
+          messages: [],
+        }));
+        setTickets(mappedTickets);
+
+        // Find and set active ticket immediately
+        const ticketToOpen = newTicketId 
+          ? mappedTickets.find((t: any) => t.id === newTicketId)
+          : mappedTickets[0]; // Fallback to newest if ID not found
+
+        if (ticketToOpen) {
+          setActiveTicket(ticketToOpen);
+          if (!newTicketId) await setTicketId(ticketToOpen.id);
+        }
       }
 
       if (statsResponse && statsResponse.tickets) {
@@ -524,7 +565,9 @@ function TicketListContent() {
         sender: user?.name || "User",
         senderId: user?.id?.toString() || "",
         time: "Just now",
-        isAdmin: (user?.name?.trim().toLowerCase() !== activeTicket.user?.trim().toLowerCase()), // Match by name as fallback
+        isAdmin:
+          user?.name?.trim().toLowerCase() !==
+          activeTicket.user?.trim().toLowerCase(), // Match by name as fallback
       };
 
       const updatedTickets = tickets.map((t) =>
@@ -552,9 +595,9 @@ function TicketListContent() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] md:h-[calc(100vh-3rem)] bg-[#f8fafc]/60 md:p-6 space-y-6 overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-2rem)] md:h-[calc(100vh-3rem)] bg-background md:p-6 space-y-6 overflow-hidden">
       {/* Header Section */}
-      <Card className="rounded-[20px] border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white overflow-hidden">
+      <Card className="rounded-[20px] border border-border shadow-sm bg-card overflow-hidden">
         <CardContent className="p-1 md:px-6 md:py-1 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-5 w-full md:w-auto">
             <div className="relative group">
@@ -567,29 +610,29 @@ function TicketListContent() {
               </div>
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+              <h1 className="text-2xl md:text-3xl font-black text-foreground tracking-tight flex items-center gap-2">
                 Support Center
               </h1>
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
-                <p className="text-slate-400 text-[13px] font-medium leading-none">
-                  Resolution hub for all student inquiries
+                <p className="text-muted-foreground text-[13px] font-medium leading-none">
+                  Resolution hub for all teacher inquiries
                 </p>
-                <span className="hidden sm:inline w-1 h-1 rounded-full bg-slate-300" />
+                <span className="hidden sm:inline w-1 h-1 rounded-full bg-border" />
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
-            <div className="flex items-center bg-slate-50/80 rounded-2xl p-1.5 px-4 shadow-sm">
-              <div className="flex items-center gap-2 pr-4 border-r border-slate-200">
+            <div className="flex items-center bg-muted/30 rounded-2xl p-1.5 px-4 border border-border">
+              <div className="flex items-center gap-2 pr-4 border-r border-border">
                 <div className="h-2 w-2 rounded-full bg-orange-400 shadow-[0_0_8px_rgba(251,146,60,0.5)]" />
-                <span className="text-[12px] font-bold text-slate-600 whitespace-nowrap">
+                <span className="text-[12px] font-bold text-muted-foreground whitespace-nowrap">
                   {loading ? "..." : stats.pending} Pending
                 </span>
               </div>
               <div className="flex items-center gap-2 pl-4">
                 <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(31,192,199,0.5)]" />
-                <span className="text-[12px] font-bold text-slate-600 whitespace-nowrap">
+                <span className="text-[12px] font-bold text-muted-foreground whitespace-nowrap">
                   {loading ? "..." : stats.open} Open
                 </span>
               </div>
@@ -603,31 +646,28 @@ function TicketListContent() {
       <div className="flex-1 flex flex-col md:flex-row gap-6 min-h-0">
         {/* Left Sidebar - Ticket List */}
         <div className="w-full md:w-[360px] flex flex-col gap-4">
-          <div className="bg-white rounded-[28px] p-5 shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100 flex flex-col gap-5">
+          <div className="bg-card rounded-[28px] p-5 shadow-sm border border-border flex flex-col gap-5">
             <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-primary transition-colors" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
               <Input
                 placeholder="Search by ID or Subject..."
-                className="pl-11 bg-slate-50 border-transparent h-12 rounded-2xl focus-visible:ring-primary/10 focus-visible:bg-white transition-all text-[15px] font-medium placeholder:text-slate-300 shadow-inner"
+                className="pl-11 bg-muted border-transparent h-12 rounded-2xl focus-visible:ring-primary/10 focus-visible:bg-muted/80 transition-all text-[15px] font-medium placeholder:text-muted-foreground/40"
               />
             </div>
 
-            <div className="flex p-1.5 bg-slate-50/80 rounded-2xl border border-slate-100/50">
+            <div className="flex p-1.5 bg-muted/50 rounded-2xl border border-border relative z-20">
               {(["pending", "open", "closed"] as const).map((tab) => (
                 <Button
                   key={tab}
                   variant="ghost"
                   size="sm"
-                  className={`flex-1 h-10 text-[11px] font-black uppercase tracking-wider transition-all duration-300 rounded-xl flex items-center justify-center gap-1.5 ${
+                  className={`flex-1 h-10 text-[11px] font-black uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 cursor-pointer select-none transition-colors ${
                     activeTab === tab
-                      ? "bg-white text-primary shadow-md shadow-primary/10 border border-slate-100"
-                      : "text-slate-400 hover:text-slate-600 hover:bg-white/50"
+                      ? "bg-card text-primary shadow-sm border border-border"
+                      : "text-muted-foreground hover:text-foreground hover:bg-card/50"
                   }`}
                   onClick={() => {
                     setActiveTab(tab);
-                    if (typeof window !== "undefined") {
-                      localStorage.setItem("activeTab", tab);
-                    }
                   }}
                 >
                   {tab}
@@ -635,8 +675,8 @@ function TicketListContent() {
                     <span
                       className={`px-1.5 py-0.5 rounded-md text-[10px] ${
                         activeTab === tab
-                          ? "bg-primary/5 text-primary"
-                          : "bg-slate-200/50 text-slate-400"
+                          ? "bg-primary/10 text-primary"
+                          : "bg-muted text-muted-foreground"
                       }`}
                     >
                       {stats[tab]}
@@ -663,21 +703,21 @@ function TicketListContent() {
                         setActiveTicket(ticket);
                       }
                     }}
-                    className={`p-5 rounded-[28px] cursor-pointer transition-all duration-300 border shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] relative group ${
+                    className={`p-5 rounded-[28px] cursor-pointer transition-all duration-300 border shadow-sm relative group ${
                       activeTicket?.id === ticket.id
-                        ? "bg-white border-primary/20 shadow-primary/5 scale-[1.02] z-10"
-                        : "bg-white border-slate-100 hover:border-primary/20 hover:shadow-primary/5 hover:translate-x-1"
+                        ? "bg-card border-primary/40 shadow-primary/5 scale-[1.02] z-10"
+                        : "bg-card/40 border-border hover:border-primary/20 hover:shadow-primary/5 hover:translate-x-1"
                     }`}
                   >
                     {activeTicket?.id === ticket.id && (
-                      <div className="absolute left-0 top-6 bottom-6 w-1 bg-primary rounded-r-full" />
+                      <div className="absolute left-0 top-6 bottom-6 w-1.5 bg-primary rounded-r-full shadow-[0_0_10px_rgba(31,192,199,0.3)]" />
                     )}
                     <div className="flex justify-between items-start mb-1.5 pl-2">
                       <h4
                         className={`font-bold text-[15px] leading-tight transition-colors ${
                           activeTicket?.id === ticket.id
                             ? "text-primary"
-                            : "text-slate-800"
+                            : "text-foreground"
                         }`}
                       >
                         {ticket.subject}
@@ -685,34 +725,34 @@ function TicketListContent() {
                       <Badge
                         className={`text-[9px] uppercase font-black px-2 py-0.5 rounded-md border-transparent ${
                           ticket.status === "pending"
-                            ? "bg-orange-50 text-orange-600"
+                            ? "bg-orange-500/10 text-orange-500"
                             : ticket.status === "open"
                               ? "bg-primary/10 text-primary border-primary/20"
-                              : "bg-slate-100 text-slate-500"
+                              : "bg-muted text-muted-foreground"
                         }`}
                       >
                         {ticket.status}
                       </Badge>
                     </div>
-                    <p className="text-[11px] text-slate-400 font-bold mb-3 pl-2 tracking-wide uppercase opacity-70">
+                    <p className="text-[11px] text-muted-foreground/60 font-bold mb-3 pl-2 tracking-wide uppercase opacity-70">
                       {ticket.ticketId}
                     </p>
-                    <p className="text-[13px] text-slate-500 line-clamp-2 mb-4 pl-2 leading-relaxed font-medium">
+                    <p className="text-[13px] text-muted-foreground line-clamp-2 mb-4 pl-2 leading-relaxed font-medium">
                       {stripHtml(ticket.lastMessage)}
                     </p>
 
-                    <div className="flex justify-between items-center pt-4 border-t border-slate-50 pl-2">
+                    <div className="flex justify-between items-center pt-4 border-t border-border/30 pl-2">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-full bg-slate-100 border-2 border-white shadow-sm flex items-center justify-center overflow-hidden">
-                          <span className="text-[10px] font-black text-slate-400 uppercase">
+                        <div className="w-8 h-8 rounded-full bg-muted border border-border shadow-sm flex items-center justify-center overflow-hidden">
+                          <span className="text-[10px] font-black text-muted-foreground/60 uppercase">
                             {ticket.user.charAt(0)}
                           </span>
                         </div>
-                        <span className="text-[12px] font-bold text-slate-700">
+                        <span className="text-[12px] font-bold text-foreground">
                           {ticket.user}
                         </span>
                       </div>
-                      <div className="flex items-center gap-1.5 text-slate-400">
+                      <div className="flex items-center gap-1.5 text-muted-foreground/60">
                         <Clock className="w-3.5 h-3.5" />
                         <span className="text-[11px] font-medium">
                           {ticket.date}
@@ -728,36 +768,36 @@ function TicketListContent() {
 
         {/* Right Area - Conversation */}
         {listLoading || messagesLoading ? (
-          <div className="flex-1 flex flex-col items-center justify-center bg-white rounded-[20px] border border-slate-100 shadow-sm p-10">
+          <div className="flex-1 flex flex-col items-center justify-center bg-card rounded-[20px] border border-border shadow-sm p-10">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            <p className="mt-4 text-slate-400 font-medium">
+            <p className="mt-4 text-muted-foreground font-medium">
               Loading messages...
             </p>
           </div>
         ) : activeTicket ? (
-          <div className="flex-1 flex flex-col min-h-0 bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100 overflow-hidden">
+          <div className="flex-1 flex flex-col min-h-0 bg-card rounded-[20px] shadow-sm border border-border overflow-hidden">
             {/* Conversation Header */}
-            <div className="p-6 md:p-8 border-b border-slate-50 flex justify-between items-center bg-white/50 backdrop-blur-md">
+            <div className="p-6 md:p-8 border-b border-border/50 flex justify-between items-center bg-card/50 backdrop-blur-md">
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100">
+                  <div className="p-2.5 bg-muted rounded-xl border border-border">
                     <MessageSquare className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-black text-slate-800 tracking-tight">
+                    <h3 className="text-xl font-black text-foreground tracking-tight">
                       {activeTicket.subject}
                     </h3>
                     <div className="flex items-center gap-4 mt-1.5 px-0.5">
                       <div className="flex items-center gap-1.5">
                         <UserIcon className="w-3.5 h-3.5 text-primary/60" />
-                        <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider">
+                        <span className="text-[11px] font-black text-muted-foreground/60 uppercase tracking-wider">
                           {activeTicket.user}
                         </span>
                       </div>
-                      <div className="w-1 h-1 rounded-full bg-slate-200" />
+                      <div className="w-1 h-1 rounded-full bg-border" />
                       <div className="flex items-center gap-1.5">
                         <Calendar className="w-3.5 h-3.5 text-primary/60" />
-                        <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none">
+                        <span className="text-[11px] font-black text-muted-foreground/60 uppercase tracking-widest leading-none">
                           CREATED {activeTicket.date}
                         </span>
                       </div>
@@ -772,7 +812,7 @@ function TicketListContent() {
             <div
               ref={scrollRef}
               onScroll={handleScroll}
-              className="flex-1 p-6 md:p-10 bg-[#fcfdfe] overflow-y-auto custom-scrollbar min-h-0"
+              className="flex-1 p-6 md:p-10 bg-background/20 overflow-y-auto custom-scrollbar min-h-0"
             >
               <div className="space-y-10 max-w-4xl mx-auto">
                 {isFetchingMore && (
@@ -782,7 +822,9 @@ function TicketListContent() {
                 )}
                 {/* Messages */}
                 {activeTicket.messages.map((message) => {
-                  const isMe = message.senderId === user?.id?.toString() || message.sender === user?.name;
+                  const isMe =
+                    message.senderId === user?.id?.toString() ||
+                    message.sender === user?.name;
                   return (
                     <div
                       key={message.id}
@@ -790,8 +832,12 @@ function TicketListContent() {
                     >
                       <div className="flex-shrink-0 relative">
                         <div
-                          className={`w-11 h-11 rounded-full border-4 border-white shadow-md flex items-center justify-center overflow-hidden ${
-                            isMe ? "bg-primary" : (message.isAdmin ? "bg-slate-900" : "bg-slate-400")
+                          className={`w-11 h-11 rounded-full border-4 border-card shadow-md flex items-center justify-center overflow-hidden ${
+                            isMe
+                              ? "bg-primary"
+                              : message.isAdmin
+                                ? "bg-muted"
+                                : "bg-muted/60"
                           }`}
                         >
                           <span className="text-xs font-black text-white uppercase">
@@ -806,27 +852,27 @@ function TicketListContent() {
                         <div
                           className={`flex items-center gap-3 mb-2 px-1 ${isMe ? "flex-row-reverse" : "flex-row"}`}
                         >
-                          <span className="text-[14px] font-black text-slate-800">
+                          <span className="text-[14px] font-black text-foreground">
                             {message.sender}
                           </span>
                           <span
                             className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md ${
                               message.isAdmin
-                                ? "bg-blue-50 text-blue-600"
+                                ? "bg-indigo-500/10 text-indigo-400"
                                 : "bg-primary/10 text-primary"
                             }`}
                           >
-                            {message.isAdmin ? "SUPPORT AGENT" : "CUSTOMER"}
+                            {message.isAdmin ? "SUPPORT AGENT" : "TEACHER"}
                           </span>
-                          <span className="text-[10px] font-bold text-slate-300 uppercase">
+                          <span className="text-[10px] font-bold text-muted-foreground/40 uppercase">
                             {message.time}
                           </span>
                         </div>
                         <div
                           className={`px-5 py-3 rounded-[10px] shadow-sm text-[15px] font-medium leading-relaxed ${
                             isMe
-                              ? `bg-primary text-white rounded-tr-none shadow-primary/20`
-                              : `bg-white text-slate-700 border border-slate-100 rounded-tl-none shadow-slate-200/20`
+                              ? `bg-primary text-primary-foreground rounded-tr-none shadow-primary/20`
+                              : `bg-card text-foreground border border-border rounded-tl-none shadow-sm`
                           }`}
                           dangerouslySetInnerHTML={{ __html: message.text }}
                         />
@@ -840,25 +886,25 @@ function TicketListContent() {
             {/* Pagination Controls removed and shifted to handleScroll */}
 
             {/* Reply Area */}
-            <div className="p-4 md:p-6 bg-white border-t border-slate-50">
+            <div className="p-4 md:p-6 bg-card border-t border-border/50">
               <div className="max-w-4xl mx-auto">
                 {activeTicket.status === "pending" ? (
-                  <div className="py-6 px-8 bg-orange-50/50 rounded-2xl border border-dashed border-orange-200 text-center">
-                    <p className="text-[13px] font-black text-orange-600 uppercase tracking-widest">
+                  <div className="py-6 px-8 bg-orange-500/5 rounded-2xl border border-dashed border-orange-500/20 text-center">
+                    <p className="text-[13px] font-black text-orange-500 uppercase tracking-widest">
                       Admin approve the ticket after open the ticket
                     </p>
                   </div>
                 ) : activeTicket.status === "closed" ? (
-                  <div className="py-6 px-8 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center">
-                    <p className="text-[13px] font-black text-slate-400 uppercase tracking-widest">
+                  <div className="py-6 px-8 bg-muted rounded-2xl border border-dashed border-border text-center">
+                    <p className="text-[13px] font-black text-muted-foreground uppercase tracking-widest">
                       Ticket Closed
                     </p>
                   </div>
                 ) : (
-                  <div className="relative bg-slate-50 rounded-[22px] p-1.5 pr-4 border border-slate-100 focus-within:bg-white focus-within:shadow-primary/10 focus-within:border-primary/20 transition-all group">
+                  <div className="relative bg-muted rounded-[22px] p-1.5 pr-4 border border-border focus-within:bg-card focus-within:shadow-primary/10 focus-within:border-primary/20 transition-all group">
                     <Textarea
                       placeholder="Write your response here..."
-                      className="w-full min-h-[44px] max-h-[160px] py-2.5 pl-4 pr-12 bg-transparent border-none focus-visible:ring-0 resize-none text-[15px] font-medium placeholder:text-slate-300 transition-all"
+                      className="w-full min-h-[44px] max-h-[160px] py-2.5 pl-4 pr-12 bg-transparent border-none focus-visible:ring-0 resize-none text-[15px] font-medium placeholder:text-muted-foreground/40 transition-all"
                       value={messageInput}
                       onChange={(e) => setMessageInput(e.target.value)}
                       onKeyDown={(e) => {
@@ -888,15 +934,15 @@ function TicketListContent() {
             </div>
           </div>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center bg-white rounded-[20px] border border-slate-100 shadow-sm gap-6 p-10 text-center">
+          <div className="flex-1 flex flex-col items-center justify-center bg-card rounded-[20px] border border-border shadow-sm gap-6 p-10 text-center">
             <div className="w-24 h-24 rounded-[20px] bg-primary/5 flex items-center justify-center shadow-inner">
               <MessageSquare className="h-10 w-10 text-primary/40 opacity-60" />
             </div>
             <div className="max-w-[280px]">
-              <h3 className="text-xl font-black text-slate-800 mb-2">
+              <h3 className="text-xl font-black text-foreground mb-2">
                 Select a Conversation
               </h3>
-              <p className="text-[13px] font-medium text-slate-400 leading-relaxed">
+              <p className="text-[13px] font-medium text-muted-foreground leading-relaxed">
                 Choose a ticket from the sidebar to view the full resolution
                 history and respond.
               </p>

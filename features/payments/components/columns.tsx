@@ -179,10 +179,10 @@ export const columns: ColumnDef<Payment>[] = [
             <Button
               variant="secondary"
               size="sm"
-              className="h-9 bg-cyan-50 font-semibold text-gray-800 hover:bg-cyan-100/80 hover:text-cyan-900 border-0"
+              className="h-9 font-semibold border-0"
               onClick={() => setShowDialog(true)}
             >
-              <Eye className="mr-2 h-4 w-4 text-gray-700" />
+              <Eye className="mr-2 h-4 w-4" />
               View
             </Button>
           </div>

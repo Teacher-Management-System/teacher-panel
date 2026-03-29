@@ -107,9 +107,12 @@ function LoginFormContent({
           <span className="font-semibold text-[14px]">Back to Home</span>
         </Link>
 
-        <div className="w-full max-w-[440px] animate-slide-up flex flex-col items-center">
+        <div className="w-full max-w-[500px] animate-slide-up flex flex-col items-center">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 mb-12 group justify-center">
+          <Link
+            href="/"
+            className="flex items-center gap-3 mb-12 group justify-center"
+          >
             <div className="w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 bg-white shadow-sm border border-slate-100 rounded-xl overflow-hidden">
               <NextImage
                 src="/logo-icon.png"
@@ -132,7 +135,9 @@ function LoginFormContent({
           >
             <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary/10 text-primary mb-5">
               <Sparkles className="w-3.5 h-3.5" />
-              <span className="text-[11px] font-extrabold tracking-widest uppercase mt-0.5">Welcome Back</span>
+              <span className="text-[11px] font-extrabold tracking-widest uppercase mt-0.5">
+                Welcome Back
+              </span>
             </div>
             <h1 className="text-[38px] leading-[1.1] font-extrabold text-[#0f172a] mb-3 tracking-tight">
               Sign In
@@ -145,7 +150,10 @@ function LoginFormContent({
           {/* Form */}
           <div className="w-full">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-5"
+              >
                 <FormField
                   control={form.control}
                   name="email"

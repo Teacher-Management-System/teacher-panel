@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { navData } from "@/lib/nav-items";
 import { useAuth } from "@/hooks/useAuth";
+import { ThemeToggle } from "../theme-toggle";
 
 export default function Header() {
   const [open, setOpen] = React.useState(false);
@@ -27,7 +28,7 @@ export default function Header() {
   const router = useRouter();
 
   return (
-    <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+    <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
       <div className="flex items-center justify-between w-full gap-2">
         <div className="flex items-center gap-2 px-4">
           <SidebarTrigger variant="outline" className="-ml-1" />
@@ -90,6 +91,7 @@ export default function Header() {
           </CommandDialog>
         </div>
         <div className="flex items-center gap-2 px-4">
+          <ThemeToggle />
           <NotificationDropdown />
           {user && <Profile user={user} />}
         </div>

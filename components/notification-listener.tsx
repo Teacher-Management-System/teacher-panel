@@ -15,36 +15,37 @@ export default function NotificationListener() {
     const echo = getEcho();
     if (!echo) return;
 
-    // 1. General Public Notifications (Optional)
     const publicChannel = echo.channel("notification-channel");
     publicChannel.listen("NotificationEvent", (data: any) => {
       console.log("Public Notification:", data);
       toast.info(data.message || "New update available!");
     });
-
-    // 2. Private User Notifications
     let privateChannel: any = null;
     if (user?.id) {
       const channelName = `notifications.${user.id}`;
-      console.log(`🔔 Waiting for notifications on: ${channelName}`);
-
       privateChannel = echo.private(channelName);
-
-      // Use the Laravel-specific .notification() helper
       privateChannel.notification((notification: any) => {
-        console.log("🔔 REALTIME Notification Received:", notification);
-
         const title = notification.title || "New Message";
         const message =
           notification.body || notification.message || "You have a new update.";
 
-        // Add to global state
+        const ticketId = notification.ticket_id || notification.data?.ticket_id;
         addNotification({
           title,
           message,
           type: "private",
-          ticket_id: notification.ticket_id,
+          ticket_id: ticketId,
         });
+        if (ticketId) {
+          // Add a small delay to ensure backend DB state is fully updated before refresh
+          setTimeout(() => {
+            window.dispatchEvent(
+              new CustomEvent("ticket-updated", {
+                detail: { ...notification, ticket_id: ticketId },
+              }),
+            );
+          }, 1000);
+        }
 
         toast.success(title, {
           description: message,

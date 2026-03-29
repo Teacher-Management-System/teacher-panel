@@ -21,7 +21,7 @@ import {
   Camera,
   Loader2,
 } from "lucide-react";
-import profileService from "../api.service";
+import profileService from "../aou.service";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { useRef } from "react";
@@ -67,7 +67,7 @@ export default function ProfileComplete({ onEdit }: { onEdit: () => void }) {
     }
 
     const formData = new FormData();
-    formData.append("profile_picture", file);
+    formData.append("avatar", file);
 
     setIsUploadingPhoto(true);
     try {
@@ -104,7 +104,7 @@ export default function ProfileComplete({ onEdit }: { onEdit: () => void }) {
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-500 max-w-7xl mx-auto pb-10">
       {/* Header Banner */}
-      <div className="relative rounded-[32px] overflow-hidden bg-white shadow-[0_2px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100">
+      <div className="relative rounded-[32px] overflow-hidden bg-card shadow-sm border border-border">
         <div className="h-44 w-full bg-gradient-to-r from-blue-600 via-teal-400 to-emerald-400 overflow-hidden relative">
           <div
             className="absolute inset-0 opacity-20"
@@ -119,10 +119,10 @@ export default function ProfileComplete({ onEdit }: { onEdit: () => void }) {
         <div className="px-6 sm:px-10 pb-8 relative flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="flex flex-col md:flex-row md:items-end gap-6 -mt-16 md:-mt-20 relative z-10">
             <div className="relative group/avatar">
-              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white bg-slate-100 overflow-hidden shadow-lg flex-shrink-0 flex items-center justify-center text-4xl md:text-5xl font-black text-slate-300 relative">
-                {profile?.profile_picture ? (
+              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-card bg-muted overflow-hidden shadow-lg flex-shrink-0 flex items-center justify-center text-4xl md:text-5xl font-black text-muted-foreground/40 relative">
+                {(profile?.avatar || profile?.profile_picture) ? (
                   <img
-                    src={profile.profile_picture}
+                    src={profile.avatar || profile.profile_picture}
                     alt="Profile Avatar"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover/avatar:scale-110"
                   />
@@ -133,7 +133,7 @@ export default function ProfileComplete({ onEdit }: { onEdit: () => void }) {
                 )}
 
                 {isUploadingPhoto && (
-                  <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-20">
+                  <div className="absolute inset-0 bg-background/60 flex items-center justify-center z-20">
                     <Loader2 className="w-8 h-8 text-primary animate-spin" />
                   </div>
                 )}
@@ -156,17 +156,17 @@ export default function ProfileComplete({ onEdit }: { onEdit: () => void }) {
             </div>
             <div className="pb-2">
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-2.5">
-                <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-800 tracking-tight">
+                <h1 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
                   {profile?.name || user?.name || "Your Name"}
                 </h1>
-                <div className="bg-emerald-50 text-emerald-600 w-fit flex items-center gap-1.5 px-3 py-1 rounded-full border border-emerald-100/50">
+                <div className="bg-emerald-500/10 text-emerald-500 w-fit flex items-center gap-1.5 px-3 py-1 rounded-full border border-emerald-500/20">
                   <ShieldCheck className="w-3.5 h-3.5 stroke-[2.5]" />
                   <span className="text-[10px] font-extrabold tracking-widest uppercase">
                     Verified Profile
                   </span>
                 </div>
               </div>
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-semibold text-slate-500">
+              <div className="flex wrap items-center gap-x-6 gap-y-3 text-sm font-semibold text-muted-foreground">
                 <div className="flex items-center gap-1.5">
                   <MapPin className="w-4 h-4 text-emerald-500" />
                   {address?.city && address?.state
@@ -190,12 +190,6 @@ export default function ProfileComplete({ onEdit }: { onEdit: () => void }) {
             >
               <Settings className="w-4 h-4 mr-2" /> Edit Profile
             </Button>
-            <Button
-              variant="outline"
-              className="border-red-100 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 rounded-xl h-12 w-12 p-0 flex-shrink-0 shadow-sm transition-all hover:scale-105 active:scale-95"
-            >
-              <LogOut className="w-4 h-4 ml-0.5" />
-            </Button>
           </div>
         </div>
       </div>
@@ -204,12 +198,12 @@ export default function ProfileComplete({ onEdit }: { onEdit: () => void }) {
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
           {/* Basic Info */}
-          <div className="bg-white rounded-[32px] p-6 sm:p-10 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100">
+          <div className="bg-card rounded-[32px] p-6 sm:p-10 shadow-sm border border-border">
             <div className="flex items-center gap-4 mb-8">
-              <div className="bg-emerald-50 p-3 rounded-2xl">
-                <User className="w-6 h-6 text-emerald-600 stroke-[2.5]" />
+              <div className="bg-emerald-500/10 p-3 rounded-2xl">
+                <User className="w-6 h-6 text-emerald-500 stroke-[2.5]" />
               </div>
-              <h2 className="text-2xl font-bold text-slate-800">
+              <h2 className="text-2xl font-bold text-foreground">
                 Basic Information
               </h2>
             </div>
@@ -267,21 +261,21 @@ export default function ProfileComplete({ onEdit }: { onEdit: () => void }) {
           </div>
 
           {/* Address Details */}
-          <div className="bg-white rounded-[32px] p-6 sm:p-10 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100">
+          <div className="bg-card rounded-[32px] p-6 sm:p-10 shadow-sm border border-border">
             <div className="flex items-center gap-4 mb-8">
-              <div className="bg-indigo-50 p-3 rounded-2xl">
-                <MapPin className="w-6 h-6 text-indigo-600 stroke-[2.5]" />
+              <div className="bg-indigo-500/10 p-3 rounded-2xl">
+                <MapPin className="w-6 h-6 text-indigo-500 stroke-[2.5]" />
               </div>
-              <h2 className="text-2xl font-bold text-slate-800">
+              <h2 className="text-2xl font-bold text-foreground">
                 Address Details
               </h2>
             </div>
 
-            <div className="bg-slate-50 rounded-[20px] p-6 mb-6 border border-slate-100/50">
-              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.15em] mb-2 hidden sm:block">
+            <div className="bg-muted/50 rounded-[20px] p-6 mb-6 border border-border/50">
+              <p className="text-[10px] font-extrabold text-muted-foreground/60 uppercase tracking-[0.15em] mb-2 hidden sm:block">
                 Current Address
               </p>
-              <p className="text-sm sm:text-base font-bold text-slate-700 leading-snug">
+              <p className="text-sm sm:text-base font-bold text-foreground leading-snug">
                 {address?.address_line1
                   ? `${address.address_line1}, ${address.address_line2 ? address.address_line2 + ", " : ""}${address.city}, ${address.state} - ${address.pincode}`
                   : "Address not provided"}
@@ -289,28 +283,28 @@ export default function ProfileComplete({ onEdit }: { onEdit: () => void }) {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div className="bg-slate-50 border border-slate-100/50 rounded-[20px] p-5 flex items-center gap-4">
-                <div className="bg-white p-2.5 rounded-xl shadow-sm border border-slate-100">
+              <div className="bg-muted/50 border border-border/50 rounded-[20px] p-5 flex items-center gap-4">
+                <div className="bg-card p-2.5 rounded-xl shadow-sm border border-border">
                   <Building2 className="w-5 h-5 text-indigo-500" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
+                  <p className="text-[10px] font-extrabold text-muted-foreground/60 uppercase tracking-widest">
                     City
                   </p>
-                  <p className="text-[15px] font-bold text-slate-700 mt-0.5">
+                  <p className="text-[15px] font-bold text-foreground mt-0.5">
                     {address?.city || "N/A"}
                   </p>
                 </div>
               </div>
-              <div className="bg-slate-50 border border-slate-100/50 rounded-[20px] p-5 flex items-center gap-4">
-                <div className="bg-white p-2.5 rounded-xl shadow-sm border border-slate-100">
+              <div className="bg-muted/50 border border-border/50 rounded-[20px] p-5 flex items-center gap-4">
+                <div className="bg-card p-2.5 rounded-xl shadow-sm border border-border">
                   <Globe2 className="w-5 h-5 text-indigo-500" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
+                  <p className="text-[10px] font-extrabold text-muted-foreground/60 uppercase tracking-widest">
                     State
                   </p>
-                  <p className="text-[15px] font-bold text-slate-700 mt-0.5">
+                  <p className="text-[15px] font-bold text-foreground mt-0.5">
                     {address?.state || "N/A"}
                   </p>
                 </div>
@@ -322,20 +316,20 @@ export default function ProfileComplete({ onEdit }: { onEdit: () => void }) {
         {/* Right Column */}
         <div className="lg:col-span-1 space-y-6">
           {/* Documents */}
-          <div className="bg-white rounded-[32px] p-6 sm:p-8 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 flex flex-col h-fit">
+          <div className="bg-card rounded-[32px] p-6 sm:p-8 shadow-sm border border-border flex flex-col h-fit">
             <div className="flex items-center gap-4 mb-8">
-              <div className="bg-amber-50 p-3 rounded-2xl">
+              <div className="bg-amber-500/10 p-3 rounded-2xl">
                 <ShieldCheck className="w-6 h-6 text-amber-500 stroke-[2.5]" />
               </div>
-              <h2 className="text-2xl font-bold text-slate-800">Documents</h2>
+              <h2 className="text-2xl font-bold text-foreground">Documents</h2>
             </div>
 
             <div className="space-y-6">
               <div>
-                <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-[0.1em] mb-3">
+                <p className="text-[11px] font-extrabold text-muted-foreground/60 uppercase tracking-[0.1em] mb-3">
                   Aadhar Card (Front)
                 </p>
-                <div className="h-44 w-full rounded-[24px] overflow-hidden shadow-sm border border-slate-100 bg-slate-50">
+                <div className="h-44 w-full rounded-[24px] overflow-hidden shadow-sm border border-border bg-muted/50">
                   {aadharFront?.document_path ? (
                     <img
                       src={aadharFront.document_path}
@@ -343,17 +337,17 @@ export default function ProfileComplete({ onEdit }: { onEdit: () => void }) {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-300 font-medium">
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground/40 font-medium">
                       No Document
                     </div>
                   )}
                 </div>
               </div>
               <div>
-                <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-[0.1em] mb-3">
+                <p className="text-[11px] font-extrabold text-muted-foreground/60 uppercase tracking-[0.1em] mb-3">
                   Aadhar Card (Back)
                 </p>
-                <div className="h-44 w-full rounded-[24px] overflow-hidden shadow-sm border border-slate-100 bg-slate-50">
+                <div className="h-44 w-full rounded-[24px] overflow-hidden shadow-sm border border-border bg-muted/50">
                   {aadharBack?.document_path ? (
                     <img
                       src={aadharBack.document_path}
@@ -361,25 +355,13 @@ export default function ProfileComplete({ onEdit }: { onEdit: () => void }) {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-300 font-medium">
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground/40 font-medium">
                       No Document
                     </div>
                   )}
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* Need Help */}
-          <div className="bg-[#0f172a] rounded-[32px] p-8 shadow-xl border border-slate-800">
-            <h3 className="text-2xl font-bold text-white mb-2">Need Help?</h3>
-            <p className="text-[15px] font-medium text-slate-400 leading-relaxed mb-8">
-              If you need to update restricted information, please contact
-              support.
-            </p>
-            <Button className="w-full bg-white hover:bg-slate-100 text-slate-900 font-extrabold text-[15px] h-14 rounded-2xl transition-transform hover:-translate-y-0.5 shadow-md">
-              Contact Support
-            </Button>
           </div>
         </div>
       </div>
@@ -398,14 +380,14 @@ function InfoRow({
 }) {
   return (
     <div className="flex items-center gap-4">
-      <div className="w-12 h-12 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center flex-shrink-0 shadow-sm">
-        <Icon className="w-5 h-5 text-slate-400 stroke-[2]" />
+      <div className="w-12 h-12 rounded-full bg-muted/50 border border-border/50 flex items-center justify-center flex-shrink-0 shadow-sm">
+        <Icon className="w-5 h-5 text-muted-foreground/60 stroke-[2]" />
       </div>
       <div>
-        <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest hidden sm:block mb-1">
+        <p className="text-[10px] font-extrabold text-muted-foreground/60 uppercase tracking-widest hidden sm:block mb-1">
           {label}
         </p>
-        <p className="text-[15px] font-bold text-slate-700">{value}</p>
+        <p className="text-[15px] font-bold text-foreground">{value}</p>
       </div>
     </div>
   );

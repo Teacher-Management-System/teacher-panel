@@ -127,15 +127,15 @@ export default function NotificationList() {
   const getBgColor = (type: string) => {
     switch (type) {
       case "success":
-        return "bg-emerald-100";
+        return "bg-emerald-500/10";
       case "info":
-        return "bg-cyan-100";
+        return "bg-cyan-500/10";
       case "warning":
-        return "bg-orange-100";
+        return "bg-orange-500/10";
       case "error":
-        return "bg-red-100";
+        return "bg-red-500/10";
       default:
-        return "bg-slate-100";
+        return "bg-muted/50";
     }
   };
 
@@ -190,12 +190,12 @@ export default function NotificationList() {
       <div className="grid gap-6 md:grid-cols-3">
         <Card className="rounded-xl border shadow-sm">
           <CardContent className="flex items-center gap-4 px-6">
-            <div className="rounded-full bg-cyan-50 p-3 text-cyan-600">
+            <div className="rounded-full bg-cyan-500/10 p-3 text-cyan-600">
               <Bell className="h-6 w-6 relative" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Total</p>
-              <h3 className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-muted-foreground">Total</p>
+              <h3 className="text-2xl font-bold text-foreground">
                 {counts.total}
               </h3>
             </div>
@@ -204,11 +204,11 @@ export default function NotificationList() {
 
         <Card className="rounded-xl border shadow-sm">
           <CardContent className="flex items-center gap-4 px-6">
-            <div className="rounded-full bg-orange-50 p-3 text-orange-600">
+            <div className="rounded-full bg-orange-500/10 p-3 text-orange-600">
               <Clock className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Unread</p>
+              <p className="text-sm font-medium text-muted-foreground">Unread</p>
               <h3 className="text-2xl font-bold text-orange-600">
                 {counts.unread}
               </h3>
@@ -218,11 +218,11 @@ export default function NotificationList() {
 
         <Card className="rounded-xl border shadow-sm">
           <CardContent className="flex items-center gap-4 px-6">
-            <div className="rounded-full bg-emerald-50 p-3 text-emerald-600">
+            <div className="rounded-full bg-emerald-500/10 p-3 text-emerald-600">
               <CheckCircle2 className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Read</p>
+              <p className="text-sm font-medium text-muted-foreground">Read</p>
               <h3 className="text-2xl font-bold text-emerald-600">
                 {counts.read}
               </h3>
@@ -248,8 +248,8 @@ export default function NotificationList() {
                 key={notification.id}
                 className={`border transition-all hover:shadow-md ${
                   !Boolean(notification.is_read)
-                    ? "bg-cyan-50/30 border-cyan-100"
-                    : "bg-white"
+                    ? "bg-cyan-500/5 border-cyan-500/20"
+                    : "bg-card"
                 }`}
               >
                 <CardContent className="flex items-start justify-between px-6">
@@ -263,17 +263,17 @@ export default function NotificationList() {
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <h4 className="font-semibold text-gray-900">
+                        <h4 className="font-semibold text-foreground">
                           {notification.title}
                         </h4>
                         {!Boolean(notification.is_read) && (
                           <span className="h-2 w-2 rounded-full bg-cyan-500" />
                         )}
                       </div>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted-foreground">
                         {stripHtml(notification.description)}
                       </p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-muted-foreground/60">
                         {formatDistanceToNow(
                           parseDate(notification.created_at),
                           { addSuffix: true },
@@ -284,7 +284,7 @@ export default function NotificationList() {
                   {Boolean(notification.is_read) ? (
                     <Badge
                       variant="secondary"
-                      className="bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                      className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
                     >
                       <Check className="mr-1 h-3 w-3" />
                       Read

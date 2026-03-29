@@ -209,7 +209,7 @@ export function SignupForm() {
       </div>
 
       {/* Right Side - Form */}
-      <div className="flex-1 flex items-center justify-center p-4 md:p-8 relative z-10 bg-white">
+      <div className="flex-1 flex items-center justify-center relative z-10 bg-white">
         {/* Back to Home Button */}
         <Link
           href="/"
@@ -218,10 +218,13 @@ export function SignupForm() {
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span className="font-semibold text-[14px]">Back to Home</span>
         </Link>
-        <div className="w-full max-w-[480px] animate-slide-up flex flex-col items-center">
+        <div className="w-full max-w-[600px] animate-slide-up flex flex-col items-center">
           {/* Logo */}
           {!showOtp && (
-            <Link href="/" className="flex items-center gap-3 mb-10 group justify-center">
+            <Link
+              href="/"
+              className="flex items-center gap-3 mb-10 group justify-center"
+            >
               <div className="w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 bg-white shadow-sm border border-slate-100 rounded-xl overflow-hidden">
                 <NextImage
                   src="/logo-icon.png"
@@ -259,7 +262,10 @@ export function SignupForm() {
                 </span>
               </p>
 
-              <form onSubmit={handleVerifyOtp} className="w-full space-y-10 flex flex-col items-center">
+              <form
+                onSubmit={handleVerifyOtp}
+                className="w-full space-y-10 flex flex-col items-center"
+              >
                 <InputOTP
                   maxLength={6}
                   value={otp}
@@ -267,7 +273,7 @@ export function SignupForm() {
                   autoFocus
                 >
                   <InputOTPGroup className="gap-2 sm:gap-4">
-                    {[0,1,2,3,4,5].map(i => (
+                    {[0, 1, 2, 3, 4, 5].map((i) => (
                       <InputOTPSlot
                         key={i}
                         index={i}

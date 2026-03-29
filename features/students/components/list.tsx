@@ -18,6 +18,7 @@ import {
   BookOpen,
   ChevronDown,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { AddStudentDialog } from "./add-student-dialog";
 import { JoinNowPopup } from "@/components/JoinNowPopup";
 import {
@@ -240,9 +241,9 @@ export default function StudentList() {
             icon: Users,
             color: "blue",
             gradient: "from-blue-600 to-indigo-600",
-            lightGradient: "from-blue-50 to-indigo-50",
-            border: "border-blue-100",
-            textColor: "text-blue-700",
+            lightGradient: "from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950",
+            border: "border-blue-100 dark:border-blue-900",
+            textColor: "text-blue-700 dark:text-blue-400",
           },
           {
             label: "Active Students",
@@ -250,9 +251,9 @@ export default function StudentList() {
             icon: UserCheck,
             color: "emerald",
             gradient: "from-emerald-600 to-teal-600",
-            lightGradient: "from-emerald-50 to-teal-50",
-            border: "border-emerald-100",
-            textColor: "text-emerald-700",
+            lightGradient: "from-emerald-50 to-teal-50 dark:from-emerald-950 dark:to-teal-950",
+            border: "border-emerald-100 dark:border-emerald-900",
+            textColor: "text-emerald-700 dark:text-emerald-400",
           },
           {
             label: "Pending Students",
@@ -260,9 +261,9 @@ export default function StudentList() {
             icon: Clock,
             color: "amber",
             gradient: "from-amber-500 to-orange-500",
-            lightGradient: "from-amber-50 to-orange-50",
-            border: "border-amber-100",
-            textColor: "text-amber-700",
+            lightGradient: "from-amber-50 to-orange-50 dark:from-amber-950 dark:to-orange-950",
+            border: "border-amber-100 dark:border-amber-900",
+            textColor: "text-amber-700 dark:text-amber-400",
           },
           {
             label: "Completed",
@@ -270,14 +271,17 @@ export default function StudentList() {
             icon: CheckCircle,
             color: "purple",
             gradient: "from-purple-600 to-violet-600",
-            lightGradient: "from-purple-50 to-violet-50",
-            border: "border-purple-100",
-            textColor: "text-purple-700",
+            lightGradient: "from-purple-50 to-violet-50 dark:from-purple-950 dark:to-violet-950",
+            border: "border-purple-100 dark:border-purple-900",
+            textColor: "text-purple-700 dark:text-purple-400",
           },
         ].map((stat, i) => (
           <Card
             key={i}
-            className={`relative overflow-hidden border ${stat.border} shadow-sm hover:shadow-md transition-all duration-300 group`}
+            className={cn(
+              "relative overflow-hidden border shadow-sm hover:shadow-md transition-all duration-300 group bg-card",
+              stat.border,
+            )}
           >
             {/* Decorative background gradient */}
             <div
@@ -311,7 +315,7 @@ export default function StudentList() {
                 </div>
               </div>
               {/* Progress indicator decoration */}
-              <div className="mt-4 h-1.5 w-full bg-black/5 rounded-full overflow-hidden">
+              <div className="mt-4 h-1.5 w-full bg-muted rounded-full overflow-hidden">
                 <div
                   className={`h-full bg-gradient-to-r ${stat.gradient} w-[70%] rounded-full opacity-80`}
                 />
@@ -321,7 +325,7 @@ export default function StudentList() {
         ))}
       </div>
 
-      <Card className="rounded-xl border bg-card text-card-foreground shadow-sm">
+      <Card className="rounded-xl border bg-card dark:bg-transparent text-card-foreground shadow-sm">
         <CardContent className="p-6 space-y-4">
           {/* Payment Button - Shows when students are selected */}
           {hasSelectedStudents && !isFree && (

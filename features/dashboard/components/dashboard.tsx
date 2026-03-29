@@ -224,9 +224,9 @@ const Dashboard = () => {
             Welcome back! Here's your performance overview.
           </p>
           {userStatus === "pending" && (
-            <div className="flex items-center gap-2 mt-2 px-3 py-1.5 bg-amber-50 border border-amber-100 rounded-lg w-fit animate-in fade-in slide-in-from-left-2 duration-700">
-              <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
-              <p className="text-xs font-semibold text-amber-700">
+            <div className="flex items-center gap-2 mt-2 px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded-lg w-fit animate-in fade-in slide-in-from-left-2 duration-700">
+              <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
+              <p className="text-xs font-semibold text-amber-500">
                 Note: This is demo data to show how your dashboard will look.
               </p>
             </div>
@@ -234,7 +234,19 @@ const Dashboard = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          {userStatus === "active" && (
+          {userStatus === "pending" && (
+            <Button
+              asChild
+              className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm rounded-lg flex items-center gap-2 px-4 transition-all animate-bounce-subtle"
+            >
+              <Link href="/profile/unlockProfile">
+                <IndianRupee className="w-4 h-4" />
+                <span className="font-semibold">Enroll Now</span>
+              </Link>
+            </Button>
+          )}
+
+          {/* {userStatus === "active" && (
             <Button
               asChild
               className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-100/50 rounded-lg flex items-center gap-2 px-4 transition-all"
@@ -244,7 +256,7 @@ const Dashboard = () => {
                 <span className="font-semibold">Access Panel</span>
               </Link>
             </Button>
-          )}
+          )} */}
 
           <div className="flex items-center gap-2 bg-background/50 p-1 rounded-lg border shadow-sm">
             <div className="flex items-center gap-2 px-3 text-muted-foreground border-r">
@@ -296,7 +308,7 @@ const Dashboard = () => {
         {stats.map((stat, index) => (
           <Card
             key={index}
-            className="border-0 shadow-lg overflow-hidden card-hover animate-fade-in group p-0"
+            className="shadow-lg overflow-hidden card-hover animate-fade-in group p-0"
             style={{ animationDelay: `${index * 0.1}s` }}
           >
             <CardContent className="p-0">
@@ -304,8 +316,8 @@ const Dashboard = () => {
                 className={`${stat.color} flex-1 p-4 sm:p-6 text-white relative overflow-hidden flex flex-col justify-between`}
               >
                 {/* Decorative circles - subtler now */}
-                <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-                <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/5 rounded-full blur-2xl pointer-events-none" />
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-background/20 rounded-full blur-2xl pointer-events-none" />
 
                 <div className="relative z-10 flex justify-between items-start mb-6">
                   <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center transition-transform group-hover:scale-110">
@@ -342,7 +354,7 @@ const Dashboard = () => {
       <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {/* Earnings Chart */}
         <Card
-          className="border-0 shadow-lg animate-fade-in"
+          className="shadow-lg animate-fade-in"
           style={{ animationDelay: "0.4s" }}
         >
           <CardHeader className="pb-2">
@@ -438,7 +450,7 @@ const Dashboard = () => {
 
         {/* Enrollments Chart */}
         <Card
-          className="border-0 shadow-lg animate-fade-in"
+          className="shadow-lg animate-fade-in"
           style={{ animationDelay: "0.5s" }}
         >
           <CardHeader className="pb-2">
@@ -511,7 +523,7 @@ const Dashboard = () => {
       <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 pb-8">
         {/* Student Status Pie Chart */}
         <Card
-          className="border-0 shadow-lg animate-fade-in"
+          className="shadow-lg animate-fade-in"
           style={{ animationDelay: "0.6s" }}
         >
           <CardHeader>
@@ -577,7 +589,7 @@ const Dashboard = () => {
 
         {/* Quick Insights */}
         <Card
-          className="border-0 shadow-lg animate-fade-in"
+          className="shadow-lg animate-fade-in"
           style={{ animationDelay: "0.7s" }}
         >
           <CardHeader>
@@ -614,7 +626,7 @@ const Dashboard = () => {
 
         {/* Recent Activity */}
         <Card
-          className="border-0 shadow-lg animate-fade-in"
+          className="shadow-lg animate-fade-in"
           style={{ animationDelay: "0.8s" }}
         >
           <CardHeader>

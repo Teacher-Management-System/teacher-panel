@@ -72,23 +72,13 @@ const SidebarMenuLink = ({ item }: { item: NavLink }) => {
         tooltip={item.title}
         className={cn(
           "py-5 px-3 transition-all duration-300",
-          isAero && [
-            "h-14 mb-2 mt-1",
-            "bg-gradient-to-br from-[#1394f9] via-[#1fc0c7] to-[#1394f9] bg-[length:200%_200%] animate-[gradient_3s_ease_infinite]",
-            "text-white shadow-xl shadow-primary/30",
-            "hover:scale-[1.05] hover:shadow-2xl hover:shadow-primary/40",
-            "active:scale-95",
-            "border-none ring-0",
-            isActive &&
-              "ring-2 ring-white ring-offset-2 ring-offset-primary/50",
-          ],
+          isAero && "h-14 mb-2 mt-1 border-none rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 shadow-lg shadow-cyan-500/20",
         )}
       >
         <Link href={item.url} onClick={() => setOpenMobile(false)}>
           {isAero ? (
             <div className="relative">
-              <Sparkles className="w-5 h-5 animate-pulse text-white" />
-              <div className="absolute -top-1 -right-1 w-2 h-2 bg-white rounded-full animate-ping" />
+              <Sparkles className="w-5 h-5 text-white animate-pulse" />
             </div>
           ) : (
             item.icon && <item.icon />
@@ -96,7 +86,7 @@ const SidebarMenuLink = ({ item }: { item: NavLink }) => {
           <span
             className={cn(
               "transition-colors",
-              isAero ? "font-bold text-lg" : "",
+              isAero ? "font-extrabold text-lg text-white" : "",
             )}
           >
             {item.title}

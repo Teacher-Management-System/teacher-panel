@@ -63,7 +63,7 @@ import {
 } from "@/components/ui/popover";
 import { toast } from "sonner";
 import studentService from "../api.service";
-import profileService from "../../profile/api.service";
+import profileService from "../../profile/aou.service";
 import authService from "../../auth/api.service";
 import courseService from "../course.service";
 import { useAuth } from "@/hooks/useAuth";
@@ -279,7 +279,7 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
       });
       setIsEmailVerified(true);
       setShowOtpModal(false);
-      
+
       // Auto-submit the student creation upon successful OTP verification
       await submitStudentData(form.getValues() as StudentFormValues);
     } catch (error: any) {
@@ -327,7 +327,7 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
     try {
       const response = await profileService.getProfile();
       const user = response?.user;
-      const isCompleted = user?.is_completed;
+      const isCompleted = user?.is_profile_completed;
 
       let hasAadhar = !!(user?.aadhar?.front && user?.aadhar?.back);
 
@@ -393,10 +393,10 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
               <UserPlus className="h-6 w-6 text-emerald-600" />
             </div>
             <div>
-              <DialogTitle className="text-xl font-bold text-slate-800">
+              <DialogTitle className="text-xl font-bold text-foreground">
                 Add New Student
               </DialogTitle>
-              <DialogDescription className="text-slate-500 text-sm mt-1">
+              <DialogDescription className="text-muted-foreground text-sm mt-1">
                 Fill in the details to register a new student.
               </DialogDescription>
             </div>
@@ -422,14 +422,16 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Student Name</FormLabel>
+                    <FormLabel className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      Student Name
+                    </FormLabel>
                     <FormControl>
                       <div className="relative">
                         <User className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
                         <Input
                           placeholder="Enter full name"
                           disabled={isLoading}
-                          className="pl-10 bg-[#f8f9fa] border-0 rounded-xl h-11 !h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
+                          className="pl-10 bg-muted/50 border-0 rounded-xl h-11 !h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30 text-foreground placeholder:text-muted-foreground"
                           {...field}
                         />
                       </div>
@@ -444,14 +446,16 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                 name="fathers_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Father's Name</FormLabel>
+                    <FormLabel className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      Father's Name
+                    </FormLabel>
                     <FormControl>
                       <div className="relative">
                         <User className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
                         <Input
                           placeholder="Enter father's name"
                           disabled={isLoading}
-                          className="pl-10 bg-[#f8f9fa] border-0 rounded-xl h-11 !h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
+                          className="pl-10 bg-muted/50 border-0 rounded-xl h-11 !h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30 text-foreground placeholder:text-muted-foreground"
                           {...field}
                         />
                       </div>
@@ -466,14 +470,16 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                 name="gender"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Gender</FormLabel>
+                    <FormLabel className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      Gender
+                    </FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                       disabled={isLoading}
                     >
                       <FormControl>
-                        <SelectTrigger className="w-full bg-[#f8f9fa] border-0 rounded-xl h-11 !h-11 px-4 shadow-none focus:ring-1 focus:ring-primary/30">
+                        <SelectTrigger className="w-full bg-muted/50 border-0 rounded-xl h-11 !h-11 px-4 shadow-none focus:ring-1 focus:ring-primary/30 text-foreground">
                           <SelectValue placeholder="Select gender" />
                         </SelectTrigger>
                       </FormControl>
@@ -493,27 +499,45 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                 name="dob"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Date of Birth</FormLabel>
-                    <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                    <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+                      Date of Birth
+                    </FormLabel>
+                    <Popover
+                      open={isCalendarOpen}
+                      onOpenChange={setIsCalendarOpen}
+                    >
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
                             variant={"outline"}
                             disabled={isLoading}
                             className={cn(
-                              "w-full h-11 !h-11 px-4 text-left font-normal bg-[#f8f9fa] border-0 rounded-xl shadow-none hover:bg-slate-100 flex justify-between",
+                              "w-full h-11 !h-11 px-4 text-left font-normal bg-muted/50 border-0 rounded-xl shadow-none hover:bg-muted flex justify-between text-foreground",
                               !field.value && "text-muted-foreground",
                             )}
                           >
-                            {field.value ? (
-                              format(
-                                parse(field.value, "yyyy-MM-dd", new Date()),
-                                "dd-MM-yyyy",
-                              )
+                            {field.value && typeof field.value === "string" ? (
+                              (() => {
+                                try {
+                                  const parsed = parse(
+                                    field.value,
+                                    "yyyy-MM-dd",
+                                    new Date(),
+                                  );
+                                  if (!isNaN(parsed.getTime())) {
+                                    return format(parsed, "dd-MM-yyyy");
+                                  }
+                                  return field.value;
+                                } catch (e) {
+                                  return field.value;
+                                }
+                              })()
+                            ) : field.value ? (
+                              String(field.value)
                             ) : (
                               <span>dd-mm-yyyy</span>
                             )}
-                            <CalendarDays className="h-4 w-4 text-slate-500" />
+                            <CalendarDays className="h-4 w-4 text-muted-foreground" />
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
@@ -521,8 +545,17 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                         <Calendar
                           mode="single"
                           selected={
-                            field.value
-                              ? parse(field.value, "yyyy-MM-dd", new Date())
+                            field.value && typeof field.value === "string"
+                              ? (() => {
+                                  const parsed = parse(
+                                    field.value,
+                                    "yyyy-MM-dd",
+                                    new Date(),
+                                  );
+                                  return !isNaN(parsed.getTime())
+                                    ? parsed
+                                    : undefined;
+                                })()
                               : undefined
                           }
                           onSelect={(date) => {
@@ -556,16 +589,18 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                 name="mobile"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Mobile (WhatsApp)</FormLabel>
+                    <FormLabel className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      Mobile (WhatsApp)
+                    </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Phone className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
+                        <Phone className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
                         <Input
                           type="tel"
                           placeholder="Enter 10-digit number"
                           maxLength={10}
                           disabled={isLoading}
-                          className="pl-10 bg-[#f8f9fa] border-0 rounded-xl h-11 !h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
+                          className="pl-10 bg-muted/50 border-0 rounded-xl h-11 !h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30 text-foreground placeholder:text-muted-foreground"
                           {...field}
                           onChange={(e) => {
                             const value = e.target.value.replace(/\D/g, "");
@@ -584,16 +619,18 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Email Address</FormLabel>
+                    <FormLabel className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      Email Address
+                    </FormLabel>
                     <div className="flex gap-2">
                       <FormControl className="flex-1">
                         <div className="relative">
-                          <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
+                          <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
                           <Input
                             type="email"
                             placeholder="Enter email address"
                             disabled={isEmailVerified || isLoading}
-                            className="pl-10 bg-[#f8f9fa] border-0 rounded-xl h-11 !h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
+                            className="pl-10 bg-muted/50 border-0 rounded-xl h-11 !h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30 text-foreground placeholder:text-muted-foreground"
                             {...field}
                           />
                         </div>
@@ -624,14 +661,16 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                 name="school_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">School Name</FormLabel>
+                    <FormLabel className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      School Name
+                    </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Building2 className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
+                        <Building2 className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
                         <Input
                           placeholder="Enter school name"
                           disabled={isLoading}
-                          className="pl-10 bg-[#f8f9fa] border-0 rounded-xl h-11 !h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
+                          className="pl-10 bg-muted/50 border-0 rounded-xl h-11 !h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30 text-foreground placeholder:text-muted-foreground"
                           {...field}
                         />
                       </div>
@@ -646,14 +685,16 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                 name="category_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Category</FormLabel>
+                    <FormLabel className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      Category
+                    </FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value}
                       disabled={isDataLoading || isLoading}
                     >
                       <FormControl>
-                        <SelectTrigger className="w-full bg-[#f8f9fa] border-0 rounded-xl h-11 !h-11 px-4 shadow-none focus:ring-1 focus:ring-primary/30">
+                        <SelectTrigger className="w-full bg-muted/50 border-0 rounded-xl h-11 !h-11 px-4 shadow-none focus:ring-1 focus:ring-primary/30 text-foreground">
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                       </FormControl>
@@ -675,14 +716,16 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                 name="class"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Class</FormLabel>
+                    <FormLabel className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      Class
+                    </FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                       disabled={isLoading}
                     >
                       <FormControl>
-                        <SelectTrigger className="w-full bg-[#f8f9fa] border-0 rounded-xl h-11 !h-11 px-4 shadow-none focus:ring-1 focus:ring-primary/30">
+                        <SelectTrigger className="w-full bg-muted/50 border-0 rounded-xl h-11 !h-11 px-4 shadow-none focus:ring-1 focus:ring-primary/30 text-foreground">
                           <SelectValue placeholder="Select class" />
                         </SelectTrigger>
                       </FormControl>
@@ -706,7 +749,9 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                 name="course_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Course</FormLabel>
+                    <FormLabel className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      Course
+                    </FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value}
@@ -715,7 +760,7 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                       }
                     >
                       <FormControl>
-                        <SelectTrigger className="w-full bg-[#f8f9fa] border-0 rounded-xl h-11 !h-11 px-4 shadow-none focus:ring-1 focus:ring-primary/30">
+                        <SelectTrigger className="w-full bg-muted/50 border-0 rounded-xl h-11 !h-11 px-4 shadow-none focus:ring-1 focus:ring-primary/30 text-foreground">
                           <SelectValue placeholder="Select course" />
                         </SelectTrigger>
                       </FormControl>
@@ -740,7 +785,9 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                 name="batch_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Batch</FormLabel>
+                    <FormLabel className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      Batch
+                    </FormLabel>
                     <div className="flex gap-2">
                       <Select
                         onValueChange={field.onChange}
@@ -748,7 +795,7 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                         disabled={isLoading}
                       >
                         <FormControl className="flex-1">
-                          <SelectTrigger className="w-full bg-[#f8f9fa] border-0 rounded-xl h-11 !h-11 px-4 shadow-none focus:ring-1 focus:ring-primary/30">
+                          <SelectTrigger className="w-full bg-muted/50 border-0 rounded-xl h-11 !h-11 px-4 shadow-none focus:ring-1 focus:ring-primary/30 text-foreground">
                             <SelectValue placeholder="Select batch" />
                           </SelectTrigger>
                         </FormControl>
@@ -784,19 +831,19 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
               />
             </div>
 
-            <div className="pt-6 pb-6 px-6 bg-white flex justify-end gap-4 border-t border-slate-100">
+            <div className="pt-6 pb-6 px-6 bg-card flex justify-end gap-4 border-t border-border">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={() => setOpen(false)}
-                className="hover:bg-transparent hover:text-slate-800 text-slate-500 font-bold"
+                className="hover:bg-transparent hover:text-foreground text-muted-foreground font-bold"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="bg-[#85e0c5] hover:bg-[#76cca8] text-white shadow-sm rounded-xl px-8 h-11 font-bold min-w-[140px]"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-xl px-8 h-11 font-bold min-w-[140px]"
               >
                 {isLoading ? (
                   <>
@@ -821,18 +868,18 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
             }
           }}
         >
-          <DialogContent className="sm:max-w-[440px] p-10 border-0 shadow-2xl rounded-[32px] overflow-hidden bg-white">
+          <DialogContent className="sm:max-w-[440px] p-10 border-0 shadow-2xl rounded-[32px] overflow-hidden bg-card">
             <DialogHeader className="space-y-0 text-center flex flex-col items-center">
-              <div className="h-[88px] w-[88px] bg-[#e0f8eb] rounded-[28px] flex items-center justify-center mb-6 mt-2">
-                <ShieldCheck className="h-11 w-11 text-[#0bd38d]" />
+              <div className="h-[88px] w-[88px] bg-primary/10 rounded-[20px] flex items-center justify-center mb-6 mt-2">
+                <ShieldCheck className="h-11 w-11 text-primary" />
               </div>
-              <DialogTitle className="text-[28px] font-extrabold text-[#1f2937] mb-2 tracking-tight">
+              <DialogTitle className="text-[28px] font-extrabold text-foreground mb-2 tracking-tight">
                 Verify Email
               </DialogTitle>
-              <DialogDescription className="text-[#64748b] text-[15px] font-medium leading-relaxed max-w-[300px] text-center">
+              <DialogDescription className="text-muted-foreground text-[15px] font-medium leading-relaxed max-w-[300px] text-center">
                 We've sent a 6-digit verification code to
                 <br />
-                <span className="font-extrabold text-[#111827] text-[15px] mt-1.5 block flex justify-center w-full">
+                <span className="font-extrabold text-foreground text-[15px] mt-1.5 block flex justify-center w-full">
                   {form.getValues("email")}
                 </span>
               </DialogDescription>
@@ -850,7 +897,7 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                     <InputOTPSlot
                       key={idx}
                       index={idx}
-                      className="w-11 h-14 sm:w-12 sm:h-14 text-xl sm:text-2xl font-bold bg-[#f8f9fa] border-[#f1f5f9] border-2 rounded-[14px] shadow-none ring-0 focus-visible:ring-1 focus-visible:ring-[#83e9c5] focus-visible:border-[#83e9c5] transition-all"
+                      className="w-11 h-14 sm:w-12 sm:h-14 text-xl sm:text-2xl font-bold bg-muted/50 border-border border-2 rounded-[14px] shadow-none ring-0 focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary transition-all text-foreground"
                     />
                   ))}
                 </InputOTPGroup>
@@ -859,7 +906,7 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
 
             <div className="text-center w-full space-y-7">
               <Button
-                className="w-full h-14 bg-[#83e9c5] hover:bg-[#72dbb6] text-white rounded-2xl text-[16px] font-extrabold shadow-[0_8px_20px_-6px_rgba(131,233,197,0.5)] transition-all"
+                className="w-full h-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl text-[16px] font-extrabold shadow-[0_8px_20px_-6px_rgba(131,233,197,0.5)] transition-all"
                 onClick={handleVerifyOtp}
                 disabled={isVerifyingEmail || otpValue.length !== 6}
               >
@@ -869,7 +916,7 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                   "Verify & Continue"
                 )}
               </Button>
-              
+
               <div className="flex flex-col items-center justify-center gap-4">
                 <Button
                   variant="link"
@@ -898,4 +945,3 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
     </Dialog>
   );
 }
-

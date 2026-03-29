@@ -172,6 +172,25 @@ export default function AeroChatUI() {
 
   return (
     <Card className="flex flex-col h-[calc(100vh-8rem)] w-full shadow-none border-none bg-transparent">
+      <CardHeader className="px-0 pt-0 pb-6 border-b border-zinc-100 dark:border-zinc-800 mb-6 flex flex-row items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-50 to-indigo-50 dark:from-emerald-950/20 dark:to-indigo-950/20 flex items-center justify-center text-primary border border-primary/10 shadow-sm">
+            <Sparkles className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+          </div>
+          <div>
+            <CardTitle className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">
+              Aero AI Assistant
+            </CardTitle>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                AI Teacher's Companion • Online
+              </p>
+            </div>
+          </div>
+        </div>
+      </CardHeader>
+
       <CardContent
         className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar"
         ref={scrollRef}
@@ -218,17 +237,17 @@ export default function AeroChatUI() {
             >
               <div
                 className={cn(
-                  "max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm",
+                  "max-w-[85%] rounded-2xl px-4 py-3 text-sm shadow-sm transition-all",
                   msg.role === "user"
-                    ? "bg-primary text-primary-foreground rounded-tr-none"
-                    : "bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-tl-none text-zinc-800 dark:text-zinc-200",
+                    ? "bg-gradient-to-br from-indigo-600 to-indigo-700 text-white rounded-tr-none shadow-indigo-100/50"
+                    : "bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-tl-none text-zinc-800 dark:text-zinc-200 shadow-zinc-100/50",
                 )}
               >
                 {msg.content}
               </div>
               <div
                 className={cn(
-                  "flex items-center gap-2 px-1 text-[10px] text-zinc-400 font-medium",
+                  "flex items-center gap-2 px-1 text-[10px] text-zinc-400 font-bold uppercase tracking-wider",
                   msg.role === "user"
                     ? "flex-row-reverse text-right"
                     : "flex-row text-left",
@@ -253,11 +272,15 @@ export default function AeroChatUI() {
 
         {showLoading && (
           <div className="flex w-full items-start gap-3 animate-in fade-in duration-500">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border bg-primary/10 border-primary/20 text-primary">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border bg-gradient-to-br from-indigo-50 to-emerald-50 border-indigo-100 text-indigo-600 shadow-sm">
               <Bot className="w-4 h-4" />
             </div>
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm">
-              <Loader2 className="w-4 h-4 animate-spin text-primary" />
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl rounded-tl-none px-5 py-3 shadow-sm shadow-zinc-100/50">
+              <div className="flex gap-1.5">
+                <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce" />
+              </div>
             </div>
           </div>
         )}

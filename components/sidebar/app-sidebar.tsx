@@ -12,18 +12,56 @@ import {
   SidebarHeader,
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
-import { cookieService } from "@/lib/cookie";
 import { navData } from "@/lib/nav-items";
 import NextImage from "next/image";
 import { useAuth } from "@/hooks/useAuth";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user } = useAuth();
+  const {
+    user,
+    isPending,
+    isProfileCompleted,
+    isBasicCompleted,
+    isAddressCompleted,
+    isDocumentCompleted,
+  } = useAuth();
+
+  const modifiedNavGroups = React.useMemo(() => {
+    return navData.navGroups.map((group) => ({
+      ...group,
+      items: group.items.map((item) => {
+        if (item.title === "Profile") {
+          if (isPending) {
+            return { ...item, url: "/profile/unlockProfile" };
+          }
+          if (!isProfileCompleted) {
+            if (!isBasicCompleted) {
+              return { ...item, url: "/profile/basic" };
+            }
+            if (!isAddressCompleted) {
+              return { ...item, url: "/profile/address" };
+            }
+            if (!isDocumentCompleted) {
+              return { ...item, url: "/profile/documents" };
+            }
+            return { ...item, url: "/profile/basic" };
+          }
+        }
+        return item;
+      }),
+    }));
+  }, [
+    isPending,
+    isProfileCompleted,
+    isBasicCompleted,
+    isAddressCompleted,
+    isDocumentCompleted,
+  ]);
 
   return (
-    <Sidebar collapsible="icon" {...props} className="bg-white">
-      <div className="flex h-full flex-col">
-        <SidebarHeader className="h-16 border-b border-gray-100 flex items-center px-6 group-data-[collapsible=icon]:px-0">
+    <Sidebar collapsible="icon" {...props} className="bg-background border-r border-sidebar-border dark:bg-background">
+      <div className="flex h-full flex-col bg-background dark:bg-background">
+        <SidebarHeader className="h-16 border-b border-sidebar-border flex items-center px-6 group-data-[collapsible=icon]:px-0">
           <div className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center">
             <div className="flex items-center justify-center w-12 h-12 flex-shrink-0">
               <NextImage
@@ -36,7 +74,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               />
             </div>
             <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-              <span className="font-display font-bold text-lg text-gray-900 tracking-tight">
+              <span className="font-display font-bold text-lg text-sidebar-foreground tracking-tight">
                 Aerophantom
               </span>
               {user?.teacher_id && (
@@ -49,7 +87,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarHeader>
         <SidebarContent>
           <nav className="flex flex-1 flex-col space-y-4">
-            {navData.navGroups.map((group) => (
+            {modifiedNavGroups.map((group) => (
               <NavGroup key={group.title} {...group} />
             ))}
           </nav>

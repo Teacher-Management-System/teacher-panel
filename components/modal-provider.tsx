@@ -1,5 +1,6 @@
 import React, { createContext, useState, ReactNode } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 type ModalSize = "sm" | "md" | "lg" | "xl";
 
@@ -16,6 +17,7 @@ export interface ModalContextType {
 export interface ModalOptions {
   size?: ModalSize;
   showCloseButton?: boolean;
+  className?: string;
 }
 
 export const ModalContext = createContext<ModalContextType | undefined>(
@@ -77,7 +79,7 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
       {children}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent
-          className={sizeClasses[modalOptions.size ?? "md"]}
+          className={cn(sizeClasses[modalOptions.size ?? "md"], modalOptions.className)}
           showCloseButton={modalOptions.showCloseButton ?? true}
         >
           {dynamicContent}

@@ -42,12 +42,12 @@ class ProfileService extends BaseService {
     return await this.post("/documents", data);
   }
 
-  async updateStatus(userId: number) {
+  async updateStatus(userId: number | string) {
     return await this.patch(`/update-status/${userId}`, {});
   }
 
   async updatePhoto(data: FormData) {
-    return await this.post("update-photo", data);
+    return await this.post("upload", data);
   }
 }
 

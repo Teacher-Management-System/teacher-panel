@@ -1,9 +1,0 @@
-# Dependencies
-node_modules
-.next
-# Dev files and folders
-npm-debug.log
-yarn-error.log
-.git
-.github
-.vscode

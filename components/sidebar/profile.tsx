@@ -35,10 +35,10 @@ export function Profile({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+        className="w-(--radix-dropdown-menu-trigger-width) min-w-64 rounded-[24px] p-2 bg-card border-border/50 shadow-2xl"
         side="bottom"
         align="end"
-        sideOffset={4}
+        sideOffset={8}
       >
         <UserDropdownContent user={user} />
       </DropdownMenuContent>

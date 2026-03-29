@@ -42,7 +42,9 @@ export function DataTable<TData>({
       <div
         className={cn(
           "relative overflow-hidden rounded-md transition-colors duration-300",
-          isPending ? "bg-zinc-100/90 border-zinc-200" : "bg-white",
+          isPending
+            ? "bg-zinc-100/90 border-zinc-200 dark:bg-zinc-900/50 dark:border-zinc-800"
+            : "bg-card dark:bg-transparent border border-border dark:border-border/50",
           containerClassName,
         )}
       >
@@ -59,11 +61,11 @@ export function DataTable<TData>({
           )}
         >
           <Table>
-            <TableHeader className="bg-gray-50/50">
+            <TableHeader className="bg-muted/50">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow
                   key={headerGroup.id}
-                  className="hover:bg-transparent border-b border-gray-100"
+                  className="hover:bg-muted/50 border-b border-border"
                 >
                   {headerGroup.headers.map((header) => (
                     <TableHead

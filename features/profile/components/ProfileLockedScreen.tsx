@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -8,13 +10,57 @@ import {
   Zap,
   CheckCircle2,
   Star,
+  Loader2,
 } from "lucide-react";
+import { load, CheckoutOptions } from "@cashfreepayments/cashfree-js";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import profileService from "@/features/profile/aou.service";
 
-interface ProfileLockedScreenProps {
-  onPayNow: () => void;
-}
+const ProfileLockedScreen = () => {
+  const { isPending, isLoading } = useAuth();
+  const [isPaying, setIsPaying] = useState(false);
+  const router = useRouter();
 
-const ProfileLockedScreen = ({ onPayNow }: ProfileLockedScreenProps) => {
+  useEffect(() => {
+    if (!isLoading && !isPending) {
+      router.push("/profile");
+    }
+  }, [isLoading, isPending, router]);
+
+  const handlePayNow = async () => {
+    try {
+      setIsPaying(true);
+      const response = await profileService.initiatePayment();
+
+      console.log("Payment session response:", response);
+
+      if (!response?.payment_session_id) {
+        toast.error("Invalid payment session");
+        return;
+      }
+
+      const cashfree = await load({ mode: "sandbox" });
+
+      const checkoutOptions: CheckoutOptions = {
+        paymentSessionId: response.payment_session_id,
+        returnUrl: `${window.location.origin}/profile`,
+        redirectTarget: "_self",
+        onClose: () => {
+          window.location.reload();
+        },
+      };
+
+      console.log("Opening checkout...");
+      await cashfree.checkout(checkoutOptions);
+    } catch (error) {
+      console.error("Payment error:", error);
+    } finally {
+      setIsPaying(false);
+    }
+  };
   return (
     <div className="relative flex items-center justify-center min-h-[70vh] w-full overflow-hidden">
       {/* Background Decorative Elements */}
@@ -23,7 +69,7 @@ const ProfileLockedScreen = ({ onPayNow }: ProfileLockedScreenProps) => {
         <div className="absolute bottom-0 left-[20%] w-96 h-96 bg-purple-500/10 rounded-full blur-[120px] opacity-70" />
       </div>
 
-      <Card className="relative max-w-lg w-full border-white/20 bg-white/40 dark:bg-black/40 backdrop-blur-xl shadow-2xl overflow-hidden mt-8">
+      <Card className="relative max-w-lg w-full border-border bg-card/40 backdrop-blur-xl shadow-2xl overflow-hidden mt-8">
         {/* Premium Banner */}
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-75" />
 
@@ -31,9 +77,9 @@ const ProfileLockedScreen = ({ onPayNow }: ProfileLockedScreenProps) => {
           {/* Hero Icon */}
           <div className="relative group">
             <div className="absolute inset-0 bg-primary/30 rounded-full blur-2xl group-hover:blur-3xl transition-all duration-500" />
-            <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-background to-muted border border-white/50 dark:border-white/10 shadow-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+            <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-card to-background border border-border shadow-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
               <Lock className="w-10 h-10 text-primary drop-shadow-md" />
-              <div className="absolute -top-2 -right-2 bg-gradient-to-br from-yellow-400 to-amber-600 w-8 h-8 rounded-full flex items-center justify-center shadow-lg border-2 border-background">
+              <div className="absolute -top-2 -right-2 bg-gradient-to-br from-yellow-400 to-amber-600 w-8 h-8 rounded-full flex items-center justify-center shadow-lg border-2 border-card">
                 <Gem className="w-4 h-4 text-white" />
               </div>
             </div>
@@ -68,7 +114,7 @@ const ProfileLockedScreen = ({ onPayNow }: ProfileLockedScreenProps) => {
             ].map((feature, i) => (
               <div
                 key={i}
-                className="flex items-center gap-3 p-3 rounded-xl bg-background/50 border border-white/10 shadow-sm hover:bg-background/80 transition-colors text-left"
+                className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 border border-border shadow-sm hover:bg-muted/50 transition-colors text-left"
               >
                 <div
                   className={`p-2 rounded-lg bg-background ${feature.color.replace("text", "bg")}/10`}
@@ -83,12 +129,17 @@ const ProfileLockedScreen = ({ onPayNow }: ProfileLockedScreenProps) => {
           {/* CTA Section */}
           <div className="w-full space-y-4 pt-4">
             <Button
-              onClick={onPayNow}
+              onClick={handlePayNow}
               size="lg"
+              disabled={isPaying}
               className="w-full h-14 text-lg font-bold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-lg shadow-primary/25 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
-              <Sparkles className="w-5 h-5 mr-2 animate-pulse" />
-              Unlock Now
+              {isPaying ? (
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              ) : (
+                <Sparkles className="w-5 h-5 mr-2 animate-pulse" />
+              )}
+              {isPaying ? "Processing..." : "Unlock Now"}
             </Button>
             <p className="text-xs text-muted-foreground uppercase tracking-widest font-medium">
               One-time payment • Lifetime access

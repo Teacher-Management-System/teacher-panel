@@ -28,8 +28,10 @@ import {
   LocateFixed,
   Loader2,
 } from "lucide-react";
-import profileService from "../api.service";
+import profileService from "../aou.service";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 import { locationService } from "@/lib/location.service";
 import { Address } from "@/features/profile/model";
 import { INDIAN_STATES, getStateCities } from "@/lib/constants/india-locations";
@@ -40,6 +42,9 @@ export default function AddressDetails({
 }: {
   onSuccess?: () => void;
 }) {
+  const { user, isPending, isProfileCompleted, isLoading, isBasicCompleted } =
+    useAuth();
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [stateOpen, setStateOpen] = useState(false);
   const [cityOpen, setCityOpen] = useState(false);
@@ -115,24 +120,29 @@ export default function AddressDetails({
   };
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response: any = await profileService.getAddress();
-        const data = response.data || response; // Handling potential response structure
-        setFormData({
-          address_line1: data.address_line1 || "",
-          address_line2: data.address_line2 || "",
-          city: data.city || "",
-          state: data.state || "",
-          pincode: data.pincode || "",
-          country: "India", // Always India
-        });
-      } catch (error) {
-        console.error("Failed to fetch address:", error);
+    if (user?.address) {
+      const data = user.address;
+      setFormData({
+        address_line1: data.address_line1 || "",
+        address_line2: data.address_line2 || "",
+        city: data.city || "",
+        state: data.state || "",
+        pincode: data.pincode || "",
+        country: "India",
+      });
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (isPending) {
+        router.push("/profile/unlockProfile");
+      } else if (!isBasicCompleted) {
+        toast.info("Please complete basic details first");
+        router.push("/profile/basic");
       }
-    };
-    fetchProfile();
-  }, []);
+    }
+  }, [isLoading, isPending, isProfileCompleted, user, router]);
 
   const handleInputChange = (field: keyof Address, value: string) => {
     if (field === "pincode") {
@@ -191,10 +201,10 @@ export default function AddressDetails({
           </h3>
         </div>
 
-        {/* Dispatch Note Alert - Optional based on whether user wants to keep it, but keeping it styled nicely is good */}
-        <div className="mb-6 flex items-start gap-2 p-4 bg-cyan-50 border border-cyan-100/50 text-cyan-800 rounded-xl text-sm">
-          <Truck className="w-5 h-5 flex-shrink-0 mt-0.5 text-cyan-600" />
-          <p className="text-cyan-800/90 font-medium">
+        {/* Dispatch Note Alert */}
+        <div className="mb-6 flex items-start gap-3 p-4 bg-primary/5 border border-primary/10 text-primary rounded-xl text-sm">
+          <Truck className="w-5 h-5 flex-shrink-0 mt-0.5" />
+          <p className="font-medium opacity-90">
             The kit will be dispatched to this address. Please ensure the
             address you provide is accurate and complete to avoid delivery
             issues.
@@ -206,7 +216,7 @@ export default function AddressDetails({
           variant="outline"
           onClick={handleGetCurrentLocation}
           disabled={isGettingLocation}
-          className="mb-8 w-full sm:w-auto bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100 hover:text-blue-700 font-semibold rounded-xl h-11 px-6 shadow-sm"
+          className="mb-8 w-full sm:w-auto bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 hover:text-primary font-bold rounded-xl h-11 px-6 shadow-none transition-all"
         >
           {isGettingLocation ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -220,7 +230,7 @@ export default function AddressDetails({
           <div className="space-y-1.5 md:col-span-2">
             <Label
               htmlFor="addressLine1"
-              className="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+              className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest"
             >
               Address Line 1
             </Label>
@@ -228,8 +238,8 @@ export default function AddressDetails({
               id="addressLine1"
               placeholder="House No, Street, Area"
               className={cn(
-                "bg-[#f8f9fa] border-0 rounded-xl h-11 px-4 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30",
-                errors.address_line1 && "ring-1 ring-red-500 bg-red-50",
+                "bg-muted/50 border-border rounded-xl h-11 px-4 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30",
+                errors.address_line1 && "ring-1 ring-red-500 bg-red-500/10",
               )}
               value={formData.address_line1}
               onChange={(e) =>
@@ -246,14 +256,14 @@ export default function AddressDetails({
           <div className="space-y-1.5 md:col-span-2">
             <Label
               htmlFor="addressLine2"
-              className="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+              className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest"
             >
               Address Line 2 (Optional)
             </Label>
             <Input
               id="addressLine2"
               placeholder="Landmark, Locality"
-              className="bg-[#f8f9fa] border-0 rounded-xl h-11 px-4 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
+              className="bg-muted/50 border-border rounded-xl h-11 px-4 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
               value={formData.address_line2}
               onChange={(e) =>
                 handleInputChange("address_line2", e.target.value)
@@ -264,7 +274,7 @@ export default function AddressDetails({
           <div className="space-y-1.5">
             <Label
               htmlFor="state"
-              className="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+              className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest"
             >
               State
             </Label>
@@ -275,9 +285,9 @@ export default function AddressDetails({
                   role="combobox"
                   aria-expanded={stateOpen}
                   className={cn(
-                    "w-full px-4 h-11 !h-11 justify-between text-left font-normal bg-[#f8f9fa] border-0 rounded-xl shadow-none hover:bg-slate-100",
+                    "w-full px-4 h-11 !h-11 justify-between text-left font-normal bg-muted/50 border-border rounded-xl shadow-none hover:bg-muted",
                     !formData.state && "text-muted-foreground",
-                    errors.state && "ring-1 ring-red-500 bg-red-50",
+                    errors.state && "ring-1 ring-red-500 bg-red-500/10",
                   )}
                 >
                   {formData.state ? formData.state : "Select state..."}
@@ -328,7 +338,7 @@ export default function AddressDetails({
           <div className="space-y-1.5">
             <Label
               htmlFor="city"
-              className="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+              className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest"
             >
               City
             </Label>
@@ -340,9 +350,9 @@ export default function AddressDetails({
                   aria-expanded={cityOpen}
                   disabled={!formData.state}
                   className={cn(
-                    "w-full px-4 h-11 !h-11 justify-between text-left font-normal bg-[#f8f9fa] border-0 rounded-xl shadow-none hover:bg-slate-100",
+                    "w-full px-4 h-11 !h-11 justify-between text-left font-normal bg-muted/50 border-border rounded-xl shadow-none hover:bg-muted",
                     !formData.city && "text-muted-foreground",
-                    errors.city && "ring-1 ring-red-500 bg-red-50",
+                    errors.city && "ring-1 ring-red-500 bg-red-500/10",
                   )}
                 >
                   {formData.city
@@ -397,7 +407,7 @@ export default function AddressDetails({
           <div className="space-y-1.5 md:col-span-1">
             <Label
               htmlFor="pincode"
-              className="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+              className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest"
             >
               Pincode
             </Label>
@@ -408,8 +418,8 @@ export default function AddressDetails({
               maxLength={6}
               placeholder="302001"
               className={cn(
-                "bg-[#f8f9fa] border-0 rounded-xl h-11 px-4 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30",
-                errors.pincode && "ring-1 ring-red-500 bg-red-50",
+                "bg-muted/50 border-border rounded-xl h-11 px-4 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30",
+                errors.pincode && "ring-1 ring-red-500 bg-red-500/10",
               )}
               value={formData.pincode}
               onChange={(e) => handleInputChange("pincode", e.target.value)}
@@ -422,28 +432,14 @@ export default function AddressDetails({
       </section>
 
       {/* Footer actions */}
-      <div className="pt-8 mt-2 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="pt-8 mt-2 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-primary" />
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+          <span className="text-[11px] font-bold text-muted-foreground/40 uppercase tracking-widest">
             All changes are auto-saved
           </span>
         </div>
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full sm:w-auto px-6 h-12 rounded-xl border-slate-200 text-slate-600 font-semibold shadow-none hover:bg-slate-50"
-            onClick={() =>
-              document
-                .querySelector<HTMLElement>(
-                  '[data-state="active"][value="basic"]',
-                )
-                ?.click()
-            }
-          >
-            Previous Step
-          </Button>
           <Button
             type="submit"
             className="w-full sm:w-auto px-10 h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-none transition-all hover:-translate-y-0.5"

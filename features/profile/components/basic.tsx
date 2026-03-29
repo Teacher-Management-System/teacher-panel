@@ -33,9 +33,11 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import PaymentReminderDialog from "@/components/PaymentReminderDialogProps";
-import profileService from "../api.service";
+import profileService from "../aou.service";
 import { toast } from "sonner";
 import { useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 type Qualification = "undergraduate" | "graduate" | "postgraduate";
 type CurrentStatus = "college_student" | "employed" | "unemployed";
@@ -58,6 +60,8 @@ interface ProfileFormData {
 }
 
 const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
+  const { user, isPending, isProfileCompleted, isLoading } = useAuth();
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [formData, setFormData] = useState<ProfileFormData>({
@@ -79,43 +83,43 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response: any = await profileService.getProfile();
-        const data = response.user;
-        setFormData({
-          fullName: data.name || "",
-          fatherName: data.father_name || "",
-          gender: data.gender || "",
-          dob: data.dob
-            ? new Date(
-                !isNaN(Number(data.dob)) &&
-                  Math.abs(Number(data.dob)) < 100000000000
-                  ? Number(data.dob) * 1000
-                  : data.dob,
-              )
-            : undefined,
-          contactNumber: data.mobile || "",
-          email: data.email || "",
-          qualification: (data.qualification_level as Qualification) || "",
-          currentStatus: (data.current_status as CurrentStatus) || "",
-          collegeName: data.college_name || "",
-          course: data.course || "",
-          year: data.year ? String(data.year) : "",
-          organizationName: data.organization_name || "",
-          designation: data.designation || "",
-          monthlyPaymentExpectation: data.monthly_payment_expectation
-            ? String(data.monthly_payment_expectation)
-            : "",
-        });
-      } catch (error) {
-        console.error("Failed to fetch profile:", error);
-        toast.error("Failed to load profile data");
-      }
-    };
+    if (user) {
+      const data = user;
+      setFormData({
+        fullName: data.name || "",
+        fatherName: data.father_name || "",
+        gender: data.gender || "",
+        dob: data.dob
+          ? new Date(
+              !isNaN(Number(data.dob)) &&
+                Math.abs(Number(data.dob)) < 100000000000
+                ? Number(data.dob) * 1000
+                : data.dob,
+            )
+          : undefined,
+        contactNumber: data.mobile || "",
+        email: data.email || "",
+        qualification: (data.qualification_level as Qualification) || "",
+        currentStatus: (data.current_status as CurrentStatus) || "",
+        collegeName: data.college_name || "",
+        course: data.course || "",
+        year: data.year ? String(data.year) : "",
+        organizationName: data.organization_name || "",
+        designation: data.designation || "",
+        monthlyPaymentExpectation: data.monthly_payment_expectation
+          ? String(data.monthly_payment_expectation)
+          : "",
+      });
+    }
+  }, [user]);
 
-    fetchProfile();
-  }, []);
+  useEffect(() => {
+    if (!isLoading) {
+      if (isPending) {
+        router.push("/profile/unlockProfile");
+      }
+    }
+  }, [isLoading, isPending, router]);
 
   const handleInputChange = (
     field: keyof ProfileFormData,
@@ -182,14 +186,14 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
             <div className="space-y-1.5">
               <Label
                 htmlFor="fullName"
-                className="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+                className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest"
               >
                 Full Name
               </Label>
               <Input
                 id="fullName"
                 placeholder="Enter full name"
-                className="bg-[#f8f9fa] border-0 rounded-xl h-11 px-4 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
+                className="bg-muted/50 border-border rounded-xl h-11 px-4 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
                 value={formData.fullName}
                 onChange={(e) => handleInputChange("fullName", e.target.value)}
               />
@@ -198,14 +202,14 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
             <div className="space-y-1.5">
               <Label
                 htmlFor="fatherName"
-                className="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+                className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest"
               >
                 Father's Name
               </Label>
               <Input
                 id="fatherName"
                 placeholder="Enter father's name"
-                className="bg-[#f8f9fa] border-0 rounded-xl h-11 px-4 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
+                className="bg-muted/50 border-border rounded-xl h-11 px-4 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
                 value={formData.fatherName}
                 onChange={(e) =>
                   handleInputChange("fatherName", e.target.value)
@@ -214,14 +218,14 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+              <Label className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
                 Gender
               </Label>
               <Select
                 value={formData.gender}
                 onValueChange={(value) => handleInputChange("gender", value)}
               >
-                <SelectTrigger className="bg-[#f8f9fa] border-0 rounded-xl h-11 !h-11 px-4 shadow-none focus:ring-1 focus:ring-primary/30 w-full">
+                <SelectTrigger className="bg-muted/50 border-border rounded-xl h-11 !h-11 px-4 shadow-none focus:ring-1 focus:ring-primary/30 w-full">
                   <SelectValue placeholder="Select gender" />
                 </SelectTrigger>
                 <SelectContent>
@@ -233,7 +237,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+              <Label className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
                 Date of Birth
               </Label>
               <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
@@ -241,7 +245,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full px-4 h-11 justify-between text-left font-normal bg-[#f8f9fa] border-0 rounded-xl shadow-none hover:bg-slate-100",
+                      "w-full px-4 h-11 justify-between text-left font-normal bg-muted/50 border-border rounded-xl shadow-none hover:bg-muted",
                       !formData.dob && "text-muted-foreground",
                     )}
                   >
@@ -250,7 +254,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                     ) : (
                       <span>dd-mm-yyyy</span>
                     )}
-                    <CalendarIcon className="h-4 w-4 text-slate-500" />
+                    <CalendarIcon className="h-4 w-4 text-muted-foreground/40" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -289,7 +293,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
             <div className="space-y-1.5">
               <Label
                 htmlFor="contactNumber"
-                className="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+                className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest"
               >
                 Mobile Number
               </Label>
@@ -297,7 +301,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 id="contactNumber"
                 type="tel"
                 placeholder="+91 12345 67890"
-                className="bg-[#f8f9fa] border-0 rounded-xl h-11 px-4 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
+                className="bg-muted/50 border-border rounded-xl h-11 px-4 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
                 value={formData.contactNumber}
                 onChange={(e) =>
                   handleInputChange("contactNumber", e.target.value)
@@ -308,7 +312,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
             <div className="space-y-1.5">
               <Label
                 htmlFor="email"
-                className="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+                className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest"
               >
                 Email Address
               </Label>
@@ -316,7 +320,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 id="email"
                 type="email"
                 placeholder="example@gmail.com"
-                className="bg-[#f8f9fa] border-0 rounded-xl h-11 px-4 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
+                className="bg-muted/50 border-border rounded-xl h-11 px-4 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
                 value={formData.email}
                 readOnly
                 disabled
@@ -336,7 +340,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-5">
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+              <Label className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
                 Highest Qualification
               </Label>
               <Select
@@ -345,7 +349,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                   handleInputChange("qualification", value)
                 }
               >
-                <SelectTrigger className="bg-[#f8f9fa] border-0 rounded-xl h-11 !h-11 px-4 shadow-none focus:ring-1 focus:ring-primary/30 w-full">
+                <SelectTrigger className="bg-muted/50 border-border rounded-xl h-11 !h-11 px-4 shadow-none focus:ring-1 focus:ring-primary/30 w-full">
                   <SelectValue placeholder="e.g. M.Tech in AI" />
                 </SelectTrigger>
                 <SelectContent>
@@ -357,7 +361,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
             </div>
 
             <div className="space-y-3 md:col-span-3 mt-4">
-              <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+              <Label className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
                 Current Status
               </Label>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -366,8 +370,8 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                   className={cn(
                     "border rounded-2xl p-4 cursor-pointer transition-all flex flex-col justify-center min-h-[90px]",
                     formData.currentStatus === "college_student"
-                      ? "border-indigo-500 bg-white shadow-sm ring-1 ring-indigo-500"
-                      : "border-slate-100 bg-[#f8f9fa] hover:bg-slate-50",
+                      ? "border-indigo-500 bg-indigo-500/10 shadow-sm ring-1 ring-indigo-500/50"
+                      : "border-border bg-muted/30 hover:bg-muted/50",
                   )}
                   onClick={() =>
                     handleInputChange("currentStatus", "college_student")
@@ -377,13 +381,13 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                     className={cn(
                       "text-base font-extrabold",
                       formData.currentStatus === "college_student"
-                        ? "text-indigo-900"
-                        : "text-slate-700",
+                        ? "text-indigo-400"
+                        : "text-foreground",
                     )}
                   >
                     College Student
                   </h4>
-                  <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mt-1">
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground/40 tracking-wider mt-1">
                     Currently Studying
                   </p>
                 </div>
@@ -393,8 +397,8 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                   className={cn(
                     "border rounded-2xl p-4 cursor-pointer transition-all flex flex-col justify-center min-h-[90px]",
                     formData.currentStatus === "employed"
-                      ? "border-emerald-500 bg-white shadow-sm ring-1 ring-emerald-500"
-                      : "border-slate-100 bg-[#f8f9fa] hover:bg-slate-50",
+                      ? "border-emerald-500 bg-emerald-500/10 shadow-sm ring-1 ring-emerald-500/50"
+                      : "border-border bg-muted/30 hover:bg-muted/50",
                   )}
                   onClick={() => handleInputChange("currentStatus", "employed")}
                 >
@@ -402,13 +406,13 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                     className={cn(
                       "text-base font-extrabold",
                       formData.currentStatus === "employed"
-                        ? "text-emerald-900"
-                        : "text-slate-700",
+                        ? "text-emerald-400"
+                        : "text-foreground",
                     )}
                   >
                     Employed
                   </h4>
-                  <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mt-1">
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground/40 tracking-wider mt-1">
                     Working Professional
                   </p>
                 </div>
@@ -418,8 +422,8 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                   className={cn(
                     "border rounded-2xl p-4 cursor-pointer transition-all flex flex-col justify-center min-h-[90px]",
                     formData.currentStatus === "unemployed"
-                      ? "border-orange-500 bg-white shadow-sm ring-1 ring-orange-500"
-                      : "border-slate-100 bg-[#f8f9fa] hover:bg-slate-50",
+                      ? "border-orange-500 bg-orange-500/10 shadow-sm ring-1 ring-orange-500/50"
+                      : "border-border bg-muted/30 hover:bg-muted/50",
                   )}
                   onClick={() =>
                     handleInputChange("currentStatus", "unemployed")
@@ -429,13 +433,13 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                     className={cn(
                       "text-base font-extrabold",
                       formData.currentStatus === "unemployed"
-                        ? "text-orange-900"
-                        : "text-slate-700",
+                        ? "text-orange-400"
+                        : "text-foreground",
                     )}
                   >
                     Unemployed
                   </h4>
-                  <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mt-1">
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground/40 tracking-wider mt-1">
                     Looking for Opportunities
                   </p>
                 </div>
@@ -448,16 +452,16 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 <div className="space-y-1.5">
                   <Label
                     htmlFor="collegeName"
-                    className="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+                    className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest"
                   >
                     College Name
                   </Label>
                   <div className="relative">
-                    <Building2 className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
+                    <Building2 className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground/40" />
                     <Input
                       id="collegeName"
                       placeholder="Enter college name"
-                      className="pl-10 bg-[#f8f9fa] border-0 rounded-xl h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
+                      className="pl-10 bg-muted/50 border-border rounded-xl h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
                       value={formData.collegeName}
                       onChange={(e) =>
                         handleInputChange("collegeName", e.target.value)
@@ -468,16 +472,16 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 <div className="space-y-1.5">
                   <Label
                     htmlFor="course"
-                    className="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+                    className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest"
                   >
                     Course
                   </Label>
                   <div className="relative">
-                    <BookOpen className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
+                    <BookOpen className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground/40" />
                     <Input
                       id="course"
                       placeholder="e.g. B.Tech CSE"
-                      className="pl-10 bg-[#f8f9fa] border-0 rounded-xl h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
+                      className="pl-10 bg-muted/50 border-border rounded-xl h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
                       value={formData.course}
                       onChange={(e) =>
                         handleInputChange("course", e.target.value)
@@ -486,16 +490,16 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                  <Label className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
                     Year
                   </Label>
                   <div className="relative">
-                    <CalendarDays className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400 z-10 pointer-events-none" />
+                    <CalendarDays className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground/40 z-10 pointer-events-none" />
                     <Select
                       value={formData.year}
                       onValueChange={(v) => handleInputChange("year", v)}
                     >
-                      <SelectTrigger className="pl-10 bg-[#f8f9fa] border-0 rounded-xl h-11 !h-11 shadow-none focus:ring-1 focus:ring-primary/30 w-full relative">
+                      <SelectTrigger className="pl-10 bg-muted/50 border-border rounded-xl h-11 !h-11 shadow-none focus:ring-1 focus:ring-primary/30 w-full relative">
                         <SelectValue placeholder="e.g. 3rd Year" />
                       </SelectTrigger>
                       <SelectContent>
@@ -524,16 +528,16 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 <div className="space-y-1.5">
                   <Label
                     htmlFor="organizationName"
-                    className="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+                    className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest"
                   >
                     Organization Name
                   </Label>
                   <div className="relative">
-                    <Home className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
+                    <Home className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground/40" />
                     <Input
                       id="organizationName"
                       placeholder="Enter company name"
-                      className="pl-10 bg-[#f8f9fa] border-0 rounded-xl h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
+                      className="pl-10 bg-muted/50 border-border rounded-xl h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
                       value={formData.organizationName}
                       onChange={(e) =>
                         handleInputChange("organizationName", e.target.value)
@@ -544,16 +548,16 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 <div className="space-y-1.5">
                   <Label
                     htmlFor="designation"
-                    className="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+                    className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest"
                   >
                     Current Designation
                   </Label>
                   <div className="relative">
-                    <Briefcase className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
+                    <Briefcase className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground/40" />
                     <Input
                       id="designation"
                       placeholder="e.g. Software Engineer"
-                      className="pl-10 bg-[#f8f9fa] border-0 rounded-xl h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
+                      className="pl-10 bg-muted/50 border-border rounded-xl h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
                       value={formData.designation}
                       onChange={(e) =>
                         handleInputChange("designation", e.target.value)
@@ -568,12 +572,12 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
               <div className="space-y-1.5 md:col-span-2">
                 <Label
                   htmlFor="monthlyPaymentExpectation"
-                  className="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+                  className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest"
                 >
                   Monthly Expectation
                 </Label>
                 <div className="relative">
-                  <div className="absolute left-1.5 top-1.5 bottom-1.5 w-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <div className="absolute left-1.5 top-1.5 bottom-1.5 w-8 bg-orange-500/10 rounded-lg flex items-center justify-center">
                     <IndianRupee
                       className="h-4 w-4 text-orange-500 font-bold"
                       strokeWidth={3}
@@ -583,7 +587,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                     id="monthlyPaymentExpectation"
                     type="number"
                     placeholder="Enter expected salary"
-                    className="pl-12 bg-[#f8f9fa] border-0 rounded-xl h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
+                    className="pl-12 bg-muted/50 border-border rounded-xl h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
                     value={formData.monthlyPaymentExpectation}
                     onChange={(e) =>
                       handleInputChange(
@@ -593,7 +597,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                     }
                   />
                 </div>
-                <p className="text-[10px] italic font-medium text-slate-400 mt-1">
+                <p className="text-[10px] italic font-medium text-muted-foreground/40 mt-1">
                   * This helps us find relevant opportunities for you.
                 </p>
               </div>
@@ -602,10 +606,10 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
         </section>
 
         {/* Footer actions */}
-        <div className="pt-8 mt-2 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="pt-8 mt-2 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-primary" />
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+            <span className="text-[11px] font-bold text-muted-foreground/40 uppercase tracking-widest">
               All changes are auto-saved
             </span>
           </div>

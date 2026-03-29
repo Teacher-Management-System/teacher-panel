@@ -43,13 +43,13 @@ export function StudentDetailsDialog({
     label: string;
     value: string | undefined | null;
   }) => (
-    <div className="flex items-start gap-3 p-3 rounded-lg bg-gray-50/50 hover:bg-gray-50 transition-colors">
-      <div className="p-2 bg-white rounded-md shadow-sm">
+    <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+      <div className="p-2 bg-card rounded-md shadow-sm border border-border">
         <Icon className="h-4 w-4 text-primary" />
       </div>
       <div>
         <p className="text-xs font-medium text-muted-foreground">{label}</p>
-        <p className="text-sm font-medium text-gray-900 mt-0.5">
+        <p className="text-sm font-medium text-foreground mt-0.5">
           {value || "Not provided"}
         </p>
       </div>
@@ -58,29 +58,29 @@ export function StudentDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[90vw] sm:max-w-[600px] p-0 overflow-hidden gap-0 border-0 shadow-2xl rounded-2xl">
-        <DialogHeader className="p-6 bg-gradient-to-br from-indigo-50/50 to-white border-b">
+      <DialogContent className="w-[90vw] sm:max-w-[600px] p-0 overflow-hidden gap-0 border border-border shadow-2xl rounded-2xl bg-card">
+        <DialogHeader className="p-6 bg-muted/30 border-b border-border">
           <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center border-4 border-white shadow-sm">
-              <span className="text-lg font-bold text-indigo-600">
+            <div className="h-12 w-12 rounded-full bg-indigo-500/10 flex items-center justify-center border-4 border-card shadow-sm">
+              <span className="text-lg font-bold text-indigo-500">
                 {student.name.charAt(0).toUpperCase()}
               </span>
             </div>
             <div>
-              <DialogTitle className="text-xl font-bold text-gray-900">
+              <DialogTitle className="text-xl font-bold text-foreground">
                 {student.name}
               </DialogTitle>
-              <DialogDescription className="text-gray-500 mt-1 flex items-center gap-2">
+              <DialogDescription className="text-muted-foreground mt-1 flex items-center gap-2">
                 <span
                   className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium capitalize ${
                     student.status === "active"
-                      ? "bg-green-100 text-green-800"
+                      ? "bg-emerald-500/10 text-emerald-500"
                       : student.status === "pending"
-                        ? "bg-yellow-100 text-yellow-800"
+                        ? "bg-amber-500/10 text-amber-500"
                         : student.status === "complete" ||
                             student.status === "completed"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-gray-100 text-gray-800"
+                          ? "bg-blue-500/10 text-blue-500"
+                          : "bg-muted text-muted-foreground"
                   }`}
                 >
                   {student.status}
@@ -96,7 +96,7 @@ export function StudentDetailsDialog({
           <div className="space-y-6">
             {/* Personal Information */}
             <section>
-              <h4 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
                 <User className="h-4 w-4 text-indigo-500" />
                 Personal Information
               </h4>
@@ -127,7 +127,7 @@ export function StudentDetailsDialog({
 
             {/* Contact Details */}
             <section>
-              <h4 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Phone className="h-4 w-4 text-indigo-500" />
                 Contact Details
               </h4>
@@ -149,7 +149,7 @@ export function StudentDetailsDialog({
 
             {/* Academic Information */}
             <section>
-              <h4 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
                 <School className="h-4 w-4 text-indigo-500" />
                 Academic Information
               </h4>
@@ -207,7 +207,7 @@ export function StudentDetailsDialog({
           </div>
         </div>
 
-        <div className="p-4 bg-gray-50 border-t flex justify-end">
+        <div className="p-4 bg-muted/30 border-t border-border flex justify-end">
           <Button onClick={() => onOpenChange(false)}>Close</Button>
         </div>
       </DialogContent>
