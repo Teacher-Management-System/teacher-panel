@@ -43,6 +43,11 @@ const nextConfig: NextConfig = {
     // !! WARNING: This will skip type checking during build !!
     ignoreBuildErrors: true,
   },
+  experimental: {
+    mcpServer: false,
+    webpackBuildWorker: true,
+    turbopackFileSystemCacheForBuild: true,
+  },
 };
 
 export default nextConfig;
