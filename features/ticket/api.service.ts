@@ -18,7 +18,7 @@ class TicketService extends BaseService {
   }
 
   public async sendMessage(ticketId: string, body: string) {
-    return this.post(`${ticketId}/messages`, { body });
+    return this.post(`${ticketId}/messages`, { body, message: body });
   }
 }
 

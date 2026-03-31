@@ -27,7 +27,7 @@ import { ticketService } from "../api.service";
 import { Ticket as ApiTicket } from "../model";
 import { getEcho } from "@/lib/echo";
 import { stripHtml } from "@/lib/utils";
-import { useQueryState, parseAsString } from "nuqs";
+import { useQueryState } from "nuqs";
 
 interface Message {
   id: string;
@@ -54,6 +54,10 @@ function TicketListContent() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
 
+  // Read ticketId from URL once on mount (for notification navigation). Not reactive.
+  const initialTicketIdRef = useRef<string | null>(searchParams.get("ticketId"));
+  const didHandleInitialTicket = useRef(false);
+
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [listLoading, setListLoading] = useState(true);
@@ -65,7 +69,6 @@ function TicketListContent() {
         ? (value as Ticket["status"])
         : "open",
   });
-  const [ticketId, setTicketId] = useQueryState("ticketId", parseAsString);
   const [activeTicket, setActiveTicket] = useState<Ticket | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [stats, setStats] = useState({ pending: 0, open: 0, closed: 0 });
@@ -76,21 +79,9 @@ function TicketListContent() {
   const scrollHeightRef = useRef<number>(0);
   const isInitialLoad = useRef<boolean>(true);
   const shouldScrollToBottomRef = useRef<boolean>(true);
+  const isBackgroundRefresh = useRef<boolean>(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // Auto-select ticket from URL parameter (ticketId)
-  useEffect(() => {
-    if (ticketId) {
-      const ticket = tickets.find((t) => t.id === ticketId);
-      if (ticket) {
-        setActiveTicket(ticket);
-      }
-    } else {
-      setActiveTicket(null);
-    }
-  }, [ticketId, tickets]);
-
-  // Fetch initial stats once
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -113,17 +104,20 @@ function TicketListContent() {
   useEffect(() => {
     const fetchTickets = async () => {
       try {
-        setListLoading(true);
+        if (!isBackgroundRefresh.current) {
+          setListLoading(true);
+        }
+        isBackgroundRefresh.current = false;
         const response: any = await ticketService.getTickets(activeTab);
         if (response && response.tickets) {
           const mappedTickets: Ticket[] = response.tickets.map(
             (t: ApiTicket) => ({
-              id: t.id,
+              id: String(t.id),
               subject: t.subject,
               lastMessage: t.description,
               status: t.status,
               user: t.user?.name || "Unknown",
-              userId: t.user?.id || "",
+              userId: String(t.user?.id || ""),
               date: new Date(t.createdAt * 1000).toLocaleDateString("en-US", {
                 month: "short",
                 day: "numeric",
@@ -145,29 +139,72 @@ function TicketListContent() {
               ],
             }),
           );
-          setTickets(mappedTickets);
+          setTickets((prev) => {
+            return mappedTickets.map((newT) => {
+              const oldT = prev.find((p) => p.id === newT.id);
+              if (oldT && oldT.messages.length > 1) {
+                return {
+                  ...newT,
+                  messages: oldT.messages,
+                  lastMessage: oldT.lastMessage,
+                };
+              }
+              return newT;
+            });
+          });
 
-          if (
-            !activeTicket ||
-            !mappedTickets.some((t) => t.id === activeTicket.id)
-          ) {
-            if (ticketId) {
-              const targetTicket = mappedTickets.find(
-                (t) => t.id === ticketId,
-              );
-              if (targetTicket) setActiveTicket(targetTicket);
-              else setActiveTicket(null);
+          // Preserve messages for currently active ticket across refreshes
+          setActiveTicket((prevActive) => {
+            if (!prevActive) return null;
+            const updatedTicket = mappedTickets.find((t) => t.id === prevActive.id);
+            if (updatedTicket) {
+              return {
+                ...updatedTicket,
+                messages: prevActive.messages,
+                lastMessage: prevActive.lastMessage,
+              };
+            }
+            return prevActive;
+          });
+
+          // One-time: handle ticketId from URL on first load (notification navigation)
+          if (!didHandleInitialTicket.current && initialTicketIdRef.current) {
+            didHandleInitialTicket.current = true;
+            const urlTicketId = initialTicketIdRef.current;
+            const targetTicket = mappedTickets.find(
+              (t) =>
+                t.id === urlTicketId ||
+                t.ticketId === urlTicketId ||
+                t.ticketId === `T-${urlTicketId}`,
+            );
+            if (targetTicket) {
+              setActiveTicket(targetTicket);
+              setMessagesLoading(true);
             } else {
-              setActiveTicket(null);
+              // Ticket may be in a different tab - check all tickets
+              ticketService.getTickets().then((allRes: any) => {
+                if (allRes?.tickets) {
+                  const found = allRes.tickets.find((t: ApiTicket) =>
+                    String(t.id) === urlTicketId ||
+                    String((t as any).ticket_number) === urlTicketId
+                  );
+                  if (found && found.status !== activeTab) {
+                    setActiveTab(found.status as any);
+                  }
+                }
+              }).catch(console.error);
             }
           }
         } else {
           setTickets([]);
-          setActiveTicket(null);
+          if (!activeTicket) setActiveTicket(null);
         }
       } catch (error) {
-        console.error("Failed to fetch tickets:", error);
+        console.error("❌ FAILED to fetch tickets:", error);
       } finally {
+        console.log(
+          "🔄 fetchTickets FINISHED, setting loading states to false",
+        );
         setListLoading(false);
         setLoading(false);
       }
@@ -176,10 +213,10 @@ function TicketListContent() {
     fetchTickets();
   }, [activeTab, refreshTrigger]);
 
-  // Listen for ticket-updated custom events (from notification-listener.tsx)
   useEffect(() => {
     const handleTicketUpdate = (event: any) => {
       console.log("📥 RECEIVED ticket-updated event:", event.detail);
+      isBackgroundRefresh.current = true;
       setRefreshTrigger((prev) => prev + 1);
     };
 
@@ -189,8 +226,6 @@ function TicketListContent() {
   }, []);
 
   const [messagesLoading, setMessagesLoading] = useState(false);
-
-  // Auto-scroll to bottom when messages change or loading finishes
   useEffect(() => {
     if (
       !messagesLoading &&
@@ -207,62 +242,97 @@ function TicketListContent() {
     }
   }, [activeTicket?.messages.length, activeTicket?.id, messagesLoading]);
 
-  // Fetch messages when a ticket is selected
   useEffect(() => {
     isInitialLoad.current = true;
     shouldScrollToBottomRef.current = true;
-  }, [activeTicket?.id]);
+    if (typeof window !== "undefined") {
+      if (activeTicket) {
+        (window as any).currentActiveTicketId = activeTicket.id;
+        (window as any).currentActiveTicketNumber = activeTicket.ticketId; // e.g., 'T-1002'
+      } else {
+        (window as any).currentActiveTicketId = null;
+        (window as any).currentActiveTicketNumber = null;
+      }
+    }
+
+    return () => {
+      if (typeof window !== "undefined") {
+        (window as any).currentActiveTicketId = null;
+        (window as any).currentActiveTicketNumber = null;
+      }
+    };
+  }, [activeTicket?.id, activeTicket?.ticketId]);
 
   useEffect(() => {
     const fetchMessages = async () => {
-      if (!activeTicket) return;
+      if (!activeTicket?.id) {
+        setMessagesLoading(false);
+        return;
+      }
+
+      console.log(`📡 FETCHING messages for ticket: ${activeTicket.id}`);
       try {
         setMessagesLoading(true);
-        // Step 1: Fetch first page to get metadata (Total Pages)
         const firstPageResponse: any = await ticketService.getMessages(
           activeTicket.id,
           1,
         );
-        if (firstPageResponse && firstPageResponse.meta) {
-          const total = firstPageResponse.meta.total_page || 1;
+
+        let finalMessages = [];
+        let targetPage = 1;
+
+        if (firstPageResponse && firstPageResponse.messages) {
+          const total =
+            (firstPageResponse.meta && firstPageResponse.meta.total_page) || 1;
           setTotalPages(total);
+          targetPage = total;
 
-          // Step 2: If multiple pages, fetch the LAST page (latest messages)
-          let targetPage = total;
           let response = firstPageResponse;
-
           if (total > 1) {
+            console.log(
+              `📖 Multiple pages detected (${total}), fetching last page...`,
+            );
             response = await ticketService.getMessages(activeTicket.id, total);
           }
 
           if (response && response.messages) {
-            const mappedMessages: Message[] = response.messages.map(
-              (m: any) => ({
-                id: m.id,
-                text: m.body,
-                sender: m.sender?.name || "Unknown",
-                senderId: m.sender?.id || m.sender_id || "",
-                time: new Date(m.createdAt * 1000).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }),
-                isAdmin:
-                  m.isAdmin !== undefined
-                    ? m.isAdmin
-                    : m.sender?.name?.trim().toLowerCase() !==
-                      activeTicket.user?.trim().toLowerCase(),
-              }),
-            );
-
-            setCurrentPage(targetPage);
-            setActiveTicket((prev) =>
-              prev ? { ...prev, messages: mappedMessages } : null,
-            );
-            isInitialLoad.current = false;
+            finalMessages = response.messages;
           }
         }
+
+        if (finalMessages.length > 0) {
+          const mappedMessages: Message[] = finalMessages.map((m: any) => ({
+            id: String(m.id),
+            text: m.body || m.message || "",
+            sender: m.sender?.name || m.user?.name || "Unknown",
+            senderId: String(m.sender?.id || m.sender_id || ""),
+            time: new Date(m.createdAt * 1000).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            isAdmin:
+              m.isAdmin !== undefined
+                ? m.isAdmin
+                : (m.sender?.name || m.user?.name || "")
+                    .trim()
+                    .toLowerCase() !== activeTicket.user?.trim().toLowerCase(),
+          }));
+
+          setCurrentPage(targetPage);
+          setActiveTicket((prev) =>
+            prev && prev.id === activeTicket.id
+              ? { ...prev, messages: mappedMessages }
+              : prev,
+          );
+          isInitialLoad.current = false;
+          console.log(`✅ LOADED ${mappedMessages.length} messages`);
+        } else {
+          console.log(
+            "ℹ️ No messages found for this ticket (beyond description)",
+          );
+        }
       } catch (error) {
-        console.error("Failed to fetch messages:", error);
+        console.error("❌ FAILED to fetch messages:", error);
       } finally {
         setMessagesLoading(false);
       }
@@ -481,11 +551,11 @@ function TicketListContent() {
       await setActiveTab("pending");
 
       // Robust ID detection from response
-      const newTicketId = response?.uuid || response?.id || response?.ticket?.id || response?.ticket?.uuid;
-
-      if (newTicketId) {
-        await setTicketId(newTicketId);
-      }
+      const newTicketId =
+        response?.uuid ||
+        response?.id ||
+        response?.ticket?.id ||
+        response?.ticket?.uuid;
 
       // Refresh list and stats
       const [ticketsResponse, statsResponse]: any = await Promise.all([
@@ -495,12 +565,12 @@ function TicketListContent() {
 
       if (ticketsResponse && ticketsResponse.tickets) {
         const mappedTickets = ticketsResponse.tickets.map((t: ApiTicket) => ({
-          id: t.id,
+          id: String(t.id),
           subject: t.subject,
           lastMessage: t.description,
           status: t.status,
           user: t.user?.name || "Unknown",
-          userId: t.user?.id || "",
+          userId: String(t.user?.id || ""),
           date: new Date(t.createdAt * 1000).toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
@@ -512,13 +582,13 @@ function TicketListContent() {
         setTickets(mappedTickets);
 
         // Find and set active ticket immediately
-        const ticketToOpen = newTicketId 
+        const ticketToOpen = newTicketId
           ? mappedTickets.find((t: any) => t.id === newTicketId)
           : mappedTickets[0]; // Fallback to newest if ID not found
 
         if (ticketToOpen) {
           setActiveTicket(ticketToOpen);
-          if (!newTicketId) await setTicketId(ticketToOpen.id);
+          setMessagesLoading(true);
         }
       }
 
@@ -625,13 +695,19 @@ function TicketListContent() {
               <div className="flex-1 md:flex-none flex items-center justify-center gap-1.5 md:gap-3 pr-2 md:pr-6 border-r border-border h-full">
                 <div className="h-1.5 w-1.5 md:h-2.5 md:w-2.5 rounded-full bg-orange-400 shadow-[0_0_8px_rgba(251,146,60,0.5)] shrink-0" />
                 <span className="text-[9px] md:text-[14px] font-black text-muted-foreground whitespace-nowrap uppercase tracking-wider">
-                  {loading ? ".." : stats.pending} <span className="hidden sm:inline ml-0.5 opacity-60">Pending</span>
+                  {loading ? ".." : stats.pending}{" "}
+                  <span className="hidden sm:inline ml-0.5 opacity-60">
+                    Pending
+                  </span>
                 </span>
               </div>
               <div className="flex-1 md:flex-none flex items-center justify-center gap-1.5 md:gap-3 pl-2 md:pl-6 h-full">
                 <div className="h-1.5 w-1.5 md:h-2.5 md:w-2.5 rounded-full bg-primary shadow-[0_0_8px_rgba(31,192,199,0.5)] shrink-0" />
                 <span className="text-[9px] md:text-[14px] font-black text-muted-foreground whitespace-nowrap uppercase tracking-wider">
-                  {loading ? ".." : stats.open} <span className="hidden sm:inline ml-0.5 opacity-60">Open</span>
+                  {loading ? ".." : stats.open}{" "}
+                  <span className="hidden sm:inline ml-0.5 opacity-60">
+                    Open
+                  </span>
                 </span>
               </div>
             </div>
@@ -643,53 +719,57 @@ function TicketListContent() {
       </Card>
 
       {/* Main Content Area */}
-      <div className={`flex-1 flex flex-col md:flex-row gap-4 md:gap-6 min-h-0 md:overflow-hidden relative ${activeTicket ? 'h-[calc(100vh-10rem)] md:h-auto' : 'h-auto'}`}>
+      <div
+        className={`flex-1 flex flex-col md:flex-row gap-4 md:gap-6 min-h-0 md:overflow-hidden relative ${activeTicket ? "h-[calc(100vh-10rem)] md:h-auto" : "h-auto"}`}
+      >
         {/* Left Sidebar - Ticket List */}
-        <div className={`w-full md:w-[360px] flex-1 md:flex-none flex flex-col gap-4 transition-all duration-300 ${activeTicket ? 'hidden md:flex' : 'flex'}`}>
+        <div
+          className={`w-full md:w-[360px] flex-1 md:flex-none flex flex-col gap-4 transition-all duration-300 ${activeTicket ? "hidden md:flex" : "flex"}`}
+        >
           <Card className="rounded-[20px] md:rounded-[28px] shadow-sm border border-border flex flex-col overflow-hidden">
             <CardContent className="p-4 md:p-6 flex flex-col gap-4 md:gap-5">
-            <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
-              <Input
-                placeholder="Search by ID or Subject..."
-                className="pl-11 bg-muted border-transparent h-12 rounded-2xl focus-visible:ring-primary/10 focus-visible:bg-muted/80 transition-all text-[15px] font-medium placeholder:text-muted-foreground/40"
-              />
-            </div>
+              <div className="relative group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
+                <Input
+                  placeholder="Search by ID or Subject..."
+                  className="pl-11 bg-muted border-transparent h-12 rounded-2xl focus-visible:ring-primary/10 focus-visible:bg-muted/80 transition-all text-[15px] font-medium placeholder:text-muted-foreground/40"
+                />
+              </div>
 
-            <div className="flex p-1.5 bg-muted/50 rounded-2xl border border-border relative z-20">
-              {(["pending", "open", "closed"] as const).map((tab) => (
-                <Button
-                  key={tab}
-                  variant="ghost"
-                  size="sm"
-                  className={`flex-1 h-10 text-[11px] font-black uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 cursor-pointer select-none transition-colors ${
-                    activeTab === tab
-                      ? "bg-card text-primary shadow-sm border border-border"
-                      : "text-muted-foreground hover:text-foreground hover:bg-card/50"
-                  }`}
-                  onClick={() => {
-                    setActiveTab(tab);
-                  }}
-                >
-                  {tab}
-                  {stats[tab] > 0 && (
-                    <span
-                      className={`px-1.5 py-0.5 rounded-md text-[10px] ${
-                        activeTab === tab
-                          ? "bg-primary/10 text-primary"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      {stats[tab]}
-                    </span>
-                  )}
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              <div className="flex p-1.5 bg-muted/50 rounded-2xl border border-border relative z-20">
+                {(["pending", "open", "closed"] as const).map((tab) => (
+                  <Button
+                    key={tab}
+                    variant="ghost"
+                    size="sm"
+                    className={`flex-1 h-10 text-[11px] font-black uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 cursor-pointer select-none transition-colors ${
+                      activeTab === tab
+                        ? "bg-card text-primary shadow-sm border border-border"
+                        : "text-muted-foreground hover:text-foreground hover:bg-card/50"
+                    }`}
+                    onClick={() => {
+                      setActiveTab(tab);
+                    }}
+                  >
+                    {tab}
+                    {stats[tab] > 0 && (
+                      <span
+                        className={`px-1.5 py-0.5 rounded-md text-[10px] ${
+                          activeTab === tab
+                            ? "bg-primary/10 text-primary"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {stats[tab]}
+                      </span>
+                    )}
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
-        <div className="flex-1 px-1 overflow-y-auto custom-scrollbar">
+          <div className="flex-1 px-1 overflow-y-auto custom-scrollbar">
             {listLoading ? (
               <div className="flex items-center justify-center h-40">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -745,22 +825,22 @@ function TicketListContent() {
                       </p>
 
                       <div className="flex justify-between items-center pt-4 border-t border-border/30 pl-2">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-full bg-muted border border-border shadow-sm flex items-center justify-center overflow-hidden">
-                          <span className="text-[10px] font-black text-muted-foreground/60 uppercase">
-                            {ticket.user.charAt(0)}
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-full bg-muted border border-border shadow-sm flex items-center justify-center overflow-hidden">
+                            <span className="text-[10px] font-black text-muted-foreground/60 uppercase">
+                              {ticket.user.charAt(0)}
+                            </span>
+                          </div>
+                          <span className="text-[12px] font-bold text-foreground">
+                            {ticket.user}
                           </span>
                         </div>
-                        <span className="text-[12px] font-bold text-foreground">
-                          {ticket.user}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-muted-foreground/60">
-                        <Clock className="w-3.5 h-3.5" />
-                        <span className="text-[11px] font-medium">
-                          {ticket.date}
-                        </span>
-                      </div>
+                        <div className="flex items-center gap-1.5 text-muted-foreground/60">
+                          <Clock className="w-3.5 h-3.5" />
+                          <span className="text-[11px] font-medium">
+                            {ticket.date}
+                          </span>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -772,7 +852,9 @@ function TicketListContent() {
 
         {/* Right Area - Conversation */}
         {listLoading || messagesLoading ? (
-          <div className={`flex-1 flex flex-col items-center justify-center bg-card md:rounded-[20px] border border-border shadow-sm p-10 ${!activeTicket ? 'hidden md:flex' : 'flex fixed inset-0 z-[100] md:relative md:z-auto'}`}>
+          <div
+            className={`flex-1 flex flex-col items-center justify-center bg-card md:rounded-[20px] border border-border shadow-sm p-10 ${!activeTicket ? "hidden md:flex" : "flex fixed inset-0 z-[100] md:relative md:z-auto"}`}
+          >
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
             <p className="mt-4 text-muted-foreground font-medium">
               Loading messages...
@@ -783,13 +865,12 @@ function TicketListContent() {
             {/* Conversation Header */}
             <div className="p-3 md:p-8 border-b border-border/50 flex justify-between items-center bg-card/50 backdrop-blur-md">
               <div className="flex items-center gap-2 md:gap-3">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="md:hidden h-8 w-8 bg-muted rounded-lg border border-border"
                   onClick={() => {
                     setActiveTicket(null);
-                    setTicketId(null);
                   }}
                 >
                   <ArrowLeft className="h-4 w-4" />

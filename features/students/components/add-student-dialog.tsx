@@ -214,7 +214,7 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
   };
 
   const handleSendOtp = async () => {
-    const email = form.getValues("email");
+    const email = form.getValues("email").toLowerCase();
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return;
     }
@@ -246,6 +246,7 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
     try {
       const payload = {
         ...data,
+        email: data.email.toLowerCase(),
         status: "pending",
       };
       await studentService.create(payload);
@@ -271,7 +272,7 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
     }
     setIsVerifyingEmail(true);
     try {
-      const email = form.getValues("email");
+      const email = form.getValues("email").toLowerCase();
       await studentService.verifyOtp({
         verification_id: verificationId,
         otp: otpValue,
@@ -293,7 +294,7 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
     if (resendCooldown > 0) return;
     setIsResendingOtp(true);
     try {
-      const email = form.getValues("email");
+      const email = form.getValues("email").toLowerCase();
       const response: any = await studentService.sendOtp({
         email,
         event: "email-verify",

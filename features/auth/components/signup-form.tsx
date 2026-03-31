@@ -80,6 +80,7 @@ export function SignupForm() {
   const onSignupSubmit = async (values: RegisterValues) => {
     setIsLoading(true);
     try {
+      values.email = values.email.toLowerCase();
       const response: any = await authService.register(values);
       if (response) {
         setRegisteredEmail(values.email);
@@ -99,6 +100,7 @@ export function SignupForm() {
     setIsLoading(true);
     try {
       const values = form.getValues();
+      values.email = values.email.toLowerCase();
       const response: any = await authService.register(values);
       if (response) {
         toast.success("OTP resent successfully!");

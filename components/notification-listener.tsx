@@ -4,11 +4,13 @@ import { useEffect } from "react";
 import { getEcho } from "@/lib/echo";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 import { useNotifications } from "@/context/notification-context";
 
 export default function NotificationListener() {
   const { user } = useAuth();
+  const router = useRouter();
   const { addNotification } = useNotifications();
 
   useEffect(() => {
@@ -47,10 +49,56 @@ export default function NotificationListener() {
           }, 1000);
         }
 
-        toast.success(title, {
-          description: message,
-          duration: 5000,
-        });
+        // Prevent showing toast if the user is currently on the same ticket's chat view
+        let isCurrentlyActive = false;
+        if (typeof window !== "undefined" && ticketId) {
+          const w = window as any;
+
+          const matchById =
+            w.currentActiveTicketId &&
+            String(w.currentActiveTicketId) === String(ticketId);
+          const matchByNumber =
+            w.currentActiveTicketNumber &&
+            String(w.currentActiveTicketNumber).includes(String(ticketId));
+
+          if (
+            window.location.pathname.includes("/ticket") &&
+            (matchById || matchByNumber)
+          ) {
+            isCurrentlyActive = true;
+          }
+        }
+
+        if (!isCurrentlyActive) {
+          const toastId = ticketId ? `toast-${ticketId}` : `toast-${title}`;
+          const handleClick = () => {
+            if (ticketId) {
+              router.push(`/ticket?ticketId=${ticketId}`);
+              toast.dismiss(toastId);
+            }
+          };
+
+          toast.success(
+            <div onClick={handleClick} className="w-full cursor-pointer font-medium">
+              {title}
+            </div>,
+            {
+              id: toastId, // Strict deduplication ID
+              description: (
+                <div onClick={handleClick} className="w-full h-full cursor-pointer mt-1">
+                  {message}
+                </div>
+              ),
+              duration: 8000,
+              action: ticketId
+                ? {
+                    label: "Reply",
+                    onClick: handleClick,
+                  }
+                : undefined,
+            }
+          );
+        }
       });
     }
 

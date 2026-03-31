@@ -59,7 +59,7 @@ function LoginFormContent({
   const onSubmit = (values: LoginFormValues) => {
     setLoading(true);
     authService
-      .login(values)
+      .login({ ...values, email: values.email.toLowerCase() })
       .then((response: any) => {
         cookieService.setCookie("user", JSON.stringify(response?.user));
         cookieService.setCookie("authToken", response.auth_token);
