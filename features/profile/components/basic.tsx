@@ -139,6 +139,11 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (isProfileCompleted) {
+      if (onSuccess) onSuccess();
+      return;
+    }
+
     // Basic Validation
     if (!formData.fullName.trim()) return toast.error("Full Name is required");
     if (!formData.fatherName.trim()) return toast.error("Father's Name is required");
@@ -226,6 +231,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 className="bg-muted/50 border-border rounded-xl h-11 px-4 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
                 value={formData.fullName}
                 onChange={(e) => handleInputChange("fullName", e.target.value)}
+                disabled={isProfileCompleted}
               />
             </div>
 
@@ -244,6 +250,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 onChange={(e) =>
                   handleInputChange("fatherName", e.target.value)
                 }
+                disabled={isProfileCompleted}
               />
             </div>
 
@@ -254,6 +261,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
               <Select
                 value={formData.gender}
                 onValueChange={(value) => handleInputChange("gender", value)}
+                disabled={isProfileCompleted}
               >
                 <SelectTrigger className="bg-muted/50 border-border rounded-xl h-11 !h-11 px-4 shadow-none focus:ring-1 focus:ring-primary/30 w-full">
                   <SelectValue placeholder="Select gender" />
@@ -271,13 +279,14 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 Date of Birth
               </Label>
               <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-                <PopoverTrigger asChild>
+                <PopoverTrigger asChild disabled={isProfileCompleted}>
                   <Button
                     variant="outline"
                     className={cn(
                       "w-full px-4 h-11 justify-between text-left font-normal bg-muted/50 border-border rounded-xl shadow-none hover:bg-muted",
                       !formData.dob && "text-muted-foreground",
                     )}
+                    disabled={isProfileCompleted}
                   >
                     {formData.dob ? (
                       format(formData.dob, "dd-MM-yyyy")
@@ -336,6 +345,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 onChange={(e) =>
                   handleInputChange("contactNumber", e.target.value)
                 }
+                disabled={isProfileCompleted}
               />
             </div>
 
@@ -378,6 +388,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 onValueChange={(value: Qualification) =>
                   handleInputChange("qualification", value)
                 }
+                disabled={isProfileCompleted}
               >
                 <SelectTrigger className="bg-muted/50 border-border rounded-xl h-11 !h-11 px-4 shadow-none focus:ring-1 focus:ring-primary/30 w-full">
                   <SelectValue placeholder="e.g. M.Tech in AI" />
@@ -398,13 +409,14 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 {/* College Student Card */}
                 <div
                   className={cn(
-                    "border rounded-2xl p-4 cursor-pointer transition-all flex flex-col justify-center min-h-[90px]",
+                    "border rounded-2xl p-4 transition-all flex flex-col justify-center min-h-[90px]",
                     formData.currentStatus === "college_student"
                       ? "border-indigo-500 bg-indigo-500/10 shadow-sm ring-1 ring-indigo-500/50"
                       : "border-border bg-muted/30 hover:bg-muted/50",
+                    isProfileCompleted && "cursor-default opacity-80" || "cursor-pointer"
                   )}
                   onClick={() =>
-                    handleInputChange("currentStatus", "college_student")
+                    !isProfileCompleted && handleInputChange("currentStatus", "college_student")
                   }
                 >
                   <h4
@@ -425,12 +437,13 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 {/* Employed Card */}
                 <div
                   className={cn(
-                    "border rounded-2xl p-4 cursor-pointer transition-all flex flex-col justify-center min-h-[90px]",
+                    "border rounded-2xl p-4 transition-all flex flex-col justify-center min-h-[90px]",
                     formData.currentStatus === "employed"
                       ? "border-emerald-500 bg-emerald-500/10 shadow-sm ring-1 ring-emerald-500/50"
                       : "border-border bg-muted/30 hover:bg-muted/50",
+                    isProfileCompleted && "cursor-default opacity-80" || "cursor-pointer"
                   )}
-                  onClick={() => handleInputChange("currentStatus", "employed")}
+                  onClick={() => !isProfileCompleted && handleInputChange("currentStatus", "employed")}
                 >
                   <h4
                     className={cn(
@@ -450,13 +463,14 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 {/* Unemployed Card */}
                 <div
                   className={cn(
-                    "border rounded-2xl p-4 cursor-pointer transition-all flex flex-col justify-center min-h-[90px]",
+                    "border rounded-2xl p-4 transition-all flex flex-col justify-center min-h-[90px]",
                     formData.currentStatus === "unemployed"
                       ? "border-orange-500 bg-orange-500/10 shadow-sm ring-1 ring-orange-500/50"
                       : "border-border bg-muted/30 hover:bg-muted/50",
+                    isProfileCompleted && "cursor-default opacity-80" || "cursor-pointer"
                   )}
                   onClick={() =>
-                    handleInputChange("currentStatus", "unemployed")
+                    !isProfileCompleted && handleInputChange("currentStatus", "unemployed")
                   }
                 >
                   <h4
@@ -496,6 +510,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                       onChange={(e) =>
                         handleInputChange("collegeName", e.target.value)
                       }
+                      disabled={isProfileCompleted}
                     />
                   </div>
                 </div>
@@ -516,6 +531,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                       onChange={(e) =>
                         handleInputChange("course", e.target.value)
                       }
+                      disabled={isProfileCompleted}
                     />
                   </div>
                 </div>
@@ -528,6 +544,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                     <Select
                       value={formData.year}
                       onValueChange={(v) => handleInputChange("year", v)}
+                      disabled={isProfileCompleted}
                     >
                       <SelectTrigger className="pl-10 bg-muted/50 border-border rounded-xl h-11 !h-11 shadow-none focus:ring-1 focus:ring-primary/30 w-full relative">
                         <SelectValue placeholder="e.g. 3rd Year" />
@@ -572,6 +589,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                       onChange={(e) =>
                         handleInputChange("organizationName", e.target.value)
                       }
+                      disabled={isProfileCompleted}
                     />
                   </div>
                 </div>
@@ -592,6 +610,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                       onChange={(e) =>
                         handleInputChange("designation", e.target.value)
                       }
+                      disabled={isProfileCompleted}
                     />
                   </div>
                 </div>
@@ -625,6 +644,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                         e.target.value,
                       )
                     }
+                    disabled={isProfileCompleted}
                   />
                 </div>
                 <p className="text-[10px] italic font-medium text-muted-foreground/40 mt-1">
@@ -649,7 +669,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
             className="w-full sm:w-auto px-10 h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-none transition-all hover:-translate-y-0.5"
             disabled={loading}
           >
-            {loading ? "Saving..." : "Next Step"}
+            {loading ? "Saving..." : isProfileCompleted ? "Next Step" : "Next Step"}
           </Button>
         </div>
       </form>
