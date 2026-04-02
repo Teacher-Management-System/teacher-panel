@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 
 import { useNotifications } from "@/context/notification-context";
+import { stripHtml } from "@/lib/utils";
 
 export default function NotificationListener() {
   const { user } = useAuth();
@@ -22,6 +23,14 @@ export default function NotificationListener() {
       console.log("Public Notification:", data);
       toast.info(data.message || "New update available!");
     });
+    publicChannel.listen("AnnouncementEvent", (data: any) => {
+      console.log("WebSocket Announcement Received:", data);
+      
+      // Dispatch global event with full data for the list page to handle
+      window.dispatchEvent(new CustomEvent("new-announcement", { 
+        detail: data 
+      }));
+    });
     let privateChannel: any = null;
     if (user?.id) {
       const channelName = `notifications.${user.id}`;
@@ -32,6 +41,26 @@ export default function NotificationListener() {
           notification.body || notification.message || "You have a new update.";
 
         const ticketId = notification.ticket_id || notification.data?.ticket_id;
+        
+        // STRICT FILTER: If it doesn't have a ticket_id, it's an announcement/global update
+        // We check for truthy ticketId (ignoring null, undefined, 0, false, "null", etc.)
+        const hasTicketId = ticketId && ticketId !== "null" && ticketId !== "undefined";
+
+        if (!hasTicketId) {
+          console.log("Private Channel: No valid ticket_id, redirecting to Global Announcement Dialog.");
+          window.dispatchEvent(new CustomEvent("new-announcement", { 
+            detail: { 
+              ...notification, 
+              id: notification.id || Math.random().toString(36).substr(2, 9),
+              title, 
+              description: message, 
+              is_read: false,
+              created_at: notification.created_at || new Date().toISOString()
+            } 
+          }));
+          return;
+        }
+
         addNotification({
           title,
           message,
@@ -104,6 +133,7 @@ export default function NotificationListener() {
 
     return () => {
       publicChannel.stopListening("NotificationEvent");
+      publicChannel.stopListening("AnnouncementEvent");
       echo.leaveChannel("notification-channel");
       if (privateChannel && user?.id) {
         echo.leaveChannel(`notifications.${user.id}`);

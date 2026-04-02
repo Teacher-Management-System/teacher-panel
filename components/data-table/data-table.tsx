@@ -118,18 +118,18 @@ export function DataTable<TData>({
                   </TableCell>
                 </TableRow>
               )}
-              {isLoading && (
-                <div className="bg-background/80 absolute inset-0 flex items-center justify-center backdrop-blur-sm">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Loader className="size-5 animate-spin" />
-                    <span className="text-sm font-medium">
-                      Loading, please wait...
-                    </span>
-                  </div>
-                </div>
-              )}
             </TableBody>
           </Table>
+          {isLoading && (
+            <div className="bg-background/80 absolute inset-0 z-10 flex items-center justify-center backdrop-blur-sm">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Loader className="size-5 animate-spin" />
+                <span className="text-sm font-medium">
+                  Loading, please wait...
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
       <div className="flex flex-col gap-2.5">

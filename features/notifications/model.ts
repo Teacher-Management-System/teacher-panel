@@ -8,7 +8,10 @@ export interface NotificationItem {
   send_at: string;
   status: string;
   is_read: boolean | null;
-  created_at: string;
+  created_at: any;
+  acknowledged?: boolean;
+  acknowledged_by?: string | null;
+  acknowledged_at?: any;
 }
 
 export interface NotificationMeta {

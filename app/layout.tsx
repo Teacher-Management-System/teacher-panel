@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
 import NotificationListener from "@/components/notification-listener";
+import AnnouncementDialog from "@/components/announcement-dialog";
 
 const fontSans = Geist({
   variable: "--font-geist-sans",
@@ -32,6 +33,7 @@ export default async function RootLayout({
       >
         <Providers>
           <NotificationListener />
+          <AnnouncementDialog />
           {children}
         </Providers>
         <Toaster richColors closeButton={true} />

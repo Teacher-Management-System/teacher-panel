@@ -1,0 +1,192 @@
+"use client";
+
+import { ColumnDef } from "@tanstack/react-table";
+import { NotificationItem } from "../model";
+import { cn, stripHtml, parseDate } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
+import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { Clock, Eye, ImageIcon, CheckCircle2, Ban } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+
+export function createColumns(
+  onMarkAsRead: (id: string) => void,
+  onView: (notification: NotificationItem) => void
+): ColumnDef<NotificationItem>[] {
+  return [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected()}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+          className="translate-y-[2px]"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+          className="translate-y-[2px]"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: "title",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Title" />
+      ),
+      cell: ({ row }) => {
+        const notification = row.original;
+        return (
+          <div 
+            className={cn(
+              "font-bold max-w-[250px] truncate cursor-pointer hover:underline transition-all",
+              !notification.is_read ? "text-cyan-600" : "text-foreground opacity-70"
+            )}
+            onClick={() => onView(notification)}
+          >
+            {notification.title}
+          </div>
+        );
+      },
+      enableSorting: true,
+      enableHiding: false,
+    },
+    {
+      accessorKey: "attachment",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Attachment" />
+      ),
+      cell: ({ row }) => {
+        const attachment = row.getValue("attachment") as string;
+        if (!attachment) return <div className="text-muted-foreground/30 flex justify-center w-fit px-4"><ImageIcon className="h-4 w-4" /></div>;
+        return (
+          <div className="relative h-10 w-16 rounded-md overflow-hidden bg-muted border border-border/50 shadow-sm transition-transform hover:scale-105 cursor-zoom-in">
+            <img 
+              src={attachment} 
+              alt="attachment" 
+              className="h-full w-full object-cover"
+              onClick={() => onView(row.original)}
+            />
+          </div>
+        );
+      },
+      enableSorting: false,
+    },
+    {
+      accessorKey: "description",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Description" />
+      ),
+      cell: ({ row }) => {
+        const description = row.getValue("description") as string;
+        return (
+          <div className="text-sm text-muted-foreground line-clamp-1 max-w-[400px]">
+            {stripHtml(description)}
+          </div>
+        );
+      },
+      enableSorting: false,
+    },
+    {
+      id: "acknowledge",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Acknowledge" />
+      ),
+      cell: ({ row }) => {
+        const notification = row.original;
+        
+        // Use acknowledged property if available, fallback to is_read
+        const isAcknowledged = notification.acknowledged ?? notification.is_read;
+
+        if (isAcknowledged) {
+          return (
+            <Badge 
+              variant="outline" 
+              className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 px-3 py-1 flex items-center gap-1.5 w-fit font-bold rounded-full"
+            >
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Acknowledged
+            </Badge>
+          );
+        }
+        return (
+          <Badge 
+            variant="outline" 
+            className="bg-rose-500/10 text-rose-600 border-rose-500/20 px-3 py-1 flex items-center gap-1.5 w-fit font-bold cursor-pointer hover:bg-rose-500 hover:text-white transition-all group rounded-lg"
+            onClick={() => onMarkAsRead(notification.id)}
+            title="Click to acknowledge"
+          >
+            <Ban className="h-3.5 w-3.5 transition-transform group-hover:rotate-12" />
+            Not Acknowledged
+          </Badge>
+        );
+      },
+    },
+    {
+      accessorKey: "send_at",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Acknowledge At" />
+      ),
+      cell: ({ row }) => {
+        const notification = row.original;
+        if (!notification.is_read) return <span className="text-muted-foreground opacity-40 italic text-xs">Pending...</span>;
+        
+        return (
+          <div className="flex flex-col gap-0.5">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Clock className="h-3 w-3" />
+              {formatDistanceToNow(parseDate(notification.acknowledged_at), { addSuffix: true })}
+            </div>
+            {notification.acknowledged_by && (
+              <span className="text-[10px] font-medium text-cyan-600 bg-cyan-50 px-1.5 py-0.5 rounded-md w-fit">
+                By {notification.acknowledged_by}
+              </span>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "created_at",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Create At" />
+      ),
+      cell: ({ row }) => {
+        const date = row.getValue("created_at") as string;
+        return (
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Clock className="h-3.5 w-3.5" />
+            {formatDistanceToNow(parseDate(date), { addSuffix: true })}
+          </div>
+        );
+      },
+      enableSorting: true,
+    },
+    {
+      id: "actions",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Actions" />
+      ),
+      cell: ({ row }) => (
+        <div className="flex items-center justify-end pr-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:text-cyan-600 hover:bg-cyan-50 rounded-full transition-all"
+            onClick={() => onView(row.original)}
+            title="View Details"
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
+}

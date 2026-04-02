@@ -20,11 +20,13 @@ export function NotificationDropdown() {
   const router = useRouter();
   const {
     notifications,
-    unreadCount,
     markAsRead,
     markAllAsRead,
     clearNotifications,
   } = useNotifications();
+
+  const filteredNotifications = notifications.filter(n => !!n.ticket_id);
+  const filteredUnreadCount = filteredNotifications.filter(n => !n.read).length;
 
   const handleNotificationClick = (id: string, ticketId?: string) => {
     markAsRead(id);
@@ -38,9 +40,9 @@ export function NotificationDropdown() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-full">
           <Bell className="h-5 w-5 text-muted-foreground" />
-          {unreadCount > 0 && (
+          {filteredUnreadCount > 0 && (
             <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-medium text-white ring-2 ring-white">
-              {unreadCount}
+              {filteredUnreadCount}
             </span>
           )}
         </Button>
@@ -58,7 +60,7 @@ export function NotificationDropdown() {
                   e.stopPropagation();
                   markAllAsRead();
                 }}
-                disabled={unreadCount === 0}
+                disabled={filteredUnreadCount === 0}
                 title="Mark all as read"
               >
                 <Check className="h-3 w-3" />
@@ -81,14 +83,14 @@ export function NotificationDropdown() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <ScrollArea className="h-80">
-          {notifications.length === 0 ? (
+          {filteredNotifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-center">
               <Bell className="mb-2 h-8 w-8 text-muted-foreground opacity-20" />
               <p className="text-xs text-muted-foreground">No new notifications</p>
             </div>
           ) : (
-            notifications.map((n) => (
-              <DropdownMenuItem
+            filteredNotifications.map((n) => (
+                <DropdownMenuItem
                 key={n.id}
                 className={cn(
                   "flex flex-col items-start gap-1 p-3 cursor-pointer focus:bg-accent",

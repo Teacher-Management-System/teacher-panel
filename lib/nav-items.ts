@@ -7,6 +7,7 @@ import {
   User,
   Sparkles,
   Ticket,
+  Megaphone,
 } from "lucide-react";
 
 export const navData = {
@@ -35,9 +36,9 @@ export const navData = {
           icon: CreditCard,
         },
         {
-          title: "Notifications",
+          title: "Announcements",
           url: "/notifications",
-          icon: Bell,
+          icon: Megaphone,
         },
         // {
         //   title: "Settings",
