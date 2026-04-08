@@ -76,6 +76,8 @@ function TicketListContent() {
   });
   const [activeTicket, setActiveTicket] = useState<Ticket | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [allRawTickets, setAllRawTickets] = useState<ApiTicket[]>([]);
+  const [allMappedTickets, setAllMappedTickets] = useState<Ticket[]>([]);
   const [stats, setStats] = useState({ pending: 0, open: 0, closed: 0 });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -139,11 +141,40 @@ function TicketListContent() {
         const response: any = await ticketService.getTickets();
         if (response && response.tickets) {
           const allTickets: ApiTicket[] = response.tickets;
+          setAllRawTickets(allTickets);
           setStats({
             pending: allTickets.filter((t) => t.status === "pending").length,
             open: allTickets.filter((t) => t.status === "open").length,
             closed: allTickets.filter((t) => t.status === "closed").length,
           });
+          const mappedAllTickets: Ticket[] = allTickets.map((t: ApiTicket) => ({
+            id: String(t.id),
+            subject: t.subject,
+            lastMessage: t.description,
+            status: t.status,
+            user: t.user?.name || "Unknown",
+            userId: String(t.user?.id || ""),
+            date: new Date(t.createdAt * 1000).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            }),
+            ticketId: `T-${t.ticket_number}`,
+            messages: [
+              {
+                id: `m-${t.id}`,
+                text: t.description,
+                sender: t.user?.name || "User",
+                senderId: t.user?.id || "",
+                time: new Date(t.createdAt * 1000).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+                isAdmin: false,
+              },
+            ],
+          }));
+          setAllMappedTickets(mappedAllTickets);
         }
       } catch (error) {
         console.error("Failed to fetch ticket stats:", error);
@@ -151,6 +182,40 @@ function TicketListContent() {
     };
     fetchStats();
   }, [refreshTrigger]);
+
+  // Handle cross-tab automatic navigation on search
+  useEffect(() => {
+    if (!searchTerm.trim() || allRawTickets.length === 0) return;
+
+    const term = searchTerm.toLowerCase().trim();
+    
+    // Find all matches
+    const allMatches = allRawTickets.filter((t: any) => {
+      const subjectMatch = t.subject?.toLowerCase().includes(term);
+      const idStr = t.ticket_number ? String(t.ticket_number).toLowerCase() : "";
+      const idMatch =
+        idStr.includes(term) ||
+        String(t.id).toLowerCase().includes(term) ||
+        `t-${idStr}`.includes(term);
+      const descMatch = stripHtml(t.description || "")
+        .toLowerCase()
+        .includes(term);
+      return subjectMatch || idMatch || descMatch;
+    });
+
+    if (allMatches.length === 0) return; // Ignore if no match at all
+
+    // Check if current tab has any of the matches
+    const hasMatchInCurrentTab = allMatches.some((t: any) => t.status === activeTab);
+
+    // If current tab has NO matches, but we found a match in another tab, switch to it!
+    if (!hasMatchInCurrentTab) {
+      const firstMatchTab = allMatches[0].status;
+      if (firstMatchTab) {
+        setActiveTab(firstMatchTab as "pending" | "open" | "closed");
+      }
+    }
+  }, [searchTerm, allRawTickets, activeTab, setActiveTab]);
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -594,7 +659,20 @@ function TicketListContent() {
     };
   }, [activeTicket?.id]);
 
-  const filteredTickets = tickets; // API already filters by status
+  const filteredTickets = (searchTerm.trim() ? allMappedTickets : tickets).filter((ticket) => {
+    if (!searchTerm.trim()) return true;
+    const term = searchTerm.toLowerCase().trim();
+
+    const subjectMatch = ticket.subject?.toLowerCase().includes(term);
+    const idMatch =
+      ticket.ticketId?.toLowerCase().includes(term) ||
+      ticket.id?.toLowerCase().includes(term);
+    const descMatch = stripHtml(ticket.lastMessage || "")
+      .toLowerCase()
+      .includes(term);
+
+    return subjectMatch || idMatch || descMatch;
+  });
   const addTicket = async (data: { subject: string; message: string }) => {
     try {
       setLoading(true);
