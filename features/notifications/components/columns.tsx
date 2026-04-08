@@ -64,8 +64,14 @@ export function createColumns(
         <DataTableColumnHeader column={column} title="Attachment" />
       ),
       cell: ({ row }) => {
-        const attachment = row.getValue("attachment") as string;
+        let attachment = row.getValue("attachment") as string;
         if (!attachment) return <div className="text-muted-foreground/30 flex justify-center w-fit px-4"><ImageIcon className="h-4 w-4" /></div>;
+        
+        if (attachment && typeof attachment === 'string' && !attachment.startsWith('http') && !attachment.startsWith('data:')) {
+          const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+          attachment = `${baseUrl.replace(/\/$/, '')}/${attachment.replace(/^\//, '')}`;
+        }
+
         return (
           <div className="relative h-10 w-16 rounded-md overflow-hidden bg-muted border border-border/50 shadow-sm transition-transform hover:scale-105 cursor-zoom-in">
             <img 

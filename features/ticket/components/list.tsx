@@ -12,6 +12,7 @@ import {
   Ticket,
   Calendar,
   ArrowLeft,
+  RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { AddTicketDialog } from "./add-ticket-dialog";
+import { ReopenTicketDialog } from "./reopen-ticket-dialog";
 import { useAuth } from "@/hooks/useAuth";
 
 import { toast } from "sonner";
@@ -55,8 +57,11 @@ function TicketListContent() {
   const searchParams = useSearchParams();
 
   // Read ticketId from URL once on mount (for notification navigation). Not reactive.
-  const initialTicketIdRef = useRef<string | null>(searchParams.get("ticketId"));
+  const initialTicketIdRef = useRef<string | null>(
+    searchParams.get("ticketId"),
+  );
   const didHandleInitialTicket = useRef(false);
+  const currentUrlTicketId = searchParams.get("ticketId");
 
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,6 +86,52 @@ function TicketListContent() {
   const shouldScrollToBottomRef = useRef<boolean>(true);
   const isBackgroundRefresh = useRef<boolean>(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // React to URL changes (when clicking notifications while already on the page)
+  useEffect(() => {
+    // Only run if we actually have tickets loaded
+    if (!currentUrlTicketId || tickets.length === 0) return;
+
+    // Check if it's already active
+    if (
+      activeTicket &&
+      (activeTicket.id === currentUrlTicketId ||
+        activeTicket.ticketId === currentUrlTicketId ||
+        activeTicket.ticketId === `T-${currentUrlTicketId}`)
+    ) {
+      return;
+    }
+
+    const targetTicket = tickets.find(
+      (t) =>
+        t.id === currentUrlTicketId ||
+        t.ticketId === currentUrlTicketId ||
+        t.ticketId === `T-${currentUrlTicketId}`,
+    );
+
+    if (targetTicket) {
+      setActiveTicket(targetTicket);
+      setMessagesLoading(true);
+    } else {
+      // It might be in another tab, fetch details to switch tab
+      ticketService
+        .getTickets()
+        .then((allRes: any) => {
+          if (allRes?.tickets) {
+            const found = allRes.tickets.find(
+              (t: ApiTicket) =>
+                String(t.id) === currentUrlTicketId ||
+                String((t as any).ticket_number) === currentUrlTicketId,
+            );
+            if (found && found.status !== activeTab) {
+              setActiveTab(found.status as any);
+              // Active ticket will be set by fetchTickets/useEffect once tab switches and tickets fetch
+            }
+          }
+        })
+        .catch(console.error);
+    }
+  }, [currentUrlTicketId, tickets, activeTicket?.id, activeTab]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -156,7 +207,9 @@ function TicketListContent() {
           // Preserve messages for currently active ticket across refreshes
           setActiveTicket((prevActive) => {
             if (!prevActive) return null;
-            const updatedTicket = mappedTickets.find((t) => t.id === prevActive.id);
+            const updatedTicket = mappedTickets.find(
+              (t) => t.id === prevActive.id,
+            );
             if (updatedTicket) {
               return {
                 ...updatedTicket,
@@ -182,17 +235,21 @@ function TicketListContent() {
               setMessagesLoading(true);
             } else {
               // Ticket may be in a different tab - check all tickets
-              ticketService.getTickets().then((allRes: any) => {
-                if (allRes?.tickets) {
-                  const found = allRes.tickets.find((t: ApiTicket) =>
-                    String(t.id) === urlTicketId ||
-                    String((t as any).ticket_number) === urlTicketId
-                  );
-                  if (found && found.status !== activeTab) {
-                    setActiveTab(found.status as any);
+              ticketService
+                .getTickets()
+                .then((allRes: any) => {
+                  if (allRes?.tickets) {
+                    const found = allRes.tickets.find(
+                      (t: ApiTicket) =>
+                        String(t.id) === urlTicketId ||
+                        String((t as any).ticket_number) === urlTicketId,
+                    );
+                    if (found && found.status !== activeTab) {
+                      setActiveTab(found.status as any);
+                    }
                   }
-                }
-              }).catch(console.error);
+                })
+                .catch(console.error);
             }
           }
         } else {
@@ -608,6 +665,37 @@ function TicketListContent() {
     }
   };
 
+  const handleReopenTicket = async (description: string) => {
+    if (!activeTicket) return;
+
+    try {
+      setLoading(true);
+      await ticketService.reopenTicket(activeTicket.id, description);
+      toast.success("Ticket reopened successfully");
+
+      // Refresh stats and list
+      setRefreshTrigger((prev) => prev + 1);
+
+      // Switch to pending tab and keep the ticket open
+      setActiveTab("pending");
+
+      // Update local state to reflect the new status immediately
+      if (activeTicket) {
+        setActiveTicket({ ...activeTicket, status: "pending" });
+        setTickets((prev) =>
+          prev.map((t) =>
+            t.id === activeTicket.id ? { ...t, status: "pending" } : t,
+          ),
+        );
+      }
+    } catch (error) {
+      toast.error("Failed to reopen ticket");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const updateTicketStatus = (id: string, newStatus: Ticket["status"]) => {
     setTickets((prev) =>
       prev.map((t) => (t.id === id ? { ...t, status: newStatus } : t)),
@@ -666,54 +754,69 @@ function TicketListContent() {
   };
 
   return (
-    <div className="flex flex-col h-auto md:h-[calc(100vh-3rem)] bg-background md:p-6 space-y-4 md:space-y-6 md:overflow-hidden">
-      {/* Header Section */}
-      <Card className="rounded-[20px] border border-border shadow-sm bg-card overflow-hidden shrink-0">
-        <CardContent className="p-4 md:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6">
-          <div className="flex items-center gap-3 md:gap-5 w-full md:w-auto">
+    <div className="flex flex-col h-auto md:h-[calc(100vh-3rem)] bg-background md:py-3 space-y-4 md:space-y-6 md:overflow-hidden">
+      <Card className="rounded-[20px] md:rounded-[20px] border border-border/50 shadow-sm bg-card overflow-hidden shrink-0">
+        <CardContent className="px-4 md:px-8 flex flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-1 md:gap-3 w-full md:w-auto">
             <div className="relative group shrink-0">
               <div className="absolute inset-0 bg-primary/20 blur-xl opacity-20 group-hover:opacity-30 transition-opacity" />
-              <div className="relative p-2.5 md:p-4 bg-gradient-to-br from-primary to-primary/80 rounded-[15px] md:rounded-[22px] shadow-lg shadow-primary/20">
-                <Ticket className="h-4 w-4 md:h-7 md:w-7 text-white" />
-                <div className="absolute -bottom-1 -right-1 p-0.5 md:p-1 bg-primary rounded-lg border-2 border-white">
-                  <Plus className="h-2 w-2 md:h-2.5 md:w-2.5 text-white stroke-[3]" />
+              <div className="relative p-2.5 md:p-3.5 bg-primary rounded-[15px] md:rounded-[20px] shadow-lg shadow-primary/20 flex items-center justify-center">
+                <Ticket className="h-5 w-5 md:h-7 md:w-7 text-white" />
+                <div className="absolute -bottom-1 -right-0.5 h-5 w-5 md:h-6 md:w-6 bg-[#22C55E] rounded-lg border-[3px] border-white flex items-center justify-center shadow-sm">
+                  <Plus className="h-2.5 w-2.5 md:h-3 md:w-3 text-white stroke-[4]" />
                 </div>
               </div>
             </div>
             <div className="min-w-0">
-              <h1 className="text-lg md:text-3xl font-black text-foreground tracking-tight flex items-center gap-2 truncate">
+              <h1 className="text-lg md:text-[22px] font-black text-foreground tracking-tight flex items-center gap-2 truncate">
                 Support Center
               </h1>
-              <p className="text-muted-foreground text-[10px] md:text-[13px] font-medium leading-none mt-1 truncate">
+              <p className="text-muted-foreground text-[9px] md:text-[13px] font-medium leading-none mt-1.5 flex items-center gap-1.5 truncate">
                 Resolution hub for all teacher inquiries
+                <span className="flex items-center gap-1.5 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-border">
+                  <span className="text-primary font-black italic tracking-wider">
+                    V2.0
+                  </span>
+                </span>
               </p>
             </div>
           </div>
 
-          <div className="flex flex-row md:flex-row items-center gap-2 md:gap-3 w-full md:w-auto justify-between md:justify-end">
-            <div className="flex flex-1 md:flex-none items-center bg-muted/30 rounded-lg md:rounded-2xl p-1 md:p-2 px-2 md:px-6 border border-border h-10 md:h-14 overflow-hidden">
-              <div className="flex-1 md:flex-none flex items-center justify-center gap-1.5 md:gap-3 pr-2 md:pr-6 border-r border-border h-full">
-                <div className="h-1.5 w-1.5 md:h-2.5 md:w-2.5 rounded-full bg-orange-400 shadow-[0_0_8px_rgba(251,146,60,0.5)] shrink-0" />
-                <span className="text-[9px] md:text-[14px] font-black text-muted-foreground whitespace-nowrap uppercase tracking-wider">
-                  {loading ? ".." : stats.pending}{" "}
-                  <span className="hidden sm:inline ml-0.5 opacity-60">
-                    Pending
-                  </span>
+          <div className="hidden md:flex items-center gap-5">
+            <div className="flex items-center bg-muted/40 rounded-[20px] px-5 py-2.5 border border-border/40 gap-4 h-12">
+              <div className="flex items-center gap-2.5">
+                <div className="h-2 w-2 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(251,146,60,0.5)] shrink-0" />
+                <span className="text-[11px] font-black text-foreground uppercase tracking-wider">
+                  {loading ? ".." : stats.pending} Pending
                 </span>
               </div>
-              <div className="flex-1 md:flex-none flex items-center justify-center gap-1.5 md:gap-3 pl-2 md:pl-6 h-full">
-                <div className="h-1.5 w-1.5 md:h-2.5 md:w-2.5 rounded-full bg-primary shadow-[0_0_8px_rgba(31,192,199,0.5)] shrink-0" />
-                <span className="text-[9px] md:text-[14px] font-black text-muted-foreground whitespace-nowrap uppercase tracking-wider">
-                  {loading ? ".." : stats.open}{" "}
-                  <span className="hidden sm:inline ml-0.5 opacity-60">
-                    Open
-                  </span>
+              <div className="w-[1px] h-4 bg-border/60" />
+              <div className="flex items-center gap-2.5">
+                <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(31,192,199,0.5)] shrink-0" />
+                <span className="text-[11px] font-black text-foreground uppercase tracking-wider">
+                  {loading ? ".." : stats.open} Open
+                </span>
+              </div>
+              <div className="w-[1px] h-4 bg-border/60" />
+              <div className="flex items-center gap-2.5">
+                <div className="h-2 w-2 rounded-full bg-muted-foreground/40 shrink-0" />
+                <span className="text-[11px] font-black text-foreground uppercase tracking-wider">
+                  {loading ? ".." : stats.closed} Closed
                 </span>
               </div>
             </div>
-            <div className="flex-1 md:flex-none">
-              <AddTicketDialog onAddTicket={addTicket} />
-            </div>
+            <AddTicketDialog
+              onAddTicket={addTicket}
+              className="rounded-[20px] bg-[#0F172A] hover:bg-[#1E293B] h-12 px-8 shadow-xl shadow-slate-200 text-white font-black flex items-center gap-3 border-none transition-all active:scale-95 whitespace-nowrap"
+            />
+          </div>
+
+          {/* Mobile Actions */}
+          <div className="md:hidden flex items-center gap-2">
+            <AddTicketDialog
+              onAddTicket={addTicket}
+              className="rounded-xl bg-[#0F172A] p-2.5 h-10 w-10 text-white flex items-center justify-center shadow-lg"
+            />
           </div>
         </CardContent>
       </Card>
@@ -723,59 +826,60 @@ function TicketListContent() {
         className={`flex-1 flex flex-col md:flex-row gap-4 md:gap-6 min-h-0 md:overflow-hidden relative ${activeTicket ? "h-[calc(100vh-10rem)] md:h-auto" : "h-auto"}`}
       >
         {/* Left Sidebar - Ticket List */}
-        <div
-          className={`w-full md:w-[360px] flex-1 md:flex-none flex flex-col gap-4 transition-all duration-300 ${activeTicket ? "hidden md:flex" : "flex"}`}
+        <Card
+          className={`w-full py-0 md:w-[360px] flex-1 md:flex-none flex flex-col transition-all duration-300 bg-card rounded-[20px] md:rounded-[28px] shadow-sm border border-border overflow-hidden ${activeTicket ? "hidden md:flex" : "flex"}`}
         >
-          <Card className="rounded-[20px] md:rounded-[28px] shadow-sm border border-border flex flex-col overflow-hidden">
-            <CardContent className="p-4 md:p-6 flex flex-col gap-4 md:gap-5">
-              <div className="relative group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
-                <Input
-                  placeholder="Search by ID or Subject..."
-                  className="pl-11 bg-muted border-transparent h-12 rounded-2xl focus-visible:ring-primary/10 focus-visible:bg-muted/80 transition-all text-[15px] font-medium placeholder:text-muted-foreground/40"
-                />
-              </div>
+          {/* Header section (Search + Tabs) */}
+          <div className="p-4 md:p-5 flex flex-col gap-4 md:gap-5 border-b border-border/40 bg-card/80">
+            <div className="relative group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
+              <Input
+                placeholder="Search by ID or Subject..."
+                className="pl-11 bg-muted border-transparent h-12 rounded-2xl focus-visible:ring-primary/10 focus-visible:bg-background transition-all text-[15px] font-medium placeholder:text-muted-foreground/40"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
 
-              <div className="flex p-1.5 bg-muted/50 rounded-2xl border border-border relative z-20">
-                {(["pending", "open", "closed"] as const).map((tab) => (
-                  <Button
-                    key={tab}
-                    variant="ghost"
-                    size="sm"
-                    className={`flex-1 h-10 text-[11px] font-black uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 cursor-pointer select-none transition-colors ${
-                      activeTab === tab
-                        ? "bg-card text-primary shadow-sm border border-border"
-                        : "text-muted-foreground hover:text-foreground hover:bg-card/50"
-                    }`}
-                    onClick={() => {
-                      setActiveTab(tab);
-                    }}
-                  >
-                    {tab}
-                    {stats[tab] > 0 && (
-                      <span
-                        className={`px-1.5 py-0.5 rounded-md text-[10px] ${
-                          activeTab === tab
-                            ? "bg-primary/10 text-primary"
-                            : "bg-muted text-muted-foreground"
-                        }`}
-                      >
-                        {stats[tab]}
-                      </span>
-                    )}
-                  </Button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+            <div className="flex p-1.5 bg-muted/50 rounded-2xl border border-border relative z-20 shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)]">
+              {(["pending", "open", "closed"] as const).map((tab) => (
+                <Button
+                  key={tab}
+                  variant="ghost"
+                  size="sm"
+                  className={`flex-1 h-10 text-[11px] font-black uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 cursor-pointer select-none transition-all duration-300 ${
+                    activeTab === tab
+                      ? "bg-background text-primary shadow-sm border border-border/50 scale-[1.02]"
+                      : "text-muted-foreground hover:text-foreground hover:bg-background/40"
+                  }`}
+                  onClick={() => {
+                    setActiveTab(tab);
+                  }}
+                >
+                  {tab}
+                  {stats[tab] > 0 && (
+                    <span
+                      className={`px-1.5 py-0.5 rounded-md text-[10px] transition-colors ${
+                        activeTab === tab
+                          ? "bg-primary/10 text-primary"
+                          : "bg-muted-foreground/10 text-muted-foreground"
+                      }`}
+                    >
+                      {stats[tab]}
+                    </span>
+                  )}
+                </Button>
+              ))}
+            </div>
+          </div>
 
-          <div className="flex-1 px-1 overflow-y-auto custom-scrollbar">
+          <div className="flex-1 md:px-4 py-1 bg-muted/20 overflow-y-auto custom-scrollbar">
             {listLoading ? (
               <div className="flex items-center justify-center h-40">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
               </div>
             ) : (
-              <div className="space-y-4 pb-4">
+              <div className="space-y-3 pb-4">
                 {filteredTickets.map((ticket) => (
                   <Card
                     key={ticket.id}
@@ -791,64 +895,55 @@ function TicketListContent() {
                         : "bg-card/40 border-border hover:border-primary/20 hover:shadow-primary/5 hover:translate-x-1"
                     }`}
                   >
-                    <CardContent className="p-4 md:p-6 relative">
+                    <div className="px-3 relative">
                       {activeTicket?.id === ticket.id && (
-                        <div className="absolute left-0 top-6 bottom-6 w-1.5 bg-primary rounded-r-full shadow-[0_0_10px_rgba(31,192,199,0.3)]" />
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1.5 bg-primary rounded-r-full shadow-[0_0_10px_rgba(31,192,199,0.3)]" />
                       )}
-                      <div className="flex justify-between items-start mb-1.5 pl-2">
-                        <h4
-                          className={`font-bold text-[15px] leading-tight transition-colors ${
-                            activeTicket?.id === ticket.id
-                              ? "text-primary"
-                              : "text-foreground"
-                          }`}
-                        >
-                          {ticket.subject}
-                        </h4>
-                        <Badge
-                          className={`text-[9px] uppercase font-black px-2 py-0.5 rounded-md border-transparent ${
-                            ticket.status === "pending"
-                              ? "bg-orange-500/10 text-orange-500"
-                              : ticket.status === "open"
-                                ? "bg-primary/10 text-primary border-primary/20"
-                                : "bg-muted text-muted-foreground"
-                          }`}
-                        >
-                          {ticket.status}
-                        </Badge>
-                      </div>
-                      <p className="text-[11px] text-muted-foreground/60 font-bold mb-3 pl-2 tracking-wide uppercase opacity-70">
-                        {ticket.ticketId}
-                      </p>
-                      <p className="text-[13px] text-muted-foreground line-clamp-2 mb-4 pl-2 leading-relaxed font-medium">
-                        {stripHtml(ticket.lastMessage)}
-                      </p>
-
-                      <div className="flex justify-between items-center pt-4 border-t border-border/30 pl-2">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-full bg-muted border border-border shadow-sm flex items-center justify-center overflow-hidden">
-                            <span className="text-[10px] font-black text-muted-foreground/60 uppercase">
-                              {ticket.user.charAt(0)}
+                      <div className="flex flex-col gap-1.5 pl-1.5 md:pl-2">
+                        <div className="flex justify-between items-center pb-2 border-b border-border/60">
+                          <div className="flex items-center gap-2 text-[10px] md:text-[11px] font-bold uppercase tracking-wider">
+                            <span className="text-primary bg-primary/10 px-1.5 py-0.5 rounded-[6px]">
+                              {ticket.ticketId}
+                            </span>
+                            <span className="flex items-center gap-1 text-muted-foreground/60">
+                              <Clock className="w-3 h-3" />
+                              {ticket.date}
                             </span>
                           </div>
-                          <span className="text-[12px] font-bold text-foreground">
-                            {ticket.user}
-                          </span>
+                          <Badge
+                            className={`text-[8px] uppercase font-black px-1.5 py-0.5 rounded border-transparent shrink-0 leading-none ${
+                              ticket.status === "pending"
+                                ? "bg-orange-500/10 text-orange-500"
+                                : ticket.status === "open"
+                                  ? "bg-primary/10 text-primary border-primary/20"
+                                  : "bg-muted-foreground/10 text-muted-foreground"
+                            }`}
+                          >
+                            {ticket.status}
+                          </Badge>
                         </div>
-                        <div className="flex items-center gap-1.5 text-muted-foreground/60">
-                          <Clock className="w-3.5 h-3.5" />
-                          <span className="text-[11px] font-medium">
-                            {ticket.date}
-                          </span>
+                        <div className="flex flex-col">
+                          <h4
+                            className={`capitalize font-bold text-[14px] leading-tight transition-colors line-clamp-1 ${
+                              activeTicket?.id === ticket.id
+                                ? "text-primary"
+                                : "text-foreground"
+                            }`}
+                          >
+                            {ticket.subject}
+                          </h4>
+                          <p className="text-[12px] text-foreground/60 line-clamp-1 leading-snug font-medium mt-0.5 pt-1">
+                            {stripHtml(ticket.lastMessage)}
+                          </p>
                         </div>
                       </div>
-                    </CardContent>
+                    </div>
                   </Card>
                 ))}
               </div>
             )}
           </div>
-        </div>
+        </Card>
 
         {/* Right Area - Conversation */}
         {listLoading || messagesLoading ? (
@@ -863,7 +958,7 @@ function TicketListContent() {
         ) : activeTicket ? (
           <div className="flex-1 flex flex-col min-h-0 bg-card md:rounded-[20px] shadow-sm border border-border overflow-hidden fixed inset-0 md:relative z-[100] md:z-auto">
             {/* Conversation Header */}
-            <div className="p-3 md:p-8 border-b border-border/50 flex justify-between items-center bg-card/50 backdrop-blur-md">
+            <div className="md:px-8 py-3 border-b border-border/50 flex justify-between items-center bg-card/50 backdrop-blur-md">
               <div className="flex items-center gap-2 md:gap-3">
                 <Button
                   variant="ghost"
@@ -895,7 +990,7 @@ function TicketListContent() {
                         <div className="flex items-center gap-1.5">
                           <Calendar className="w-3 h-3 md:w-3.5 md:h-3.5 text-primary/60" />
                           <span className="text-[9px] md:text-[11px] font-black text-muted-foreground/60 uppercase tracking-widest leading-none">
-                            CREATED {activeTicket.date}
+                            {activeTicket.date}
                           </span>
                         </div>
                       </div>
@@ -903,7 +998,14 @@ function TicketListContent() {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-4"></div>
+              <div className="flex items-center gap-4">
+                {activeTicket.status === "closed" && (
+                  <ReopenTicketDialog
+                    onReopenTicket={handleReopenTicket}
+                    className="rounded-lg md:rounded-xl bg-primary hover:bg-primary/90 h-8 md:h-10 px-3 md:px-5 shadow-lg shadow-primary/20 text-[11px] md:text-[13px] text-white font-black flex items-center gap-2 border-none transition-all active:scale-95 whitespace-nowrap"
+                  />
+                )}
+              </div>
             </div>
 
             {/* Messages Area */}
@@ -993,7 +1095,7 @@ function TicketListContent() {
                     </p>
                   </div>
                 ) : activeTicket.status === "closed" ? (
-                  <div className="py-6 px-8 bg-muted rounded-2xl border border-dashed border-border text-center">
+                  <div className="py-6 px-8 bg-muted rounded-2xl border border-dashed border-border text-center flex flex-col items-center gap-2">
                     <p className="text-[13px] font-black text-muted-foreground uppercase tracking-widest">
                       Ticket Closed
                     </p>

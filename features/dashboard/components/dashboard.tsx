@@ -9,8 +9,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { format, subDays, startOfDay, endOfDay } from "date-fns";
 import { DateRange } from "react-day-picker";
+
 import Link from "next/link";
 import { cookieService } from "@/lib/cookie";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -50,12 +51,34 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 
 const Dashboard = () => {
+  const [selectedRange, setSelectedRange] = useState<string>("Today");
   const [date, setDate] = useState<DateRange | undefined>({
-    from: new Date(),
-    to: new Date(),
+    from: startOfDay(new Date()),
+    to: endOfDay(new Date()),
   });
 
+  const handleRangeChange = (range: string) => {
+    setSelectedRange(range);
+    const today = new Date();
+
+    switch (range) {
+      case "Today":
+        setDate({ from: startOfDay(today), to: endOfDay(today) });
+        break;
+      case "7D":
+        setDate({ from: startOfDay(subDays(today, 6)), to: endOfDay(today) });
+        break;
+      case "15D":
+        setDate({ from: startOfDay(subDays(today, 14)), to: endOfDay(today) });
+        break;
+      case "30D":
+        setDate({ from: startOfDay(subDays(today, 29)), to: endOfDay(today) });
+        break;
+    }
+  };
+
   const [data, setData] = useState<DashboardResponse | null>(null);
+
   const [loading, setLoading] = useState(true);
   const { status: userStatus, isLoading: authLoading } = useAuth();
 
@@ -258,33 +281,48 @@ const Dashboard = () => {
             </Button>
           )} */}
 
-          <div className="flex items-center gap-2 bg-background/50 p-1 rounded-lg border shadow-sm">
-            <div className="flex items-center gap-2 px-3 text-muted-foreground border-r">
-              <Filter className="w-4 h-4" />
-              <span className="text-sm font-medium">Filter:</span>
-            </div>
+          <div className="flex flex-wrap items-center gap-1 bg-muted/40 p-1.5 rounded-2xl border shadow-sm backdrop-blur-sm">
+            {["Today", "7D", "15D", "30D"].map((range) => (
+              <Button
+                key={range}
+                variant="ghost"
+                size="sm"
+                onClick={() => handleRangeChange(range)}
+                className={cn(
+                  "px-4 py-1.5 h-8 rounded-xl font-bold transition-all text-xs sm:text-sm",
+                  selectedRange === range
+                    ? "bg-white text-black shadow-md shadow-black/5 ring-1 ring-black/5"
+                    : "text-muted-foreground hover:text-foreground hover:bg-white/50",
+                )}
+              >
+                {range}
+              </Button>
+            ))}
             <Popover>
               <PopoverTrigger asChild>
                 <Button
-                  id="date"
-                  variant={"ghost"}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedRange("Custom")}
                   className={cn(
-                    "justify-start text-left font-normal hover:bg-transparent",
-                    !date && "text-muted-foreground",
+                    "px-4 py-1.5 h-8 rounded-xl font-bold transition-all text-xs sm:text-sm flex items-center gap-2",
+                    selectedRange === "Custom"
+                      ? "bg-white text-black shadow-md shadow-black/5 ring-1 ring-black/5"
+                      : "text-muted-foreground hover:text-foreground hover:bg-white/50",
                   )}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date?.from ? (
+                  <CalendarIcon className="h-3.5 w-3.5" />
+                  {selectedRange === "Custom" && date?.from ? (
                     date.to ? (
-                      <>
-                        {format(date.from, "LLL dd, y")} -{" "}
-                        {format(date.to, "LLL dd, y")}
-                      </>
+                      <span className="truncate max-w-[100px] md:max-w-none">
+                        {format(date.from, "LLL dd")} -{" "}
+                        {format(date.to, "LLL dd")}
+                      </span>
                     ) : (
-                      format(date.from, "LLL dd, y")
+                      format(date.from, "LLL dd")
                     )
                   ) : (
-                    <span>Pick a date</span>
+                    "Custom"
                   )}
                 </Button>
               </PopoverTrigger>
@@ -294,12 +332,16 @@ const Dashboard = () => {
                   mode="range"
                   defaultMonth={date?.from}
                   selected={date}
-                  onSelect={setDate}
+                  onSelect={(newDate) => {
+                    setDate(newDate);
+                    setSelectedRange("Custom");
+                  }}
                   numberOfMonths={2}
                 />
               </PopoverContent>
             </Popover>
           </div>
+
         </div>
       </div>
 

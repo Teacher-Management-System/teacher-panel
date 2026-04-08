@@ -130,7 +130,7 @@ export function SignupForm() {
       if (response?.auth_token) {
         cookieService.setCookie("user", JSON.stringify(response.user));
         cookieService.setCookie("authToken", response.auth_token);
-        router.push("/dashboard");
+        window.location.href = "/dashboard";
       } else {
         console.error("Verification failed. Please try again.");
       }
@@ -414,7 +414,7 @@ export function SignupForm() {
                               <Input
                                 maxLength={10}
                                 type="tel"
-                                placeholder="+91 98765 43210"
+                                placeholder="+91 XXXXX XXXXX"
                                 className="pl-[52px] h-[56px] bg-[#f8f9fa] border-[#f1f5f9] border-2 rounded-2xl shadow-none ring-0 focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary transition-all font-semibold text-slate-700 text-[15px]"
                                 {...field}
                               />

@@ -29,15 +29,16 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased `}
+        className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased`}
       >
         <Providers>
           <NotificationListener />
           <AnnouncementDialog />
           {children}
         </Providers>
-        <Toaster richColors closeButton={true} />
+        <Toaster richColors closeButton={true} position="top-right" />
       </body>
+
     </html>
   );
 }

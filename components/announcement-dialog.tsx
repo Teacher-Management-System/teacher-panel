@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { cookieService } from "@/lib/cookie";
 import { Badge } from "@/components/ui/badge";
 import { Megaphone, Calendar, Clock } from "lucide-react";
 import { stripHtml, parseDate } from "@/lib/utils";
@@ -22,6 +23,26 @@ export default function AnnouncementDialog() {
   const [data, setData] = useState<NotificationItem | null>(null);
 
   useEffect(() => {
+    // Check for unread announcements on load/login
+    const checkUnreadAnnouncements = async () => {
+      const authToken = cookieService.getCookie("authToken");
+      if (!authToken) return;
+
+      try {
+        const response = await notificationService.getNotifications({ status: "unacknowledged" });
+        if (response?.notifications && response.notifications.length > 0) {
+          // Show the most recent unread announcement
+          setData(response.notifications[0]);
+          setIsOpen(true);
+        }
+      } catch (error) {
+        console.error("Failed to fetch unread announcements on load:", error);
+      }
+    };
+
+    // Delay slightly to ensure smooth initial page load
+    const timeout = setTimeout(checkUnreadAnnouncements, 1500);
+
     const handleNewAnnouncement = async (event: any) => {
       const announcement = event.detail as any;
       if (!announcement) return;
@@ -34,6 +55,7 @@ export default function AnnouncementDialog() {
 
     window.addEventListener("new-announcement", handleNewAnnouncement);
     return () => {
+      clearTimeout(timeout);
       window.removeEventListener("new-announcement", handleNewAnnouncement);
     };
   }, []);
@@ -53,75 +75,103 @@ export default function AnnouncementDialog() {
     console.error("Date formatting error:", e);
   }
 
-  const attachmentUrl = 
+  // Format attachment URL with base URL if needed
+  let attachmentUrl = 
     data.attachment || 
     (data as any).image || 
     (data as any).data?.attachment || 
     (data as any).data?.image;
 
+  if (attachmentUrl && typeof attachmentUrl === 'string' && !attachmentUrl.startsWith('http') && !attachmentUrl.startsWith('data:')) {
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+    attachmentUrl = `${baseUrl.replace(/\/$/, '')}/${attachmentUrl.replace(/^\//, '')}`;
+  }
+
+  const handleClose = (open: boolean) => {
+    if (!open && data?.id && data.is_read === false) {
+      // Optimistically close & acknowledge
+      notificationService.markAsRead(data.id)
+        .then(() => {
+          // Tell other components to refresh
+          window.dispatchEvent(new CustomEvent("announcement-read"));
+        })
+        .catch(console.error);
+    } else if (!open && data?.id && (data.acknowledged === false || data.acknowledged === undefined)) {
+      // Fallback if is_read isn't exactly boolean false
+      notificationService.markAsRead(data.id)
+        .then(() => {
+          window.dispatchEvent(new CustomEvent("announcement-read"));
+        })
+        .catch(console.error);
+    }
+    setIsOpen(open);
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] rounded-3xl border-none shadow-2xl overflow-hidden max-w-[600px] p-0 z-[10000]">
-        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 z-50" />
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] rounded-3xl border-none shadow-2xl overflow-hidden max-w-[600px] w-[95vw] max-h-[90vh] flex flex-col p-0 z-[10000]">
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 z-50 flex-shrink-0" />
         
-        {attachmentUrl && (
-          <div className="relative w-full aspect-video bg-zinc-100 overflow-hidden group">
-            <img 
-              src={attachmentUrl} 
-              alt={data.title}
-              onError={(e) => {
-                console.error("Global Dialog: Image failed to load", attachmentUrl);
-                (e.target as any).style.display = 'none';
-              }}
-              className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
-            <div className="absolute bottom-4 left-6 right-6 text-white pointer-events-none">
-              <Badge className="bg-cyan-500 text-white border-none mb-2 shadow-lg">New Announcement</Badge>
-              <h2 className="text-2xl font-bold line-clamp-2 drop-shadow-lg">
+        <div className="flex-1 overflow-y-auto custom-scrollbar pt-1.5 flex flex-col">
+          {attachmentUrl && (
+            <div className="relative w-full aspect-video bg-zinc-100 overflow-hidden group flex-shrink-0 border-b border-border/5">
+              <img 
+                src={attachmentUrl} 
+                alt={data.title}
+                onError={(e) => {
+                  console.error("Global Dialog: Image failed to load", attachmentUrl);
+                  (e.target as any).style.display = 'none';
+                }}
+                className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+              <div className="absolute bottom-4 left-6 right-6 text-white pointer-events-none">
+                <Badge className="bg-cyan-500 text-white border-none mb-2 shadow-lg">New Announcement</Badge>
+                <h2 className="text-2xl font-bold line-clamp-2 drop-shadow-lg">
+                  {data.title}
+                </h2>
+              </div>
+            </div>
+          )}
+
+          <div className="p-6 md:p-8 space-y-6 bg-background flex-shrink-0">
+            <div className="space-y-2">
+              {!attachmentUrl && (
+                <div className="flex items-center gap-2 text-cyan-600 font-bold uppercase tracking-wider text-xs">
+                  <Megaphone className="h-4 w-4" />
+                  System Announcement
+                </div>
+              )}
+              <DialogTitle className="text-2xl md:text-3xl font-extrabold tracking-tight">
                 {data.title}
-              </h2>
+              </DialogTitle>
             </div>
-          </div>
-        )}
 
-        <div className="p-8 space-y-6 bg-background">
-          <div className="space-y-2">
-            {!attachmentUrl && (
-              <div className="flex items-center gap-2 text-cyan-600 font-bold uppercase tracking-wider text-xs">
-                <Megaphone className="h-4 w-4" />
-                System Announcement
-              </div>
-            )}
-            <DialogTitle className="text-3xl font-extrabold tracking-tight">
-              {data.title}
-            </DialogTitle>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground bg-muted/30 p-3 rounded-2xl">
-            <div className="flex items-center gap-1.5 px-2 border-r border-border last:border-0 border-opacity-50">
-              <Calendar className="h-4 w-4 text-cyan-500" />
-              <span className="font-medium">{formattedDate}</span>
-            </div>
-            {formattedTime && (
+            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground bg-muted/30 p-3 rounded-2xl">
               <div className="flex items-center gap-1.5 px-2 border-r border-border last:border-0 border-opacity-50">
-                <Clock className="h-4 w-4 text-cyan-500" />
-                <span className="font-medium">{formattedTime}</span>
+                <Calendar className="h-4 w-4 text-cyan-500" />
+                <span className="font-medium">{formattedDate}</span>
               </div>
-            )}
-          </div>
+              {formattedTime && (
+                <div className="flex items-center gap-1.5 px-2 border-r border-border last:border-0 border-opacity-50">
+                  <Clock className="h-4 w-4 text-cyan-500" />
+                  <span className="font-medium">{formattedTime}</span>
+                </div>
+              )}
+            </div>
 
-          <div className="relative">
-            <div className="absolute -left-4 top-0 bottom-0 w-1 bg-cyan-500/20 rounded-full" />
-            <p className="text-base leading-relaxed text-foreground/80 font-medium whitespace-pre-wrap max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-              {stripHtml(data.description || "")}
-            </p>
+            <div className="relative">
+              <div className="absolute -left-4 top-0 bottom-0 w-1 bg-cyan-500/20 rounded-full" />
+              <p className="text-base leading-relaxed text-foreground/90 font-medium whitespace-pre-wrap break-words">
+                {stripHtml(data.description || "")}
+              </p>
+            </div>
           </div>
         </div>
 
-        <DialogFooter className="px-8 pb-8 pt-2">
+        <DialogFooter className="px-6 md:px-8 pb-6 md:pb-8 pt-4 flex-shrink-0 bg-background border-t border-border/5">
           <Button 
-            onClick={() => setIsOpen(false)} 
+            onClick={() => handleClose(false)} 
             className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-bold h-12 rounded-2xl shadow-xl shadow-cyan-600/20 transition-all active:scale-[0.98]"
           >
             Close Announcement

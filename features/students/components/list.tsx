@@ -16,8 +16,8 @@ import {
   X,
   CreditCard,
   BookOpen,
-  ChevronDown,
 } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import { AddStudentDialog } from "./add-student-dialog";
 import { JoinNowPopup } from "@/components/JoinNowPopup";
@@ -28,27 +28,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ExportButton } from "@/components/export-button";
 
 import { useEffect, useState } from "react";
 import studentService from "../api.service";
-import {
-  useQueryState,
-  parseAsInteger,
-  parseAsString,
-  parseAsArrayOf,
-} from "nuqs";
+import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 import { load, CheckoutOptions } from "@cashfreepayments/cashfree-js";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
@@ -68,21 +55,11 @@ export default function StudentList() {
   const [search, setSearch] = useQueryState("search", parseAsString);
   const [sort] = useQueryState("sort", parseAsString);
   const [status, setStatus] = useQueryState("status", parseAsString);
-  const [batchFilter, setBatchFilter] = useQueryState(
-    "batch",
-    parseAsArrayOf(parseAsString),
-  );
+  const [batchFilter, setBatchFilter] = useQueryState("batch", parseAsString);
 
-  const selectedBatches = batchFilter || [];
-  const toggleBatch = (batchId: string) => {
-    const newBatches = selectedBatches.includes(batchId)
-      ? selectedBatches.filter((id) => id !== batchId)
-      : [...selectedBatches, batchId];
-    setBatchFilter(newBatches.length > 0 ? newBatches : null);
-  };
   const [batches, setBatches] = useState<any[]>([]);
   const [isFree, setIsFree] = useState(false);
-  const { user, refreshUser } = useAuth();
+  const { user } = useAuth();
   const isPending = user?.status === "pending";
   const [showJoinNowModal, setShowJoinNowModal] = useState(false);
 
@@ -137,7 +114,7 @@ export default function StudentList() {
           search: search || undefined,
           sort: sort || undefined,
           status: status || undefined,
-          batch: batchFilter?.join(",") || undefined,
+          batch: batchFilter || undefined,
         };
 
         // Note: Assuming api.service.ts handles the 'status' param correctly in the query string
@@ -248,7 +225,8 @@ export default function StudentList() {
             icon: Users,
             color: "blue",
             gradient: "from-blue-600 to-indigo-600",
-            lightGradient: "from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950",
+            lightGradient:
+              "from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950",
             border: "border-blue-100 dark:border-blue-900",
             textColor: "text-blue-700 dark:text-blue-400",
           },
@@ -258,7 +236,8 @@ export default function StudentList() {
             icon: UserCheck,
             color: "emerald",
             gradient: "from-emerald-600 to-teal-600",
-            lightGradient: "from-emerald-50 to-teal-50 dark:from-emerald-950 dark:to-teal-950",
+            lightGradient:
+              "from-emerald-50 to-teal-50 dark:from-emerald-950 dark:to-teal-950",
             border: "border-emerald-100 dark:border-emerald-900",
             textColor: "text-emerald-700 dark:text-emerald-400",
           },
@@ -268,7 +247,8 @@ export default function StudentList() {
             icon: Clock,
             color: "amber",
             gradient: "from-amber-500 to-orange-500",
-            lightGradient: "from-amber-50 to-orange-50 dark:from-amber-950 dark:to-orange-950",
+            lightGradient:
+              "from-amber-50 to-orange-50 dark:from-amber-950 dark:to-orange-950",
             border: "border-amber-100 dark:border-amber-900",
             textColor: "text-amber-700 dark:text-amber-400",
           },
@@ -278,7 +258,8 @@ export default function StudentList() {
             icon: CheckCircle,
             color: "purple",
             gradient: "from-purple-600 to-violet-600",
-            lightGradient: "from-purple-50 to-violet-50 dark:from-purple-950 dark:to-violet-950",
+            lightGradient:
+              "from-purple-50 to-violet-50 dark:from-purple-950 dark:to-violet-950",
             border: "border-purple-100 dark:border-purple-900",
             textColor: "text-purple-700 dark:text-purple-400",
           },
@@ -391,48 +372,28 @@ export default function StudentList() {
                   <SelectItem value="complete">Complete</SelectItem>
                 </SelectContent>
               </Select>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full md:w-[140px] h-10 md:h-11 border-none bg-muted/30 rounded-xl px-3 text-muted-foreground whitespace-nowrap justify-between font-normal"
-                  >
-                    <div className="flex items-center gap-2 overflow-hidden">
-                      <BookOpen className="h-3.5 w-3.5 flex-shrink-0 opacity-60" />
-                      <span className="truncate">
-                        {selectedBatches.length > 0
-                          ? `${selectedBatches.length} selected`
-                          : "Batch"}
-                      </span>
-                    </div>
-                    <ChevronDown className="h-4 w-4 opacity-40 flex-shrink-0" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-[200px]">
-                  <DropdownMenuLabel>Filter by Batch</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
+              <Select
+                value={batchFilter || "all"}
+                onValueChange={(val) =>
+                  setBatchFilter(val === "all" ? null : val)
+                }
+              >
+                <SelectTrigger className="w-full md:w-[160px] h-10 md:h-11 border-none bg-muted/30 rounded-xl px-3 text-muted-foreground">
+                  <div className="flex items-center gap-2 overflow-hidden">
+                    <BookOpen className="h-3.5 w-3.5 flex-shrink-0 opacity-60" />
+                    <SelectValue placeholder="Batch" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Batches</SelectItem>
                   {batches.map((b) => (
-                    <DropdownMenuCheckboxItem
-                      key={b.id}
-                      checked={selectedBatches.includes(b.id.toString())}
-                      onCheckedChange={() => toggleBatch(b.id.toString())}
-                    >
+                    <SelectItem key={b.id} value={b.id.toString()}>
                       {b.name}
-                    </DropdownMenuCheckboxItem>
+                    </SelectItem>
                   ))}
-                  {selectedBatches.length > 0 && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onSelect={() => setBatchFilter(null)}
-                        className="justify-center text-center"
-                      >
-                        Clear filters
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
+                </SelectContent>
+              </Select>
+
               {hasFilters && (
                 <Button
                   variant="ghost"

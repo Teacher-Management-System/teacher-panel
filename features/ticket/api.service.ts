@@ -20,6 +20,10 @@ class TicketService extends BaseService {
   public async sendMessage(ticketId: string, body: string) {
     return this.post(`${ticketId}/messages`, { body, message: body });
   }
+
+  public async reopenTicket(ticketId: string, description: string) {
+    return this.post(`${ticketId}/reopen`, { description });
+  }
 }
 
 export const ticketService = new TicketService();

@@ -36,17 +36,67 @@ export default function NotificationListener() {
       const channelName = `notifications.${user.id}`;
       privateChannel = echo.private(channelName);
       privateChannel.notification((notification: any) => {
-        const title = notification.title || "New Message";
-        const message =
-          notification.body || notification.message || "You have a new update.";
+        const data = notification.data || notification;
+        const rawTitle = data.title || notification.title || "New Message";
+        const rawMessage =
+          data.body || 
+          data.message || 
+          notification.body || 
+          notification.message || 
+          "You have a new update.";
 
-        const ticketId = notification.ticket_id || notification.data?.ticket_id;
+        const ticketId = data.ticket_id || 
+                       data.data?.ticket_id || 
+                       notification.ticket_id || 
+                       notification.data?.ticket_id;
+
+        let ticketNumber = data.ticket_number || data.data?.ticket_number || data.ticket?.ticket_number;
         
-        // STRICT FILTER: If it doesn't have a ticket_id, it's an announcement/global update
-        // We check for truthy ticketId (ignoring null, undefined, 0, false, "null", etc.)
-        const hasTicketId = ticketId && ticketId !== "null" && ticketId !== "undefined";
+        // Fallback to extract ticket number if it is not explicitly provided by backend
+        if (!ticketNumber) {
+          const match = rawMessage.match(/(?:#|T-)(\d+)/i) || rawTitle.match(/(?:#|T-)(\d+)/i);
+          if (match) {
+            ticketNumber = match[1];
+          }
+        }
+        
+        // Try to map ticket_id to valid ticket reference if not provided but number is extracted
+        let finalTicketId = ticketId || ticketNumber;
+        const hasTicketId = finalTicketId && finalTicketId !== "null" && finalTicketId !== "undefined";
 
-        if (!hasTicketId) {
+        // Check if this looks like a generic system announcement vs a personal message/ticket update
+        const isTicketNotification = 
+          rawTitle.toLowerCase().includes("ticket") || 
+          rawTitle.toLowerCase().includes("message") ||
+          rawTitle.toLowerCase().includes("reply");
+
+        const isAnnouncement = 
+          notification.type?.toLowerCase().includes("announcement") ||
+          rawTitle.toLowerCase().includes("announcement") ||
+          (!hasTicketId && !isTicketNotification);
+
+        let title = rawTitle;
+        let message = rawMessage;
+
+        // Customize ticket assignment/opening notification ONLY if it's actually a ticket notification
+        if (!isAnnouncement && (hasTicketId || isTicketNotification)) {
+          const isStatusChangeToOpen = 
+            rawTitle.toLowerCase().includes("assign") || 
+            rawMessage.toLowerCase().includes("assign") ||
+            rawTitle.toLowerCase().includes("assing") || 
+            rawMessage.toLowerCase().includes("assing") ||
+            rawTitle.toLowerCase().includes("open") || 
+            rawMessage.toLowerCase().includes("open");
+
+          if (isStatusChangeToOpen) {
+            const cleanNumber = ticketNumber ? String(ticketNumber).replace(/#/g, '') : "";
+            const numStr = cleanNumber ? `#${cleanNumber}` : "";
+            message = `Your ticket ${numStr} is open and ready for chat.`;
+          }
+        }
+
+        // STRICT FILTER: If it's an announcement, treat as global announcement update
+        if (isAnnouncement) {
           console.log("Private Channel: No valid ticket_id, redirecting to Global Announcement Dialog.");
           window.dispatchEvent(new CustomEvent("new-announcement", { 
             detail: { 
@@ -65,30 +115,31 @@ export default function NotificationListener() {
           title,
           message,
           type: "private",
-          ticket_id: ticketId,
+          ticket_id: finalTicketId,
         });
-        if (ticketId) {
-          // Add a small delay to ensure backend DB state is fully updated before refresh
+        if (finalTicketId) {
+          // Add a larger delay to ensure backend DB state is fully updated before refresh, 
+          // and to let the user see the notification and ticket before it quickly moves to 'open' tab
           setTimeout(() => {
             window.dispatchEvent(
               new CustomEvent("ticket-updated", {
                 detail: { ...notification, ticket_id: ticketId },
               }),
             );
-          }, 1000);
+          }, 5000);
         }
 
         // Prevent showing toast if the user is currently on the same ticket's chat view
         let isCurrentlyActive = false;
-        if (typeof window !== "undefined" && ticketId) {
+        if (typeof window !== "undefined" && finalTicketId) {
           const w = window as any;
 
           const matchById =
             w.currentActiveTicketId &&
-            String(w.currentActiveTicketId) === String(ticketId);
+            String(w.currentActiveTicketId) === String(finalTicketId);
           const matchByNumber =
             w.currentActiveTicketNumber &&
-            String(w.currentActiveTicketNumber).includes(String(ticketId));
+            String(w.currentActiveTicketNumber).includes(String(finalTicketId));
 
           if (
             window.location.pathname.includes("/ticket") &&
@@ -99,10 +150,10 @@ export default function NotificationListener() {
         }
 
         if (!isCurrentlyActive) {
-          const toastId = ticketId ? `toast-${ticketId}` : `toast-${title}`;
+          const toastId = finalTicketId ? `toast-${finalTicketId}` : `toast-${title}`;
           const handleClick = () => {
-            if (ticketId) {
-              router.push(`/ticket?ticketId=${ticketId}`);
+            if (finalTicketId) {
+              router.push(`/ticket?ticketId=${finalTicketId}`);
               toast.dismiss(toastId);
             }
           };
@@ -118,8 +169,8 @@ export default function NotificationListener() {
                   {message}
                 </div>
               ),
-              duration: 8000,
-              action: ticketId
+              duration: 10000,
+              action: finalTicketId
                 ? {
                     label: "Reply",
                     onClick: handleClick,

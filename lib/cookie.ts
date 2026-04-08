@@ -156,6 +156,10 @@ class CookieService {
     for (const key in cookies) {
       this.deleteCookie(key);
     }
+
+    // Fallback: force delete known critical cookies directly just in case they were missed by getAllCookies.
+    this.deleteCookie("authToken");
+    this.deleteCookie("user");
   }
 }
 

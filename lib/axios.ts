@@ -67,7 +67,11 @@ apiClient.interceptors.response.use(
 
       switch (status) {
         case 401:
-          handleUnauthorized();
+          if (!window.location.pathname.startsWith("/auth/")) {
+            handleUnauthorized();
+          } else {
+            cookieService.clearAllCookies(); // Just clear cookies, no redirect loop
+          }
           break;
 
         case 403:
@@ -115,6 +119,16 @@ apiClient.interceptors.response.use(
 // Helper function to handle unauthorized access
 function handleUnauthorized(): void {
   if (typeof window === "undefined") return;
+
+  const pathname = window.location.pathname;
+  if (pathname === "/auth/login") {
+    // Already on the login page, just clear cookies and stop
+    if (cookieService.getCookie("authToken")) {
+      cookieService.clearAllCookies();
+    }
+    return;
+  }
+
   cookieService.clearAllCookies();
   window.location.href = "/auth/login";
 }
