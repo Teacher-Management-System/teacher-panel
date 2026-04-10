@@ -10,7 +10,7 @@ import { useNotifications } from "@/context/notification-context";
 import { stripHtml } from "@/lib/utils";
 
 export default function NotificationListener() {
-  const { user } = useAuth();
+  const { user, isActive } = useAuth();
   const router = useRouter();
   const { addNotification } = useNotifications();
 
@@ -20,10 +20,12 @@ export default function NotificationListener() {
 
     const publicChannel = echo.channel("notification-channel");
     publicChannel.listen("NotificationEvent", (data: any) => {
+      if (!isActive) return;
       console.log("Public Notification:", data);
       toast.info(data.message || "New update available!");
     });
     publicChannel.listen("AnnouncementEvent", (data: any) => {
+      if (!isActive) return;
       console.log("WebSocket Announcement Received:", data);
       
       // Dispatch global event with full data for the list page to handle
@@ -190,7 +192,7 @@ export default function NotificationListener() {
         echo.leaveChannel(`notifications.${user.id}`);
       }
     };
-  }, [user?.id]);
+  }, [user?.id, isActive]);
 
   return null;
 }

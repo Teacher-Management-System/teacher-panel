@@ -405,7 +405,7 @@ export const createColumns = (
           Actions
         </div>
       ),
-      cell: ({ row }) => <ActionCell row={row} />,
+      cell: ({ row }) => <ActionCell row={row} refreshData={refreshData} />,
     },
   ];
 
@@ -416,7 +416,7 @@ export const createColumns = (
   return columns;
 };
 
-function ActionCell({ row }: { row: any }) {
+function ActionCell({ row, refreshData }: { row: any; refreshData: () => void }) {
   const student = row.original as Student;
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
@@ -427,6 +427,8 @@ function ActionCell({ row }: { row: any }) {
     setIsDeleting(true);
     try {
       await studentService.deleteStudent(student.id);
+      toast.success("Student deleted successfully");
+      refreshData();
     } catch (error) {
       console.error(error);
       toast.error("Failed to delete student");
@@ -481,7 +483,7 @@ function ActionCell({ row }: { row: any }) {
         student={student}
         open={showEditDialog}
         onOpenChange={setShowEditDialog}
-        onSuccess={() => window.location.reload()}
+        onSuccess={() => refreshData()}
       />
 
       <StudentDetailsDialog

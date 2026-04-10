@@ -64,21 +64,61 @@ export function createColumns(
         <DataTableColumnHeader column={column} title="Attachment" />
       ),
       cell: ({ row }) => {
-        let attachment = row.getValue("attachment") as string;
-        if (!attachment) return <div className="text-muted-foreground/30 flex justify-center w-fit px-4"><ImageIcon className="h-4 w-4" /></div>;
+        const notification = row.original;
         
-        if (attachment && typeof attachment === 'string' && !attachment.startsWith('http') && !attachment.startsWith('data:')) {
+        const getFirstAttachment = () => {
+          let attachments: any = 
+            notification.attachments ||
+            notification.attachment || 
+            (notification as any).image;
+
+          if (!attachments) return null;
+
+          let attachmentStr = "";
+          if (Array.isArray(attachments)) {
+            attachmentStr = attachments[0];
+          } else if (typeof attachments === 'string') {
+            if (attachments.includes(',') && !attachments.startsWith('data:')) {
+              attachmentStr = attachments.split(',')[0].trim();
+            } else if (attachments.startsWith('[') && attachments.endsWith(']')) {
+              try {
+                const parsed = JSON.parse(attachments);
+                attachmentStr = Array.isArray(parsed) ? parsed[0] : attachments;
+              } catch (e) {
+                attachmentStr = attachments;
+              }
+            } else {
+              attachmentStr = attachments;
+            }
+          }
+
+          if (!attachmentStr || typeof attachmentStr !== 'string') return null;
+          if (attachmentStr.startsWith('http') || attachmentStr.startsWith('data:')) return attachmentStr;
+          
           const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-          attachment = `${baseUrl.replace(/\/$/, '')}/${attachment.replace(/^\//, '')}`;
+          return `${baseUrl.replace(/\/$/, '')}/${attachmentStr.replace(/^\//, '')}`;
+        };
+
+        const firstAttachment = getFirstAttachment();
+
+        if (!firstAttachment) {
+          return (
+            <div className="text-muted-foreground/30 flex justify-center w-fit px-4">
+              <ImageIcon className="h-4 w-4" />
+            </div>
+          );
         }
 
         return (
           <div className="relative h-10 w-16 rounded-md overflow-hidden bg-muted border border-border/50 shadow-sm transition-transform hover:scale-105 cursor-zoom-in">
             <img 
-              src={attachment} 
+              src={firstAttachment} 
               alt="attachment" 
               className="h-full w-full object-cover"
-              onClick={() => onView(row.original)}
+              onClick={() => onView(notification)}
+              onError={(e) => {
+                (e.target as any).style.display = 'none';
+              }}
             />
           </div>
         );

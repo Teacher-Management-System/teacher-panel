@@ -14,15 +14,27 @@ import {
 import { Button } from "@/components/ui/button";
 import { cookieService } from "@/lib/cookie";
 import { Badge } from "@/components/ui/badge";
-import { Megaphone, Calendar, Clock } from "lucide-react";
+import { Megaphone, Calendar, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import { stripHtml, parseDate } from "@/lib/utils";
 import { format } from "date-fns";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+
+import { useAuth } from "@/hooks/useAuth";
 
 export default function AnnouncementDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [data, setData] = useState<NotificationItem | null>(null);
+  const { isActive, isLoading } = useAuth();
 
   useEffect(() => {
+    if (isLoading || !isActive) return;
+
     // Check for unread announcements on load/login
     const checkUnreadAnnouncements = async () => {
       const authToken = cookieService.getCookie("authToken");
@@ -44,6 +56,9 @@ export default function AnnouncementDialog() {
     const timeout = setTimeout(checkUnreadAnnouncements, 1500);
 
     const handleNewAnnouncement = async (event: any) => {
+      // Small defensive check even though effect is restricted
+      if (!isActive) return;
+      
       const announcement = event.detail as any;
       if (!announcement) return;
 
@@ -58,7 +73,7 @@ export default function AnnouncementDialog() {
       clearTimeout(timeout);
       window.removeEventListener("new-announcement", handleNewAnnouncement);
     };
-  }, []);
+  }, [isActive, isLoading]);
 
   if (!data) return null;
 
@@ -76,16 +91,54 @@ export default function AnnouncementDialog() {
   }
 
   // Format attachment URL with base URL if needed
-  let attachmentUrl = 
-    data.attachment || 
-    (data as any).image || 
-    (data as any).data?.attachment || 
-    (data as any).data?.image;
+  const getAttachments = () => {
+    if (!data) return [];
+    
+    // Prioritize plural attachments array if it exists
+    let attachments: any = 
+      data.attachments || 
+      data.attachment || 
+      (data as any).image || 
+      (data as any).data?.attachments ||
+      (data as any).data?.attachment || 
+      (data as any).data?.image;
 
-  if (attachmentUrl && typeof attachmentUrl === 'string' && !attachmentUrl.startsWith('http') && !attachmentUrl.startsWith('data:')) {
+    if (!attachments) return [];
+
+    let attachmentsArray: string[] = [];
+
+    if (Array.isArray(attachments)) {
+      attachmentsArray = attachments;
+    } else if (typeof attachments === 'string') {
+      // Handle comma separated or single string
+      if (attachments.includes(',') && !attachments.startsWith('data:')) {
+        attachmentsArray = attachments.split(',').map(s => s.trim()).filter(Boolean);
+      } else if (attachments.startsWith('[') && attachments.endsWith(']')) {
+        // Try to parse if it looks like a JSON array string
+        try {
+          const parsed = JSON.parse(attachments);
+          attachmentsArray = Array.isArray(parsed) ? parsed : [attachments];
+        } catch (e) {
+          attachmentsArray = [attachments];
+        }
+      } else {
+        attachmentsArray = [attachments];
+      }
+    }
+
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-    attachmentUrl = `${baseUrl.replace(/\/$/, '')}/${attachmentUrl.replace(/^\//, '')}`;
-  }
+    
+    return attachmentsArray.map(url => {
+      if (typeof url !== 'string') return '';
+      if (url.startsWith('http') || url.startsWith('data:')) return url;
+      // Ensure we don't have multiple slashes if baseUrl ends with / or url starts with /
+      const cleanBaseUrl = baseUrl.replace(/\/$/, '');
+      const cleanUrl = url.replace(/^\//, '');
+      return `${cleanBaseUrl}/${cleanUrl}`;
+    }).filter(url => url !== '');
+  };
+
+  const attachments = getAttachments();
 
   const handleClose = (open: boolean) => {
     if (!open && data?.id && data.is_read === false) {
@@ -113,18 +166,48 @@ export default function AnnouncementDialog() {
         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 z-50 flex-shrink-0" />
         
         <div className="flex-1 overflow-y-auto custom-scrollbar pt-1.5 flex flex-col">
-          {attachmentUrl && (
+          {attachments.length > 0 && (
             <div className="relative w-full aspect-video bg-zinc-100 overflow-hidden group flex-shrink-0 border-b border-border/5">
-              <img 
-                src={attachmentUrl} 
-                alt={data.title}
-                onError={(e) => {
-                  console.error("Global Dialog: Image failed to load", attachmentUrl);
-                  (e.target as any).style.display = 'none';
-                }}
-                className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+              {attachments.length === 1 ? (
+                <img 
+                  src={attachments[0]} 
+                  alt={data.title}
+                  onError={(e) => {
+                    console.error("Global Dialog: Image failed to load", attachments[0]);
+                    (e.target as any).style.display = 'none';
+                  }}
+                  className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
+                />
+              ) : (
+                <Carousel className="w-full h-full">
+                  <CarouselContent className="h-full ml-0">
+                    {attachments.map((url, index) => (
+                      <CarouselItem key={index} className="pl-0 h-full">
+                        <img 
+                          src={url} 
+                          alt={`${data.title} - ${index + 1}`}
+                          onError={(e) => {
+                            console.error(`Global Dialog: Carousel image ${index} failed to load`, url);
+                            (e.target as any).style.display = 'none';
+                          }}
+                          className="w-full h-full object-contain"
+                        />
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    <CarouselPrevious className="relative left-0 translate-x-0 pointer-events-auto bg-black/20 hover:bg-black/40 border-none text-white h-10 w-10" />
+                    <CarouselNext className="relative right-0 translate-x-0 pointer-events-auto bg-black/20 hover:bg-black/40 border-none text-white h-10 w-10" />
+                  </div>
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 pointer-events-none">
+                    {attachments.map((_, i) => (
+                      <div key={i} className="w-1.5 h-1.5 rounded-full bg-white/50" />
+                    ))}
+                  </div>
+                </Carousel>
+              )}
+              
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
               <div className="absolute bottom-4 left-6 right-6 text-white pointer-events-none">
                 <Badge className="bg-cyan-500 text-white border-none mb-2 shadow-lg">New Announcement</Badge>
                 <h2 className="text-2xl font-bold line-clamp-2 drop-shadow-lg">
@@ -136,7 +219,7 @@ export default function AnnouncementDialog() {
 
           <div className="p-6 md:p-8 space-y-6 bg-background flex-shrink-0">
             <div className="space-y-2">
-              {!attachmentUrl && (
+              {attachments.length === 0 && (
                 <div className="flex items-center gap-2 text-cyan-600 font-bold uppercase tracking-wider text-xs">
                   <Megaphone className="h-4 w-4" />
                   System Announcement

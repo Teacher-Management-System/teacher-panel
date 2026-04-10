@@ -4,6 +4,7 @@ export interface NotificationItem {
   title: string;
   description: string;
   attachment: string | null;
+  attachments?: string[];
   scheduled_at: string;
   send_at: string;
   status: string;
