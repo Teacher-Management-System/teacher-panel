@@ -35,8 +35,18 @@ export function useFcm() {
       setPermission(permissionStatus);
 
       if (permissionStatus === "granted") {
+        const firebaseConfigParams = new URLSearchParams({
+          apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "",
+          authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "",
+          projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "",
+          storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "",
+          messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "",
+          appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "",
+          measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "",
+        }).toString();
+
         const registration = await navigator.serviceWorker.register(
-          "/firebase-messaging-sw.js",
+          `/firebase-messaging-sw.js?${firebaseConfigParams}`,
         );
         const token = await getToken(messaging, {
           vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,

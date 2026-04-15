@@ -11,11 +11,11 @@ import { Button } from "@/components/ui/button";
 import { BellRing, ShieldCheck } from "lucide-react";
 
 interface NotificationModalProps {
-  onConfirm: () => void;
+  onEnable: () => void;
   loading?: boolean;
 }
 
-export default function NotificationModal({ onConfirm, loading }: NotificationModalProps) {
+export default function NotificationModal({ onEnable, loading }: NotificationModalProps) {
   return (
     <div className="flex flex-col gap-6 py-4">
       <DialogHeader>
@@ -48,7 +48,7 @@ export default function NotificationModal({ onConfirm, loading }: NotificationMo
       <DialogFooter className="sm:justify-start gap-2">
         <Button 
           type="button" 
-          onClick={onConfirm} 
+          onClick={onEnable} 
           disabled={loading}
           className="flex-1 sm:flex-none font-semibold px-8"
         >

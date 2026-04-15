@@ -16,24 +16,56 @@ export default function FcmHandler() {
   const modalContext = useContext(ModalContext);
 
   useEffect(() => {
-    if (!user || !isFirebaseConfigured) return;
+    console.log(
+      "[FCM] Effect triggered. user:",
+      !!user,
+      "| isFirebaseConfigured:",
+      isFirebaseConfigured,
+      "| isActive:",
+      isActive,
+      "| modalContext:",
+      !!modalContext,
+    );
+
+    if (!user || !isFirebaseConfigured) {
+      console.log(
+        "[FCM] Early return — user:",
+        !!user,
+        "| configured:",
+        isFirebaseConfigured,
+      );
+      return;
+    }
 
     // Trigger notification prompt modal after login
     const autoRegisterOnLogin = async () => {
-      const currentPermission = typeof Notification !== "undefined" ? Notification.permission : "default";
+      const currentPermission =
+        typeof Notification !== "undefined"
+          ? Notification.permission
+          : "default";
+      console.log("[FCM] Notification.permission:", currentPermission);
 
       if (currentPermission === "default") {
+        console.log("[FCM] Permission is default — will open modal in 1s");
         // 1-second delay to ensure the dashboard has loaded smoothly
         setTimeout(() => {
-          modalContext?.openModal(NotificationModal, {
-            onConfirm: async () => {
-              await registerNotifications();
-              modalContext.closeModal();
-            }
-          }, { size: "sm" });
+          console.log("[FCM] Timeout fired — modalContext:", !!modalContext);
+          modalContext?.openModal(
+            NotificationModal,
+            {
+              onEnable: async () => {
+                await registerNotifications();
+                modalContext.closeModal();
+              },
+            },
+            { size: "sm" },
+          );
         }, 1000);
       } else if (currentPermission === "granted") {
+        console.log("[FCM] Already granted — registering silently");
         await registerNotifications();
+      } else {
+        console.log("[FCM] Permission is denied — skipping modal");
       }
     };
 
@@ -64,7 +96,13 @@ export default function FcmHandler() {
     return () => {
       unsubscribePromise.then((unsubscribe) => unsubscribe?.());
     };
-  }, [user, isActive, registerNotifications, modalContext, isFirebaseConfigured]);
+  }, [
+    user,
+    isActive,
+    registerNotifications,
+    modalContext,
+    isFirebaseConfigured,
+  ]);
 
   return null;
 }

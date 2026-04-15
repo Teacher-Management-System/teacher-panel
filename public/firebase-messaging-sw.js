@@ -4,18 +4,16 @@ importScripts(
 importScripts(
   "https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging-compat.js",
 );
-
-// This will be filled by the user or I will provide instructions on how to fill it
-// Alternatively, we can use the messaging app without config if we just want basics
-// but normally firebase-messaging-sw.js needs the messagingSenderId at least.
+const urlParams = new URL(self.location).searchParams;
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: urlParams.get("apiKey"),
+  authDomain: urlParams.get("authDomain"),
+  projectId: urlParams.get("projectId"),
+  storageBucket: urlParams.get("storageBucket"),
+  messagingSenderId: urlParams.get("messagingSenderId"),
+  appId: urlParams.get("appId"),
+  measurementId: urlParams.get("measurementId"),
 };
 
 firebase.initializeApp(firebaseConfig);
