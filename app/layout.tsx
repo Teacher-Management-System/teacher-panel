@@ -18,6 +18,12 @@ const fontMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Aerophantom",
   description: "Aerophantom - Student Management System",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Aerophantom",
+  },
 };
 
 export default async function RootLayout({
