@@ -14,8 +14,11 @@ export function useFcm() {
   const [loading, setLoading] = useState(false);
 
   const registerNotifications = useCallback(async (isSilent = false) => {
-    console.log("FCM: registerNotifications called. Configured:", isFirebaseConfigured);
-    
+    console.log(
+      "FCM: registerNotifications called. Configured:",
+      isFirebaseConfigured,
+    );
+
     if (!isFirebaseConfigured) {
       console.warn("FCM: Skip registration - Not configured in .env");
       return;
@@ -30,7 +33,7 @@ export function useFcm() {
       }
 
       console.log("FCM: Current permission status:", Notification.permission);
-      
+
       const permissionStatus = await Notification.requestPermission();
       console.log("FCM: Permission result after prompt:", permissionStatus);
       setPermission(permissionStatus);
@@ -41,7 +44,8 @@ export function useFcm() {
           authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "",
           projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "",
           storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "",
-          messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "",
+          messagingSenderId:
+            process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "",
           appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "",
           measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "",
         }).toString();
@@ -71,24 +75,15 @@ export function useFcm() {
         if (currentToken) {
           setToken(currentToken);
           await profileService.updateFcmToken(currentToken);
-          if (!isSilent) toast.success("Push notifications enabled!");
           return currentToken;
-        }
-      } else if (permissionStatus === "denied") {
-        if (!isSilent) {
-          toast.error(
-            "Notification permission denied. Please enable it in your browser settings.",
-          );
         }
       }
     } catch (error) {
       console.error("Error specialized in useFcm:", error);
-      if (!isSilent) toast.error("Failed to enable notifications.");
     } finally {
       setLoading(false);
     }
   }, []);
-
 
   return {
     permission,
