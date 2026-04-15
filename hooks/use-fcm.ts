@@ -48,6 +48,20 @@ export function useFcm() {
         const registration = await navigator.serviceWorker.register(
           `/firebase-messaging-sw.js?${firebaseConfigParams}`,
         );
+
+        // Wait for service worker to be active to avoid "no active Service Worker" error
+        if (!registration.active) {
+          console.log("FCM: Waiting for Service Worker to activate...");
+          await new Promise<void>((resolve) => {
+            const interval = setInterval(() => {
+              if (registration.active) {
+                clearInterval(interval);
+                resolve();
+              }
+            }, 100);
+          });
+        }
+
         const token = await getToken(messaging, {
           vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
           serviceWorkerRegistration: registration,

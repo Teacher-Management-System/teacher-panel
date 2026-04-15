@@ -4,6 +4,15 @@ importScripts(
 importScripts(
   "https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging-compat.js",
 );
+
+// Force active
+self.addEventListener("install", () => {
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(clients.claim());
+});
 const urlParams = new URL(self.location).searchParams;
 
 const firebaseConfig = {
