@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { onMessage } from "firebase/messaging";
 import { getFirebaseMessaging } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,43 +15,33 @@ export default function FcmHandler() {
   const { registerNotifications, isFirebaseConfigured } = useFcm();
   const modalContext = useContext(ModalContext);
 
-  useEffect(() => {
-    console.log(
-      "[FCM] Effect triggered. user:",
-      !!user,
-      "| isFirebaseConfigured:",
-      isFirebaseConfigured,
-      "| isActive:",
-      isActive,
-      "| modalContext:",
-      !!modalContext,
-    );
+  const hasPrompted = useRef(false);
 
-    if (isLoading) return; // Wait for auth to load
+  useEffect(() => {
+    if (isLoading) return;
 
     if (!user || !isFirebaseConfigured) {
-      console.log(
-        "[FCM] Early return — user:",
-        !!user,
-        "| configured:",
-        isFirebaseConfigured,
-      );
+      hasPrompted.current = false;
       return;
     }
 
-    // Trigger notification prompt modal after login
+    if (hasPrompted.current) return;
+
+    let timeoutId: NodeJS.Timeout;
+
     const autoRegisterOnLogin = async () => {
       const currentPermission =
         typeof Notification !== "undefined"
           ? Notification.permission
           : "default";
-      console.log("[FCM] Notification.permission:", currentPermission);
+      
+      console.log("[FCM] Checking permission:", currentPermission);
 
       if (currentPermission === "default" || currentPermission === "denied") {
-        console.log(`[FCM] Permission is ${currentPermission} — will open modal in 1s`);
-        // 1-second delay to ensure the dashboard has loaded smoothly
-        setTimeout(() => {
-          console.log("[FCM] Timeout fired — modalContext:", !!modalContext);
+        hasPrompted.current = true;
+        console.log(`[FCM] Prompting user (status: ${currentPermission})`);
+        
+        timeoutId = setTimeout(() => {
           modalContext?.openModal(
             NotificationModal,
             {
@@ -65,6 +55,7 @@ export default function FcmHandler() {
           );
         }, 1000);
       } else if (currentPermission === "granted") {
+        hasPrompted.current = true;
         console.log("[FCM] Already granted — registering silently");
         await registerNotifications();
       }
@@ -95,12 +86,12 @@ export default function FcmHandler() {
     const unsubscribePromise = setupForegroundListener();
 
     return () => {
+      if (timeoutId) clearTimeout(timeoutId);
       unsubscribePromise.then((unsubscribe) => unsubscribe?.());
     };
   }, [
     user,
     isLoading,
-    isActive,
     registerNotifications,
     modalContext,
     isFirebaseConfigured,

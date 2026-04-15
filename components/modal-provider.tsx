@@ -1,4 +1,4 @@
-import React, { createContext, useState, ReactNode } from "react";
+import React, { createContext, useState, ReactNode, useCallback, useMemo } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
@@ -34,7 +34,7 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
     ((result: any) => void) | null
   >(null);
 
-  const openModal = (
+  const openModal = useCallback((
     content: React.ComponentType<any>,
     data: any = {},
     options?: ModalOptions,
@@ -45,9 +45,9 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
     setModalOptions(options || {});
     setOnCloseCallback(() => onClose); // Use a functional update to store the callback
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const closeModal = (result: any = null) => {
+  const closeModal = useCallback((result: any = null) => {
     setIsModalOpen(false);
     if (onCloseCallback) {
       onCloseCallback(result);
@@ -58,7 +58,9 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
       setModalData(null);
       setOnCloseCallback(null);
     }, 300);
-  };
+  }, [onCloseCallback]);
+
+  const value = useMemo(() => ({ openModal, closeModal }), [openModal, closeModal]);
 
   const dynamicContent = modalContent
     ? React.createElement(modalContent, {
@@ -75,7 +77,7 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <ModalContext.Provider value={{ openModal, closeModal }}>
+    <ModalContext.Provider value={value}>
       {children}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent
