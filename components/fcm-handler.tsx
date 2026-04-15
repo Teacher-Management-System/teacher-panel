@@ -98,8 +98,8 @@ export default function FcmHandler() {
                   body: body,
                   icon: "/logo-icon.png",
                   badge: "/logo-icon.png",
-                  tag: "fcm-notification-group",
-                  renotify: true,
+                  tag: `fcm-${Date.now()}`, // Unique tag prevents spam detection
+                  renotify: false,
                 } as any);
               })
               .catch((e) => {
