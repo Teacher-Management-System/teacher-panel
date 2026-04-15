@@ -14,6 +14,10 @@ export class NotificationService extends BaseService {
     const url = id ? `${id}/read` : "read-all";
     return this.patch(url, {});
   }
+
+  sendTestNotification(): Promise<any> {
+    return this.post("/test", {});
+  }
 }
 
 const notificationService = new NotificationService();

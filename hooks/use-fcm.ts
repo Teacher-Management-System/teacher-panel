@@ -10,6 +10,7 @@ export function useFcm() {
   const [permission, setPermission] = useState<NotificationPermission>(
     typeof Notification !== "undefined" ? Notification.permission : "default",
   );
+  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const registerNotifications = useCallback(async () => {
@@ -62,15 +63,16 @@ export function useFcm() {
           });
         }
 
-        const token = await getToken(messaging, {
+        const currentToken = await getToken(messaging, {
           vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
           serviceWorkerRegistration: registration,
         });
 
-        if (token) {
-          await profileService.updateFcmToken(token);
+        if (currentToken) {
+          setToken(currentToken);
+          await profileService.updateFcmToken(currentToken);
           toast.success("Push notifications enabled!");
-          return token;
+          return currentToken;
         }
       } else if (permissionStatus === "denied") {
         toast.error(
@@ -87,6 +89,7 @@ export function useFcm() {
 
   return {
     permission,
+    token,
     loading,
     registerNotifications,
     isFirebaseConfigured,
