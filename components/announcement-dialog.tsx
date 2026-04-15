@@ -14,7 +14,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { cookieService } from "@/lib/cookie";
 import { Badge } from "@/components/ui/badge";
-import { Megaphone, Calendar, Clock, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Megaphone,
+  Calendar,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { stripHtml, parseDate } from "@/lib/utils";
 import { format } from "date-fns";
 import {
@@ -41,11 +47,15 @@ export default function AnnouncementDialog() {
       if (!authToken) return;
 
       try {
-        const response = await notificationService.getNotifications({ status: "unacknowledged" });
+        const response = await notificationService.getNotifications({
+          status: "unacknowledged",
+        });
         if (response?.notifications && response.notifications.length > 0) {
-          // Show the most recent unread announcement
           setData(response.notifications[0]);
           setIsOpen(true);
+          notificationService.markAsRead().catch((err) => {
+            console.error("Failed to mark all as read:", err);
+          });
         }
       } catch (error) {
         console.error("Failed to fetch unread announcements on load:", error);
@@ -58,12 +68,18 @@ export default function AnnouncementDialog() {
     const handleNewAnnouncement = async (event: any) => {
       // Small defensive check even though effect is restricted
       if (!isActive) return;
-      
+
       const announcement = event.detail as any;
       if (!announcement) return;
 
-      console.log("Global Dialog: Full Announcement Data Received", announcement);
-      console.log("Global Dialog: Attachment URL detected", announcement.attachment || announcement.image);
+      console.log(
+        "Global Dialog: Full Announcement Data Received",
+        announcement,
+      );
+      console.log(
+        "Global Dialog: Attachment URL detected",
+        announcement.attachment || announcement.image,
+      );
       setData(announcement);
       setIsOpen(true);
     };
@@ -93,14 +109,14 @@ export default function AnnouncementDialog() {
   // Format attachment URL with base URL if needed
   const getAttachments = () => {
     if (!data) return [];
-    
+
     // Prioritize plural attachments array if it exists
-    let attachments: any = 
-      data.attachments || 
-      data.attachment || 
-      (data as any).image || 
+    let attachments: any =
+      data.attachments ||
+      data.attachment ||
+      (data as any).image ||
       (data as any).data?.attachments ||
-      (data as any).data?.attachment || 
+      (data as any).data?.attachment ||
       (data as any).data?.image;
 
     if (!attachments) return [];
@@ -109,11 +125,14 @@ export default function AnnouncementDialog() {
 
     if (Array.isArray(attachments)) {
       attachmentsArray = attachments;
-    } else if (typeof attachments === 'string') {
+    } else if (typeof attachments === "string") {
       // Handle comma separated or single string
-      if (attachments.includes(',') && !attachments.startsWith('data:')) {
-        attachmentsArray = attachments.split(',').map(s => s.trim()).filter(Boolean);
-      } else if (attachments.startsWith('[') && attachments.endsWith(']')) {
+      if (attachments.includes(",") && !attachments.startsWith("data:")) {
+        attachmentsArray = attachments
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+      } else if (attachments.startsWith("[") && attachments.endsWith("]")) {
         // Try to parse if it looks like a JSON array string
         try {
           const parsed = JSON.parse(attachments);
@@ -126,16 +145,19 @@ export default function AnnouncementDialog() {
       }
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-    
-    return attachmentsArray.map(url => {
-      if (typeof url !== 'string') return '';
-      if (url.startsWith('http') || url.startsWith('data:')) return url;
-      // Ensure we don't have multiple slashes if baseUrl ends with / or url starts with /
-      const cleanBaseUrl = baseUrl.replace(/\/$/, '');
-      const cleanUrl = url.replace(/^\//, '');
-      return `${cleanBaseUrl}/${cleanUrl}`;
-    }).filter(url => url !== '');
+    const baseUrl =
+      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+
+    return attachmentsArray
+      .map((url) => {
+        if (typeof url !== "string") return "";
+        if (url.startsWith("http") || url.startsWith("data:")) return url;
+        // Ensure we don't have multiple slashes if baseUrl ends with / or url starts with /
+        const cleanBaseUrl = baseUrl.replace(/\/$/, "");
+        const cleanUrl = url.replace(/^\//, "");
+        return `${cleanBaseUrl}/${cleanUrl}`;
+      })
+      .filter((url) => url !== "");
   };
 
   const attachments = getAttachments();
@@ -143,15 +165,21 @@ export default function AnnouncementDialog() {
   const handleClose = (open: boolean) => {
     if (!open && data?.id && data.is_read === false) {
       // Optimistically close & acknowledge
-      notificationService.markAsRead(data.id)
+      notificationService
+        .markAsRead(data.id)
         .then(() => {
           // Tell other components to refresh
           window.dispatchEvent(new CustomEvent("announcement-read"));
         })
         .catch(console.error);
-    } else if (!open && data?.id && (data.acknowledged === false || data.acknowledged === undefined)) {
+    } else if (
+      !open &&
+      data?.id &&
+      (data.acknowledged === false || data.acknowledged === undefined)
+    ) {
       // Fallback if is_read isn't exactly boolean false
-      notificationService.markAsRead(data.id)
+      notificationService
+        .markAsRead(data.id)
         .then(() => {
           window.dispatchEvent(new CustomEvent("announcement-read"));
         })
@@ -164,17 +192,20 @@ export default function AnnouncementDialog() {
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] rounded-3xl border-none shadow-2xl overflow-hidden max-w-[600px] w-[95vw] max-h-[90vh] flex flex-col p-0 z-[10000]">
         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 z-50 flex-shrink-0" />
-        
+
         <div className="flex-1 overflow-y-auto custom-scrollbar pt-1.5 flex flex-col">
           {attachments.length > 0 && (
             <div className="relative w-full aspect-video bg-zinc-100 overflow-hidden group flex-shrink-0 border-b border-border/5">
               {attachments.length === 1 ? (
-                <img 
-                  src={attachments[0]} 
+                <img
+                  src={attachments[0]}
                   alt={data.title}
                   onError={(e) => {
-                    console.error("Global Dialog: Image failed to load", attachments[0]);
-                    (e.target as any).style.display = 'none';
+                    console.error(
+                      "Global Dialog: Image failed to load",
+                      attachments[0],
+                    );
+                    (e.target as any).style.display = "none";
                   }}
                   className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
                 />
@@ -183,12 +214,15 @@ export default function AnnouncementDialog() {
                   <CarouselContent className="h-full ml-0">
                     {attachments.map((url, index) => (
                       <CarouselItem key={index} className="pl-0 h-full">
-                        <img 
-                          src={url} 
+                        <img
+                          src={url}
                           alt={`${data.title} - ${index + 1}`}
                           onError={(e) => {
-                            console.error(`Global Dialog: Carousel image ${index} failed to load`, url);
-                            (e.target as any).style.display = 'none';
+                            console.error(
+                              `Global Dialog: Carousel image ${index} failed to load`,
+                              url,
+                            );
+                            (e.target as any).style.display = "none";
                           }}
                           className="w-full h-full object-contain"
                         />
@@ -201,15 +235,20 @@ export default function AnnouncementDialog() {
                   </div>
                   <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 pointer-events-none">
                     {attachments.map((_, i) => (
-                      <div key={i} className="w-1.5 h-1.5 rounded-full bg-white/50" />
+                      <div
+                        key={i}
+                        className="w-1.5 h-1.5 rounded-full bg-white/50"
+                      />
                     ))}
                   </div>
                 </Carousel>
               )}
-              
+
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
               <div className="absolute bottom-4 left-6 right-6 text-white pointer-events-none">
-                <Badge className="bg-cyan-500 text-white border-none mb-2 shadow-lg">New Announcement</Badge>
+                <Badge className="bg-cyan-500 text-white border-none mb-2 shadow-lg">
+                  New Announcement
+                </Badge>
                 <h2 className="text-2xl font-bold line-clamp-2 drop-shadow-lg">
                   {data.title}
                 </h2>
@@ -253,8 +292,8 @@ export default function AnnouncementDialog() {
         </div>
 
         <DialogFooter className="px-6 md:px-8 pb-6 md:pb-8 pt-4 flex-shrink-0 bg-background border-t border-border/5">
-          <Button 
-            onClick={() => handleClose(false)} 
+          <Button
+            onClick={() => handleClose(false)}
             className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-bold h-12 rounded-2xl shadow-xl shadow-cyan-600/20 transition-all active:scale-[0.98]"
           >
             Close Announcement
