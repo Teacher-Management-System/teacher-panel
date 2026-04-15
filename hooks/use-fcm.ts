@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { getToken } from "firebase/messaging";
+import { getToken, deleteToken } from "firebase/messaging";
 import { getFirebaseMessaging, isFirebaseConfigured } from "@/lib/firebase";
 import profileService from "@/features/profile/aou.service";
 import { toast } from "sonner";
@@ -13,26 +13,34 @@ export function useFcm() {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const registerNotifications = useCallback(async (isSilent = false) => {
-    console.log(
-      "FCM: registerNotifications called. Configured:",
-      isFirebaseConfigured,
-    );
+  const registerNotifications = useCallback(
+    async (isSilent = false, forceRefresh = false) => {
+      console.log(
+        "FCM: registerNotifications called. Configured:",
+        isFirebaseConfigured,
+        "Force Refresh:",
+        forceRefresh,
+      );
 
-    if (!isFirebaseConfigured) {
-      console.warn("FCM: Skip registration - Not configured in .env");
-      return;
-    }
-
-    if (!isSilent) setLoading(true);
-    try {
-      const messaging = await getFirebaseMessaging();
-      if (!messaging) {
-        console.error("FCM: Messaging instance not available");
+      if (!isFirebaseConfigured) {
+        console.warn("FCM: Skip registration - Not configured in .env");
         return;
       }
 
-      console.log("FCM: Current permission status:", Notification.permission);
+      if (!isSilent) setLoading(true);
+      try {
+        const messaging = await getFirebaseMessaging();
+        if (!messaging) {
+          console.error("FCM: Messaging instance not available");
+          return;
+        }
+
+        if (forceRefresh) {
+          console.log("FCM: Forcing token refresh (deleting old token)...");
+          await deleteToken(messaging);
+        }
+
+        console.log("FCM: Current permission status:", Notification.permission);
 
       const permissionStatus = await Notification.requestPermission();
       console.log("FCM: Permission result after prompt:", permissionStatus);
