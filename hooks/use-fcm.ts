@@ -87,6 +87,13 @@ export function useFcm() {
     }
   }, []);
 
+  // Automatically fetch token if permission is already granted
+  useEffect(() => {
+    if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+      registerNotifications();
+    }
+  }, [registerNotifications]);
+
   return {
     permission,
     token,
