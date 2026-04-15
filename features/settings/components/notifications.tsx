@@ -20,7 +20,6 @@ import {
   Terminal,
 } from "lucide-react";
 import notificationService from "@/features/notifications/api.service";
-import { toast } from "sonner";
 
 export function NotificationSettings() {
   const {
@@ -43,7 +42,6 @@ export function NotificationSettings() {
     if (!token) return;
     navigator.clipboard.writeText(token);
     setCopied(true);
-    toast.success("Token copied to clipboard!");
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -52,34 +50,8 @@ export function NotificationSettings() {
     setTestLoading(true);
     try {
       await notificationService.sendTestNotification();
-      toast.success("Test notification sent successfully!");
     } catch (error: any) {
       console.error("Test notification failed:", error);
-
-      // Check for unregistered device error
-      const errorMessage =
-        error?.response?.data?.message || error?.message || "";
-      if (errorMessage.toLowerCase().includes("unregistered")) {
-        toast.error("Device unregistered. Retrying to fix your token...", {
-          description:
-            "Please wait a moment while we refresh your registration.",
-        });
-
-        // Trigger forced re-registration
-        try {
-          await registerNotifications(true, true); // silent, forceRefresh
-          toast.success(
-            "Token refreshed! Please try sending the test notification again.",
-          );
-        } catch (regError) {
-          console.error("Token refresh failed:", regError);
-          toast.error(
-            "Failed to refresh token automatically. Please refresh the page.",
-          );
-        }
-      } else {
-        toast.error(errorMessage || "Failed to send test notification.");
-      }
     } finally {
       setTestLoading(false);
     }

@@ -38,6 +38,17 @@ export default function FcmHandler() {
 
     if (isPublicPage) return;
 
+    // Detect iOS
+    const isIOS =
+      typeof window !== "undefined" &&
+      (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1));
+
+    if (isIOS) {
+      console.log("[FCM] Suppressing prompt for iOS device");
+      return;
+    }
+
     if (hasPrompted.current) return;
 
     let timeoutId: NodeJS.Timeout;
@@ -112,8 +123,8 @@ export default function FcmHandler() {
                   body: body,
                   icon: "/logo-icon.png",
                   badge: "/logo-icon.png",
-                  tag: `fcm-${Date.now()}`, // Unique tag prevents spam detection
-                  renotify: false,
+                  tag: "teacher-panel-notification",
+                  renotify: true,
                 } as any);
               })
               .catch((e) => {
@@ -154,7 +165,6 @@ export default function FcmHandler() {
     isFirebaseConfigured,
     pathname,
   ]);
-
 
   return null;
 }
