@@ -8,21 +8,35 @@ import { useFcm } from "@/hooks/use-fcm";
 import { useContext } from "react";
 import { ModalContext } from "@/components/modal-provider";
 import NotificationModal from "@/components/notification-modal";
+import { usePathname } from "next/navigation";
 
 export default function FcmHandler() {
   const { user, isActive, isLoading } = useAuth();
   const { registerNotifications, isFirebaseConfigured } = useFcm();
   const modalContext = useContext(ModalContext);
+  const pathname = usePathname();
 
   const hasPrompted = useRef(false);
 
   useEffect(() => {
     if (isLoading || !isFirebaseConfigured) return;
 
+    // Skip registration/prompt if user is not logged in
     if (!user) {
       hasPrompted.current = false;
       return;
     }
+
+    // Skip prompt if we are on a public page (site pages, auth pages, etc.)
+    const isPublicPage =
+      pathname === "/" ||
+      pathname.startsWith("/auth") ||
+      pathname.startsWith("/website") ||
+      pathname.startsWith("/faq") ||
+      pathname.startsWith("/inquiry") ||
+      pathname.startsWith("/privacy");
+
+    if (isPublicPage) return;
 
     if (hasPrompted.current) return;
 
@@ -138,7 +152,9 @@ export default function FcmHandler() {
     registerNotifications,
     modalContext,
     isFirebaseConfigured,
+    pathname,
   ]);
+
 
   return null;
 }
