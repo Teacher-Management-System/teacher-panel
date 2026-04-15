@@ -68,10 +68,21 @@ export default function FcmHandler() {
 
         const unsubscribe = onMessage(messaging, (payload) => {
           console.log("Message received in foreground: ", payload);
-          if (payload.notification) {
-            toast.success(payload.notification.title || "New Notification", {
-              description: payload.notification.body,
-              duration: 10000,
+          
+          const title = payload.notification?.title || "New Notification";
+          const body = payload.notification?.body || "";
+
+          // 1. Show nice UI toast
+          toast.success(title, {
+            description: body,
+            duration: 10000,
+          });
+
+          // 2. Trigger native browser notification (if permission is granted)
+          if (Notification.permission === "granted") {
+            new Notification(title, {
+              body: body,
+              icon: "/logo-icon.png", // Path to your icon
             });
           }
         });
