@@ -53,7 +53,6 @@ export function NotificationSettings() {
       await notificationService.sendTestNotification();
     } catch (error) {
       console.error("Test notification failed:", error);
-      toast.error("Failed to send test notification.");
     } finally {
       setTestLoading(false);
     }
