@@ -47,8 +47,8 @@ export default function FcmHandler() {
           : "default";
       console.log("[FCM] Notification.permission:", currentPermission);
 
-      if (currentPermission === "default") {
-        console.log("[FCM] Permission is default — will open modal in 1s");
+      if (currentPermission === "default" || currentPermission === "denied") {
+        console.log(`[FCM] Permission is ${currentPermission} — will open modal in 1s`);
         // 1-second delay to ensure the dashboard has loaded smoothly
         setTimeout(() => {
           console.log("[FCM] Timeout fired — modalContext:", !!modalContext);
@@ -59,6 +59,7 @@ export default function FcmHandler() {
                 await registerNotifications();
                 modalContext.closeModal();
               },
+              isDenied: currentPermission === "denied",
             },
             { size: "sm" },
           );
@@ -66,8 +67,6 @@ export default function FcmHandler() {
       } else if (currentPermission === "granted") {
         console.log("[FCM] Already granted — registering silently");
         await registerNotifications();
-      } else {
-        console.log("[FCM] Permission is denied — skipping modal");
       }
     };
 
