@@ -40,11 +40,11 @@ export const navData = {
           url: "/notifications",
           icon: Megaphone,
         },
-        {
-          title: "Settings",
-          url: "/settings",
-          icon: Settings,
-        },
+        // {
+        //   title: "Settings",
+        //   url: "/settings",
+        //   icon: Settings,
+        // },
         {
           title: "Profile",
           url: "/profile",
