@@ -4,7 +4,6 @@ import { useEffect, useRef } from "react";
 import { onMessage } from "firebase/messaging";
 import { getFirebaseMessaging } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
 import { useFcm } from "@/hooks/use-fcm";
 import { useContext } from "react";
 import { ModalContext } from "@/components/modal-provider";
@@ -18,9 +17,9 @@ export default function FcmHandler() {
   const hasPrompted = useRef(false);
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || !isFirebaseConfigured) return;
 
-    if (!user || !isFirebaseConfigured) {
+    if (!user) {
       hasPrompted.current = false;
       return;
     }
@@ -29,35 +28,49 @@ export default function FcmHandler() {
 
     let timeoutId: NodeJS.Timeout;
 
-    const autoRegisterOnLogin = async () => {
-      const currentPermission =
-        typeof Notification !== "undefined"
-          ? Notification.permission
-          : "default";
-      
-      console.log("[FCM] Checking permission:", currentPermission);
-
-      if (currentPermission === "default" || currentPermission === "denied") {
-        hasPrompted.current = true;
-        console.log(`[FCM] Prompting user (status: ${currentPermission})`);
+    const runRegistration = async () => {
+      try {
+        const currentPermission =
+          typeof Notification !== "undefined"
+            ? Notification.permission
+            : "default";
         
-        timeoutId = setTimeout(() => {
-          modalContext?.openModal(
-            NotificationModal,
-            {
-              onEnable: async () => {
-                await registerNotifications();
-                modalContext.closeModal();
+        console.log("[FCM] Checking permission:", currentPermission);
+
+        if (currentPermission === "default" || currentPermission === "denied") {
+          hasPrompted.current = true;
+          console.log(`[FCM] Prompting user (status: ${currentPermission})`);
+          
+          timeoutId = setTimeout(() => {
+            modalContext?.openModal(
+              NotificationModal,
+              {
+                onEnable: async () => {
+                  try {
+                    await registerNotifications();
+                  } catch (e) {
+                    console.error("[FCM] Modal registration failed:", e);
+                  }
+                  modalContext.closeModal();
+                },
+                isDenied: currentPermission === "denied",
               },
-              isDenied: currentPermission === "denied",
-            },
-            { size: "sm" },
-          );
-        }, 1000);
-      } else if (currentPermission === "granted") {
-        hasPrompted.current = true;
-        console.log("[FCM] Already granted — registering silently");
-        await registerNotifications();
+              { size: "sm" },
+            );
+          }, 1500); // 1.5s delay for modal after login
+        } else if (currentPermission === "granted") {
+          hasPrompted.current = true;
+          console.log("[FCM] Already granted — registering silently");
+          // Slight delay to ensure auth headers are settled after a login redirect
+          await new Promise(resolve => setTimeout(resolve, 800));
+          await registerNotifications(true); // Pass true for isSilent
+        }
+      } catch (error: any) {
+        if (error?.response?.status === 401) {
+          console.warn("[FCM] Unauthorized while updating token - user might still be logging in");
+        } else {
+          console.error("[FCM] Registration error:", error);
+        }
       }
     };
 
@@ -68,22 +81,20 @@ export default function FcmHandler() {
 
         const unsubscribe = onMessage(messaging, (payload) => {
           console.log("Message received in foreground: ", payload);
-          
+
           const title = payload.notification?.title || "New Notification";
           const body = payload.notification?.body || "";
 
-          // 1. Show nice UI toast
-          toast.success(title, {
-            description: body,
-            duration: 10000,
-          });
-
-          // 2. Trigger native browser notification (if permission is granted)
-          if (Notification.permission === "granted") {
-            new Notification(title, {
-              body: body,
-              icon: "/logo-icon.png", // Path to your icon
-            });
+          // 1. Show native browser notification
+          if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+            try {
+              new Notification(title, {
+                body: body,
+                icon: "/logo-icon.png",
+              });
+            } catch (e) {
+              console.warn("[FCM] Native notification failed:", e);
+            }
           }
         });
 
@@ -93,7 +104,7 @@ export default function FcmHandler() {
       }
     };
 
-    autoRegisterOnLogin();
+    runRegistration();
     const unsubscribePromise = setupForegroundListener();
 
     return () => {

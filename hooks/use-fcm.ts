@@ -13,7 +13,7 @@ export function useFcm() {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const registerNotifications = useCallback(async () => {
+  const registerNotifications = useCallback(async (isSilent = false) => {
     console.log("FCM: registerNotifications called. Configured:", isFirebaseConfigured);
     
     if (!isFirebaseConfigured) {
@@ -21,7 +21,7 @@ export function useFcm() {
       return;
     }
 
-    setLoading(true);
+    if (!isSilent) setLoading(true);
     try {
       const messaging = await getFirebaseMessaging();
       if (!messaging) {
@@ -71,28 +71,24 @@ export function useFcm() {
         if (currentToken) {
           setToken(currentToken);
           await profileService.updateFcmToken(currentToken);
-          toast.success("Push notifications enabled!");
+          if (!isSilent) toast.success("Push notifications enabled!");
           return currentToken;
         }
       } else if (permissionStatus === "denied") {
-        toast.error(
-          "Notification permission denied. Please enable it in your browser settings.",
-        );
+        if (!isSilent) {
+          toast.error(
+            "Notification permission denied. Please enable it in your browser settings.",
+          );
+        }
       }
     } catch (error) {
       console.error("Error specialized in useFcm:", error);
-      toast.error("Failed to enable notifications.");
+      if (!isSilent) toast.error("Failed to enable notifications.");
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Automatically fetch token if permission is already granted
-  useEffect(() => {
-    if (typeof Notification !== "undefined" && Notification.permission === "granted") {
-      registerNotifications();
-    }
-  }, [registerNotifications]);
 
   return {
     permission,

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,6 +19,13 @@ export function NotificationSettings() {
   const { permission, token, registerNotifications, loading: fcmLoading } = useFcm();
   const [testLoading, setTestLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Automatically fetch token on mount if permission is already granted
+  useEffect(() => {
+    if (permission === "granted" && !token) {
+      registerNotifications(true); // silent fetch
+    }
+  }, [permission, token, registerNotifications]);
 
   const handleCopyToken = () => {
     if (!token) return;
