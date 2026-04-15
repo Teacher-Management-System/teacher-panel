@@ -11,7 +11,7 @@ import { ModalContext } from "@/components/modal-provider";
 import NotificationModal from "@/components/notification-modal";
 
 export default function FcmHandler() {
-  const { user, isActive } = useAuth();
+  const { user, isActive, isLoading } = useAuth();
   const { registerNotifications, isFirebaseConfigured } = useFcm();
   const modalContext = useContext(ModalContext);
 
@@ -26,6 +26,8 @@ export default function FcmHandler() {
       "| modalContext:",
       !!modalContext,
     );
+
+    if (isLoading) return; // Wait for auth to load
 
     if (!user || !isFirebaseConfigured) {
       console.log(
@@ -98,6 +100,7 @@ export default function FcmHandler() {
     };
   }, [
     user,
+    isLoading,
     isActive,
     registerNotifications,
     modalContext,
