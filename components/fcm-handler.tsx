@@ -34,13 +34,13 @@ export default function FcmHandler() {
           typeof Notification !== "undefined"
             ? Notification.permission
             : "default";
-        
+
         console.log("[FCM] Checking permission:", currentPermission);
 
         if (currentPermission === "default" || currentPermission === "denied") {
           hasPrompted.current = true;
           console.log(`[FCM] Prompting user (status: ${currentPermission})`);
-          
+
           timeoutId = setTimeout(() => {
             modalContext?.openModal(
               NotificationModal,
@@ -62,12 +62,14 @@ export default function FcmHandler() {
           hasPrompted.current = true;
           console.log("[FCM] Already granted — registering silently");
           // Slight delay to ensure auth headers are settled after a login redirect
-          await new Promise(resolve => setTimeout(resolve, 800));
+          await new Promise((resolve) => setTimeout(resolve, 800));
           await registerNotifications(true); // Pass true for isSilent
         }
       } catch (error: any) {
         if (error?.response?.status === 401) {
-          console.warn("[FCM] Unauthorized while updating token - user might still be logging in");
+          console.warn(
+            "[FCM] Unauthorized while updating token - user might still be logging in",
+          );
         } else {
           console.error("[FCM] Registration error:", error);
         }
@@ -85,16 +87,35 @@ export default function FcmHandler() {
           const title = payload.notification?.title || "New Notification";
           const body = payload.notification?.body || "";
 
-          // 1. Show native browser notification
-          if (typeof Notification !== "undefined" && Notification.permission === "granted") {
-            try {
-              new Notification(title, {
-                body: body,
-                icon: "/logo-icon.png",
+          // 2. Trigger native browser notification (Mobile compatible)
+          if (
+            typeof Notification !== "undefined" &&
+            Notification.permission === "granted"
+          ) {
+            navigator.serviceWorker.ready
+              .then((registration) => {
+                registration.showNotification(title, {
+                  body: body,
+                  icon: "/logo-icon.png",
+                  badge: "/logo-icon.png",
+                  tag: "fcm-notification-group",
+                  renotify: true,
+                } as any);
+              })
+              .catch((e) => {
+                console.warn("[FCM] ServiceWorker notification failed:", e);
+                try {
+                  new Notification(title, {
+                    body: body,
+                    icon: "/logo-icon.png",
+                  });
+                } catch (err) {
+                  console.error(
+                    "[FCM] Native notification fallback failed:",
+                    err,
+                  );
+                }
               });
-            } catch (e) {
-              console.warn("[FCM] Native notification failed:", e);
-            }
           }
         });
 

@@ -107,7 +107,7 @@ export function NotificationSettings() {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={registerNotifications}
+                  onClick={() => registerNotifications()}
                   disabled={fcmLoading}
                   className="font-medium"
                 >
