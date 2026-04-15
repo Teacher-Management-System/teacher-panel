@@ -11,12 +11,24 @@ import {
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useFcm } from "@/hooks/use-fcm";
-import { AlertCircle, Check, Copy, Send, ShieldCheck, Terminal } from "lucide-react";
+import {
+  AlertCircle,
+  Check,
+  Copy,
+  Send,
+  ShieldCheck,
+  Terminal,
+} from "lucide-react";
 import notificationService from "@/features/notifications/api.service";
 import { toast } from "sonner";
 
 export function NotificationSettings() {
-  const { permission, token, registerNotifications, loading: fcmLoading } = useFcm();
+  const {
+    permission,
+    token,
+    registerNotifications,
+    loading: fcmLoading,
+  } = useFcm();
   const [testLoading, setTestLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -39,7 +51,6 @@ export function NotificationSettings() {
     setTestLoading(true);
     try {
       await notificationService.sendTestNotification();
-      toast.success("Test notification request sent!");
     } catch (error) {
       console.error("Test notification failed:", error);
       toast.error("Failed to send test notification.");
@@ -60,7 +71,12 @@ export function NotificationSettings() {
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50">
             <div className="space-y-0.5">
-              <Label htmlFor="email-notifications" className="text-base font-semibold">Email Notifications</Label>
+              <Label
+                htmlFor="email-notifications"
+                className="text-base font-semibold"
+              >
+                Email Notifications
+              </Label>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 Receive important account and platform updates via email.
               </p>
@@ -71,31 +87,36 @@ export function NotificationSettings() {
           <div className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50">
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
-                <Label htmlFor="push-notifications" className="text-base font-semibold">Push Notifications</Label>
+                <Label
+                  htmlFor="push-notifications"
+                  className="text-base font-semibold"
+                >
+                  Push Notifications
+                </Label>
                 {permission === "granted" && (
                   <ShieldCheck className="h-4 w-4 text-green-500" />
                 )}
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                {permission === "denied" 
+                {permission === "denied"
                   ? "Status: Blocked. Please reset browser permissions using the lock icon in the address bar."
                   : "Status: Active. Receive real-time alerts directly on your device."}
               </p>
             </div>
             <div className="flex items-center gap-4">
               {permission === "default" && (
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={registerNotifications} 
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={registerNotifications}
                   disabled={fcmLoading}
                   className="font-medium"
                 >
                   Enable Now
                 </Button>
               )}
-              <Switch 
-                id="push-notifications" 
+              <Switch
+                id="push-notifications"
                 checked={permission === "granted"}
                 onCheckedChange={(checked) => {
                   if (checked) registerNotifications();
@@ -118,12 +139,15 @@ export function NotificationSettings() {
               <CardTitle className="text-lg">Diagnostic Tools</CardTitle>
             </div>
             <CardDescription className="text-primary/70">
-              Use these tools to verify your notification setup is working correctly.
+              Use these tools to verify your notification setup is working
+              correctly.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-wider text-primary/80">Device Registration Token</Label>
+              <Label className="text-xs font-bold uppercase tracking-wider text-primary/80">
+                Device Registration Token
+              </Label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
                   <input
@@ -144,9 +168,9 @@ export function NotificationSettings() {
                     </button>
                   )}
                 </div>
-                <Button 
-                  size="sm" 
-                  onClick={handleSendTest} 
+                <Button
+                  size="sm"
+                  onClick={handleSendTest}
                   disabled={testLoading || !token}
                   className="gap-2 font-semibold shadow-sm"
                 >
@@ -163,8 +187,9 @@ export function NotificationSettings() {
             <div className="flex items-start gap-3 rounded-md bg-background/50 p-3 text-xs border border-primary/10">
               <AlertCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
               <p className="text-primary/80 leading-relaxed">
-                Click <strong>Send Test</strong> to trigger a push notification through your backend. 
-                If you don't receive it, verify your VAPID keys and FCM configuration on the server.
+                Click <strong>Send Test</strong> to trigger a push notification
+                through your backend. If you don't receive it, verify your VAPID
+                keys and FCM configuration on the server.
               </p>
             </div>
           </CardContent>
@@ -175,7 +200,9 @@ export function NotificationSettings() {
         <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-4 flex items-center gap-3">
           <AlertCircle className="h-5 w-5 text-destructive" />
           <p className="text-sm font-medium text-destructive">
-            Push notifications are blocked. Please click the <strong>lock icon</strong> next to the URL in your address bar to reset permissions.
+            Push notifications are blocked. Please click the{" "}
+            <strong>lock icon</strong> next to the URL in your address bar to
+            reset permissions.
           </p>
         </div>
       )}
