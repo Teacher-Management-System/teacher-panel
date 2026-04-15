@@ -49,6 +49,10 @@ class ProfileService extends BaseService {
   async updatePhoto(data: FormData) {
     return await this.post("upload", data);
   }
+
+  async updateFcmToken(token: string) {
+    return await this.post("/update-fcm-token", { fcm_token: token });
+  }
 }
 
 const profileServiceInstance = new ProfileService();

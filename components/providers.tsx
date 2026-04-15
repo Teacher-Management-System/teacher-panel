@@ -8,6 +8,7 @@ import { ModalProvider } from "@/components/modal-provider";
 import { NotificationProvider } from "@/context/notification-context";
 import { usePathname } from "next/navigation";
 import { AuthProvider } from "@/context/auth-context";
+import FcmHandler from "@/components/fcm-handler";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -33,7 +34,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <AuthProvider>
           <ModalProvider>
             <NotificationProvider>
-              <NuqsAdapter>{children}</NuqsAdapter>
+              <NuqsAdapter>
+                <FcmHandler />
+                {children}
+              </NuqsAdapter>
             </NotificationProvider>
           </ModalProvider>
         </AuthProvider>

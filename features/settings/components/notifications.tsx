@@ -9,8 +9,11 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { useFcm } from "@/hooks/use-fcm";
 
 export function NotificationSettings() {
+  const { permission, registerNotifications, loading } = useFcm();
+
   return (
     <Card>
       <CardHeader>
@@ -33,10 +36,19 @@ export function NotificationSettings() {
           <div className="space-y-0.5">
             <Label htmlFor="push-notifications">Push Notifications</Label>
             <p className="text-sm text-muted-foreground">
-              Send push notifications to users&apos; devices.
+              {permission === "denied" 
+                ? "Notification permission is blocked. Please enable it in browser settings."
+                : "Receive push notifications on this device."}
             </p>
           </div>
-          <Switch id="push-notifications" />
+          <Switch 
+            id="push-notifications" 
+            checked={permission === "granted"}
+            onCheckedChange={(checked) => {
+              if (checked) registerNotifications();
+            }}
+            disabled={loading || permission === "denied"}
+          />
         </div>
       </CardContent>
       <CardFooter>
