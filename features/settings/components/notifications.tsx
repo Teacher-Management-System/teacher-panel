@@ -41,18 +41,30 @@ export function NotificationSettings() {
                 : "Receive push notifications on this device."}
             </p>
           </div>
-          <Switch 
-            id="push-notifications" 
-            checked={permission === "granted"}
-            onCheckedChange={(checked) => {
-              if (checked) registerNotifications();
-            }}
-            disabled={loading || permission === "denied"}
-          />
+          <div className="flex items-center gap-2">
+            {permission === "default" && (
+              <Button size="sm" variant="outline" onClick={registerNotifications} disabled={loading}>
+                Open Popup
+              </Button>
+            )}
+            <Switch 
+              id="push-notifications" 
+              checked={permission === "granted"}
+              onCheckedChange={(checked) => {
+                if (checked) registerNotifications();
+              }}
+              disabled={loading || permission === "denied"}
+            />
+          </div>
         </div>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex justify-between">
         <Button>Save Changes</Button>
+        {permission === "denied" && (
+          <p className="text-xs text-destructive">
+            Please reset browser permissions (click lock icon next to URL)
+          </p>
+        )}
       </CardFooter>
     </Card>
   );

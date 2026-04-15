@@ -2,28 +2,45 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { getToken } from "firebase/messaging";
-import { getFirebaseMessaging } from "@/lib/firebase";
+import { getFirebaseMessaging, isFirebaseConfigured } from "@/lib/firebase";
 import profileService from "@/features/profile/aou.service";
 import { toast } from "sonner";
 
 export function useFcm() {
   const [permission, setPermission] = useState<NotificationPermission>(
-    typeof Notification !== "undefined" ? Notification.permission : "default"
+    typeof Notification !== "undefined" ? Notification.permission : "default",
   );
   const [loading, setLoading] = useState(false);
 
   const registerNotifications = useCallback(async () => {
+    console.log("FCM: registerNotifications called. Configured:", isFirebaseConfigured);
+    
+    if (!isFirebaseConfigured) {
+      console.warn("FCM: Skip registration - Not configured in .env");
+      return;
+    }
+
     setLoading(true);
     try {
       const messaging = await getFirebaseMessaging();
-      if (!messaging) throw new Error("Firebase Messaging not supported");
+      if (!messaging) {
+        console.error("FCM: Messaging instance not available");
+        return;
+      }
 
+      console.log("FCM: Current permission status:", Notification.permission);
+      
       const permissionStatus = await Notification.requestPermission();
+      console.log("FCM: Permission result after prompt:", permissionStatus);
       setPermission(permissionStatus);
 
       if (permissionStatus === "granted") {
+        const registration = await navigator.serviceWorker.register(
+          "/firebase-messaging-sw.js",
+        );
         const token = await getToken(messaging, {
           vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+          serviceWorkerRegistration: registration,
         });
 
         if (token) {
@@ -32,7 +49,9 @@ export function useFcm() {
           return token;
         }
       } else if (permissionStatus === "denied") {
-        toast.error("Notification permission denied. Please enable it in your browser settings.");
+        toast.error(
+          "Notification permission denied. Please enable it in your browser settings.",
+        );
       }
     } catch (error) {
       console.error("Error specialized in useFcm:", error);
@@ -46,6 +65,7 @@ export function useFcm() {
     permission,
     loading,
     registerNotifications,
+    isFirebaseConfigured,
     isSupported: typeof window !== "undefined" && "Notification" in window,
   };
 }

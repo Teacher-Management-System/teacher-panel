@@ -6,17 +6,35 @@ import { getFirebaseMessaging } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { useFcm } from "@/hooks/use-fcm";
+import { useContext } from "react";
+import { ModalContext } from "@/components/modal-provider";
+import NotificationModal from "@/components/notification-modal";
 
 export default function FcmHandler() {
   const { user, isActive } = useAuth();
-  const { registerNotifications } = useFcm();
+  const { registerNotifications, isFirebaseConfigured } = useFcm();
+  const modalContext = useContext(ModalContext);
 
   useEffect(() => {
-    if (!isActive || !user) return;
+    if (!user || !isFirebaseConfigured) return;
 
-    // Trigger permission prompt and token sync immediately upon login
+    // Trigger notification prompt modal after login
     const autoRegisterOnLogin = async () => {
-      await registerNotifications();
+      const currentPermission = typeof Notification !== "undefined" ? Notification.permission : "default";
+
+      if (currentPermission === "default") {
+        // 1-second delay to ensure the dashboard has loaded smoothly
+        setTimeout(() => {
+          modalContext?.openModal(NotificationModal, {
+            onConfirm: async () => {
+              await registerNotifications();
+              modalContext.closeModal();
+            }
+          }, { size: "sm" });
+        }, 1000);
+      } else if (currentPermission === "granted") {
+        await registerNotifications();
+      }
     };
 
     const setupForegroundListener = async () => {
@@ -46,7 +64,7 @@ export default function FcmHandler() {
     return () => {
       unsubscribePromise.then((unsubscribe) => unsubscribe?.());
     };
-  }, [user, isActive, registerNotifications]);
+  }, [user, isActive, registerNotifications, modalContext, isFirebaseConfigured]);
 
   return null;
 }

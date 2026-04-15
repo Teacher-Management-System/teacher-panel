@@ -12,7 +12,13 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase only if we have minimum required config
-const isConfigValid = !!firebaseConfig.apiKey && !!firebaseConfig.messagingSenderId;
+const isConfigValid = Boolean(
+  firebaseConfig.apiKey && 
+  firebaseConfig.apiKey.length > 10 && 
+  firebaseConfig.messagingSenderId
+);
+
+export const isFirebaseConfigured = isConfigValid;
 
 let app: any;
 try {

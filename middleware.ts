@@ -11,7 +11,8 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/website") ||
     pathname.startsWith("/privacy") ||
     pathname.startsWith("/faq") ||
-    pathname.startsWith("/inquiry");
+    pathname.startsWith("/inquiry") ||
+    pathname === "/firebase-messaging-sw.js";
   const isProtectedButNotAuthRoute = !isAuthRoute && !isPublicRoute;
 
   if (authToken && isAuthRoute) {
