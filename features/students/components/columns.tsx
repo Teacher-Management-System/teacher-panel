@@ -88,6 +88,26 @@ export const createColumns = (
       enableHiding: false,
     },
     {
+      accessorKey: "student_id",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="hover:bg-transparent pl-0 text-left font-medium text-muted-foreground"
+          >
+            Student ID
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => (
+        <div className="font-medium text-foreground">
+          {row.getValue("student_id") || "-"}
+        </div>
+      ),
+    },
+    {
       accessorKey: "name",
       header: ({ column }) => {
         return (

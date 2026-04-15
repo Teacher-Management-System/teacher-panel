@@ -44,7 +44,7 @@ const batchSchema = z.object({
 type BatchFormValues = z.infer<typeof batchSchema>;
 
 interface AddBatchDialogProps {
-  onSuccess?: () => void;
+  onSuccess?: (batch?: any) => void;
   batch?: Batch;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -59,7 +59,7 @@ function AddBatchForm({
 }: { 
   batch?: Batch, 
   onClose: () => void, 
-  onSuccess?: () => void 
+  onSuccess?: (batch?: any) => void 
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -85,17 +85,18 @@ function AddBatchForm({
   async function onSubmit(data: BatchFormValues) {
     setIsLoading(true);
     try {
+      let response: any;
       if (batch?.id) {
-        await batchService.update(batch.id as unknown as number, data);
+        response = await batchService.update(batch.id as unknown as number, data);
         toast.success("Batch updated successfully");
       } else {
-        await batchService.create(data);
+        response = await batchService.create(data);
         toast.success("Batch created successfully");
       }
       onClose();
       form.reset();
       if (onSuccess) {
-        onSuccess();
+        onSuccess(response?.data || response);
       }
     } catch (error) {
       console.error(error);

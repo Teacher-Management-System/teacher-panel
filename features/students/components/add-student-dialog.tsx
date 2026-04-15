@@ -185,19 +185,23 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
   const fetchBatchesList = async () => {
     try {
       const response: any = await studentService.getBatches();
+      let fetchedBatches = [];
       if (response?.data?.batches) {
-        setBatches(response.data.batches);
+        fetchedBatches = response.batches;
       } else if (response?.batches) {
-        setBatches(response.batches);
+        fetchedBatches = response.batches;
       } else if (Array.isArray(response)) {
-        setBatches(response);
+        fetchedBatches = response;
       } else if (response?.data && Array.isArray(response.data)) {
-        setBatches(response.data);
+        fetchedBatches = response.data;
       } else {
-        setBatches([]);
+        fetchedBatches = [];
       }
+      setBatches(fetchedBatches);
+      return fetchedBatches;
     } catch (error) {
       console.error("Failed to fetch batches:", error);
+      return [];
     }
   };
 
@@ -680,38 +684,6 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                   </FormItem>
                 )}
               />
-
-              <FormField
-                control={form.control}
-                name="category_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                      Category
-                    </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                      disabled={isDataLoading || isLoading}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="w-full bg-muted/50 border-0 rounded-xl h-11 !h-11 px-4 shadow-none focus:ring-1 focus:ring-primary/30 text-foreground">
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {categories.map((cat) => (
-                          <SelectItem key={cat.id} value={cat.id.toString()}>
-                            {cat.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <FormField
                 control={form.control}
                 name="class"
@@ -738,6 +710,36 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                             </SelectItem>
                           ),
                         )}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="category_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      Category
+                    </FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      disabled={isDataLoading || isLoading}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-full bg-muted/50 border-0 rounded-xl h-11 !h-11 px-4 shadow-none focus:ring-1 focus:ring-primary/30 text-foreground">
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.id.toString()}>
+                            {cat.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -812,7 +814,24 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                         </SelectContent>
                       </Select>
                       <AddBatchDialog
-                        onSuccess={() => fetchBatchesList()}
+                        onSuccess={async (newBatch) => {
+                          const batchesList = await fetchBatchesList();
+                          const batchId =
+                            newBatch?.id ||
+                            newBatch?.data?.id ||
+                            (typeof newBatch === "string" ? newBatch : null);
+
+                          if (batchId) {
+                            // Use setTimeout to ensure the Select component has re-rendered with new batches
+                            setTimeout(() => {
+                              form.setValue("batch_id", batchId.toString(), {
+                                shouldValidate: true,
+                                shouldDirty: true,
+                                shouldTouch: true,
+                              });
+                            }, 100);
+                          }
+                        }}
                         trigger={
                           <Button
                             type="button"

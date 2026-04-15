@@ -18,6 +18,7 @@ import {
   GraduationCap,
   BookOpen,
   Layout,
+  Hash,
 } from "lucide-react";
 import { Student } from "../model";
 
@@ -101,6 +102,11 @@ export function StudentDetailsDialog({
                 Personal Information
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <DetailItem
+                  icon={Hash}
+                  label="Student ID"
+                  value={student.student_id}
+                />
                 <DetailItem
                   icon={User}
                   label="Father's Name"

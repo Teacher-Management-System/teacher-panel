@@ -2,6 +2,7 @@ import { Batch } from "../batches/model";
 
 export interface Student {
   id: string;
+  student_id: string;
   name: string;
   email: string;
   mobile: string;
