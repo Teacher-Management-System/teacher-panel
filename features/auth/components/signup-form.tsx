@@ -450,6 +450,7 @@ export function SignupForm() {
                               <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
+                                tabIndex={-1}
                                 className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors z-10"
                               >
                                 {showPassword ? (
@@ -490,6 +491,7 @@ export function SignupForm() {
                                 onClick={() =>
                                   setShowConfirmPassword(!showConfirmPassword)
                                 }
+                                tabIndex={-1}
                                 className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors z-10"
                               >
                                 {showConfirmPassword ? (

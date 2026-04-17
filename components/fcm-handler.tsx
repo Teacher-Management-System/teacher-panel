@@ -21,13 +21,11 @@ export default function FcmHandler() {
   useEffect(() => {
     if (isLoading || !isFirebaseConfigured) return;
 
-    // Skip registration/prompt if user is not logged in
-    if (!user) {
+    if (!user || !isActive) {
       hasPrompted.current = false;
       return;
     }
 
-    // Skip prompt if we are on a public page (site pages, auth pages, etc.)
     const isPublicPage =
       pathname === "/" ||
       pathname.startsWith("/auth") ||
@@ -38,7 +36,6 @@ export default function FcmHandler() {
 
     if (isPublicPage) return;
 
-    // Detect iOS
     const isIOS =
       typeof window !== "undefined" &&
       (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
@@ -70,7 +67,18 @@ export default function FcmHandler() {
             modalContext?.openModal(
               NotificationModal,
               {
+                isDenied: currentPermission === "denied",
+
+                // ✅ "denied" case: show browser guide steps, no requestPermission() call
                 onEnable: async () => {
+                  if (currentPermission === "denied") {
+                    // Nothing to call — modal already shows manual steps.
+                    // Just close so user can follow the instructions.
+                    modalContext.closeModal();
+                    return;
+                  }
+
+                  // "default" case: trigger browser permission popup normally
                   try {
                     await registerNotifications();
                   } catch (e) {
@@ -78,17 +86,19 @@ export default function FcmHandler() {
                   }
                   modalContext.closeModal();
                 },
-                isDenied: currentPermission === "denied",
+
+                onDismiss: () => {
+                  modalContext.closeModal();
+                },
               },
               { size: "sm" },
             );
-          }, 1500); // 1.5s delay for modal after login
+          }, 1500);
         } else if (currentPermission === "granted") {
           hasPrompted.current = true;
           console.log("[FCM] Already granted — registering silently");
-          // Slight delay to ensure auth headers are settled after a login redirect
           await new Promise((resolve) => setTimeout(resolve, 800));
-          await registerNotifications(true); // Pass true for isSilent
+          await registerNotifications(true);
         }
       } catch (error: any) {
         if (error?.response?.status === 401) {
@@ -107,12 +117,11 @@ export default function FcmHandler() {
         if (!messaging) return;
 
         const unsubscribe = onMessage(messaging, (payload) => {
-          console.log("Message received in foreground: ", payload);
+          console.log("Message received in foreground:", payload);
 
           const title = payload.notification?.title || "New Notification";
           const body = payload.notification?.body || "";
 
-          // 2. Trigger native browser notification (Mobile compatible)
           if (
             typeof Notification !== "undefined" &&
             Notification.permission === "granted"
@@ -120,7 +129,7 @@ export default function FcmHandler() {
             navigator.serviceWorker.ready
               .then((registration) => {
                 registration.showNotification(title, {
-                  body: body,
+                  body,
                   icon: "/logo-icon.png",
                   badge: "/logo-icon.png",
                   tag: "teacher-panel-notification",
@@ -130,10 +139,7 @@ export default function FcmHandler() {
               .catch((e) => {
                 console.warn("[FCM] ServiceWorker notification failed:", e);
                 try {
-                  new Notification(title, {
-                    body: body,
-                    icon: "/logo-icon.png",
-                  });
+                  new Notification(title, { body, icon: "/logo-icon.png" });
                 } catch (err) {
                   console.error(
                     "[FCM] Native notification fallback failed:",

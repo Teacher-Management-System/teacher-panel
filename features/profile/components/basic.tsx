@@ -86,37 +86,72 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
     if (user) {
       const data = user;
       setFormData({
-        fullName: data.name || "",
-        fatherName: data.father_name || "",
-        gender: data.gender 
-          ? (() => {
-              const g = String(data.gender).toLowerCase().trim();
-              if (g === "male" || g === "m") return "male";
-              if (g === "female" || g === "f") return "female";
-              if (g === "other" || g === "o") return "other";
-              return "";
-            })()
-          : "",
-        dob: data.dob
-          ? new Date(
-              !isNaN(Number(data.dob)) &&
-                Math.abs(Number(data.dob)) < 100000000000
-                ? Number(data.dob) * 1000
-                : data.dob,
-            )
-          : undefined,
-        contactNumber: data.mobile ? data.mobile.replace(/^\+91/, "") : "",
-        email: data.email || "",
-        qualification: (data.qualification_level as Qualification) || "",
-        currentStatus: (data.current_status as CurrentStatus) || "",
-        collegeName: data.college_name || "",
-        course: data.course || "",
-        year: data.year ? String(data.year) : "",
-        organizationName: data.organization_name || "",
-        designation: data.designation || "",
-        monthlyPaymentExpectation: data.monthly_payment_expectation
-          ? String(data.monthly_payment_expectation)
-          : "",
+        fullName: data.name || data.user?.name || "",
+        fatherName: data.father_name || data.user?.father_name || "",
+        gender:
+          data.gender || data.user?.gender
+            ? (() => {
+                const g = String(data.gender || data.user?.gender)
+                  .toLowerCase()
+                  .trim();
+                if (g === "male" || g === "m") return "male";
+                if (g === "female" || g === "f") return "female";
+                if (g === "other" || g === "o") return "other";
+                return "";
+              })()
+            : "",
+        dob:
+          data.dob || data.user?.dob
+            ? new Date(
+                !isNaN(Number(data.dob || data.user?.dob)) &&
+                  Math.abs(Number(data.dob || data.user?.dob)) < 100000000000
+                  ? Number(data.dob || data.user?.dob) * 1000
+                  : data.dob || data.user?.dob,
+              )
+            : undefined,
+        contactNumber:
+          data.mobile || data.user?.mobile
+            ? String(data.mobile || data.user?.mobile).replace(/^\+91/, "")
+            : "",
+        email: data.email || data.user?.email || "",
+        qualification: (() => {
+          const q = String(
+            data.qualification_level ||
+              data.user?.qualification_level ||
+              data.user?.qualification ||
+              "",
+          )
+            .toLowerCase()
+            .trim();
+          if (q.includes("under")) return "undergraduate";
+          if (q === "graduate") return "graduate";
+          if (q.includes("post")) return "postgraduate";
+          return (
+            ((data.qualification_level ||
+              data.user?.qualification_level ||
+              data.user?.qualification) as Qualification) || ""
+          );
+        })(),
+        currentStatus:
+          ((data.current_status ||
+            data.user?.current_status) as CurrentStatus) || "",
+        collegeName: data.college_name || data.user?.college_name || "",
+        course: data.course || data.user?.course || "",
+        year:
+          data.year || data.user?.year
+            ? String(data.year || data.user?.year)
+            : "",
+        organizationName:
+          data.organization_name || data.user?.organization_name || "",
+        designation: data.designation || data.user?.designation || "",
+        monthlyPaymentExpectation:
+          data.monthly_payment_expectation ||
+          data.user?.monthly_payment_expectation
+            ? String(
+                data.monthly_payment_expectation ||
+                  data.user?.monthly_payment_expectation,
+              )
+            : "",
       });
     }
   }, [user]);
@@ -146,23 +181,31 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
     // Basic Validation
     if (!formData.fullName.trim()) return toast.error("Full Name is required");
-    if (!formData.fatherName.trim()) return toast.error("Father's Name is required");
+    if (!formData.fatherName.trim())
+      return toast.error("Father's Name is required");
     if (!formData.gender) return toast.error("Gender is required");
     if (!formData.dob) return toast.error("Date of Birth is required");
-    if (!formData.contactNumber.trim()) return toast.error("Mobile Number is required");
-    if (!formData.qualification) return toast.error("Highest Qualification is required");
-    if (!formData.currentStatus) return toast.error("Current Status is required");
+    if (!formData.contactNumber.trim())
+      return toast.error("Mobile Number is required");
+    if (!formData.qualification)
+      return toast.error("Highest Qualification is required");
+    if (!formData.currentStatus)
+      return toast.error("Current Status is required");
 
     // Dynamic Validation based on Current Status
     if (formData.currentStatus === "college_student") {
-      if (!formData.collegeName.trim()) return toast.error("College Name is required");
+      if (!formData.collegeName.trim())
+        return toast.error("College Name is required");
       if (!formData.course.trim()) return toast.error("Course is required");
       if (!formData.year) return toast.error("Year of study is required");
     } else if (formData.currentStatus === "employed") {
-      if (!formData.organizationName.trim()) return toast.error("Organization Name is required");
-      if (!formData.designation.trim()) return toast.error("Current Designation is required");
+      if (!formData.organizationName.trim())
+        return toast.error("Organization Name is required");
+      if (!formData.designation.trim())
+        return toast.error("Current Designation is required");
     } else if (formData.currentStatus === "unemployed") {
-      if (!formData.monthlyPaymentExpectation.trim()) return toast.error("Monthly Expectation is required");
+      if (!formData.monthlyPaymentExpectation.trim())
+        return toast.error("Monthly Expectation is required");
     }
 
     setLoading(true);
@@ -413,10 +456,12 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                     formData.currentStatus === "college_student"
                       ? "border-indigo-500 bg-indigo-500/10 shadow-sm ring-1 ring-indigo-500/50"
                       : "border-border bg-muted/30 hover:bg-muted/50",
-                    isProfileCompleted && "cursor-default opacity-80" || "cursor-pointer"
+                    (isProfileCompleted && "cursor-default opacity-80") ||
+                      "cursor-pointer",
                   )}
                   onClick={() =>
-                    !isProfileCompleted && handleInputChange("currentStatus", "college_student")
+                    !isProfileCompleted &&
+                    handleInputChange("currentStatus", "college_student")
                   }
                 >
                   <h4
@@ -441,9 +486,13 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                     formData.currentStatus === "employed"
                       ? "border-emerald-500 bg-emerald-500/10 shadow-sm ring-1 ring-emerald-500/50"
                       : "border-border bg-muted/30 hover:bg-muted/50",
-                    isProfileCompleted && "cursor-default opacity-80" || "cursor-pointer"
+                    (isProfileCompleted && "cursor-default opacity-80") ||
+                      "cursor-pointer",
                   )}
-                  onClick={() => !isProfileCompleted && handleInputChange("currentStatus", "employed")}
+                  onClick={() =>
+                    !isProfileCompleted &&
+                    handleInputChange("currentStatus", "employed")
+                  }
                 >
                   <h4
                     className={cn(
@@ -467,10 +516,12 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                     formData.currentStatus === "unemployed"
                       ? "border-orange-500 bg-orange-500/10 shadow-sm ring-1 ring-orange-500/50"
                       : "border-border bg-muted/30 hover:bg-muted/50",
-                    isProfileCompleted && "cursor-default opacity-80" || "cursor-pointer"
+                    (isProfileCompleted && "cursor-default opacity-80") ||
+                      "cursor-pointer",
                   )}
                   onClick={() =>
-                    !isProfileCompleted && handleInputChange("currentStatus", "unemployed")
+                    !isProfileCompleted &&
+                    handleInputChange("currentStatus", "unemployed")
                   }
                 >
                   <h4
@@ -604,7 +655,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                     <Briefcase className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground/40" />
                     <Input
                       id="designation"
-                      placeholder="e.g. Software Engineer"
+                      placeholder="e.g. Teacher"
                       className="pl-10 bg-muted/50 border-border rounded-xl h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
                       value={formData.designation}
                       onChange={(e) =>
@@ -669,7 +720,11 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
             className="w-full sm:w-auto px-10 h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-none transition-all hover:-translate-y-0.5"
             disabled={loading}
           >
-            {loading ? "Saving..." : isProfileCompleted ? "Next Step" : "Next Step"}
+            {loading
+              ? "Saving..."
+              : isProfileCompleted
+                ? "Next Step"
+                : "Next Step"}
           </Button>
         </div>
       </form>

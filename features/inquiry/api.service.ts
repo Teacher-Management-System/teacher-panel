@@ -13,6 +13,10 @@ class InquiryService extends BaseService {
   }) {
     return await this.post("", data);
   }
+
+  async paymentInquiry(data: { message: string }) {
+    return await this.post("payment", data);
+  }
 }
 
 const inquiryService = new InquiryService();

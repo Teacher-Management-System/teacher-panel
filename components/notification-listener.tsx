@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 
 import { useNotifications } from "@/context/notification-context";
 import { stripHtml } from "@/lib/utils";
+import { showTicketNotice } from "@/features/ticket/components/ticket-notification-toast";
 
 export default function NotificationListener() {
   const { user, isActive } = useAuth();
@@ -27,11 +28,13 @@ export default function NotificationListener() {
     publicChannel.listen("AnnouncementEvent", (data: any) => {
       if (!isActive) return;
       console.log("WebSocket Announcement Received:", data);
-      
+
       // Dispatch global event with full data for the list page to handle
-      window.dispatchEvent(new CustomEvent("new-announcement", { 
-        detail: data 
-      }));
+      window.dispatchEvent(
+        new CustomEvent("new-announcement", {
+          detail: data,
+        }),
+      );
     });
     let privateChannel: any = null;
     if (user?.id) {
@@ -41,38 +44,47 @@ export default function NotificationListener() {
         const data = notification.data || notification;
         const rawTitle = data.title || notification.title || "New Message";
         const rawMessage =
-          data.body || 
-          data.message || 
-          notification.body || 
-          notification.message || 
+          data.body ||
+          data.message ||
+          notification.body ||
+          notification.message ||
           "You have a new update.";
 
-        const ticketId = data.ticket_id || 
-                       data.data?.ticket_id || 
-                       notification.ticket_id || 
-                       notification.data?.ticket_id;
+        const ticketId =
+          data.ticket_id ||
+          data.data?.ticket_id ||
+          notification.ticket_id ||
+          notification.data?.ticket_id;
 
-        let ticketNumber = data.ticket_number || data.data?.ticket_number || data.ticket?.ticket_number;
-        
+        let ticketNumber =
+          data.ticket_number ||
+          data.data?.ticket_number ||
+          data.ticket?.ticket_number;
+
         // Fallback to extract ticket number if it is not explicitly provided by backend
         if (!ticketNumber) {
-          const match = rawMessage.match(/(?:#|T-)(\d+)/i) || rawTitle.match(/(?:#|T-)(\d+)/i);
+          const match =
+            rawMessage.match(/(?:#|T-)(\d+)/i) ||
+            rawTitle.match(/(?:#|T-)(\d+)/i);
           if (match) {
             ticketNumber = match[1];
           }
         }
-        
+
         // Try to map ticket_id to valid ticket reference if not provided but number is extracted
         let finalTicketId = ticketId || ticketNumber;
-        const hasTicketId = finalTicketId && finalTicketId !== "null" && finalTicketId !== "undefined";
+        const hasTicketId =
+          finalTicketId &&
+          finalTicketId !== "null" &&
+          finalTicketId !== "undefined";
 
         // Check if this looks like a generic system announcement vs a personal message/ticket update
-        const isTicketNotification = 
-          rawTitle.toLowerCase().includes("ticket") || 
+        const isTicketNotification =
+          rawTitle.toLowerCase().includes("ticket") ||
           rawTitle.toLowerCase().includes("message") ||
           rawTitle.toLowerCase().includes("reply");
 
-        const isAnnouncement = 
+        const isAnnouncement =
           notification.type?.toLowerCase().includes("announcement") ||
           rawTitle.toLowerCase().includes("announcement") ||
           (!hasTicketId && !isTicketNotification);
@@ -80,106 +92,90 @@ export default function NotificationListener() {
         let title = rawTitle;
         let message = rawMessage;
 
+        const isStatusChangeToOpen =
+          rawTitle.toLowerCase().includes("assign") ||
+          rawMessage.toLowerCase().includes("assign") ||
+          rawTitle.toLowerCase().includes("assing") ||
+          rawMessage.toLowerCase().includes("assing") ||
+          rawTitle.toLowerCase().includes("open") ||
+          rawMessage.toLowerCase().includes("open");
+
         // Customize ticket assignment/opening notification ONLY if it's actually a ticket notification
         if (!isAnnouncement && (hasTicketId || isTicketNotification)) {
-          const isStatusChangeToOpen = 
-            rawTitle.toLowerCase().includes("assign") || 
-            rawMessage.toLowerCase().includes("assign") ||
-            rawTitle.toLowerCase().includes("assing") || 
-            rawMessage.toLowerCase().includes("assing") ||
-            rawTitle.toLowerCase().includes("open") || 
-            rawMessage.toLowerCase().includes("open");
-
           if (isStatusChangeToOpen) {
-            const cleanNumber = ticketNumber ? String(ticketNumber).replace(/#/g, '') : "";
+            const cleanNumber = ticketNumber
+              ? String(ticketNumber).replace(/#/g, "")
+              : "";
             const numStr = cleanNumber ? `#${cleanNumber}` : "";
             message = `Your ticket ${numStr} is open and ready for chat.`;
           }
         }
 
+        const isStatusChangeToClosed =
+          rawTitle.toLowerCase().includes("closed") ||
+          rawMessage.toLowerCase().includes("closed") ||
+          rawTitle.toLowerCase().includes("resolved") ||
+          rawMessage.toLowerCase().includes("resolved");
+
         // STRICT FILTER: If it's an announcement, treat as global announcement update
         if (isAnnouncement) {
-          console.log("Private Channel: No valid ticket_id, redirecting to Global Announcement Dialog.");
-          window.dispatchEvent(new CustomEvent("new-announcement", { 
-            detail: { 
-              ...notification, 
-              id: notification.id || Math.random().toString(36).substr(2, 9),
-              title, 
-              description: message, 
-              is_read: false,
-              created_at: notification.created_at || new Date().toISOString()
-            } 
-          }));
+          console.log(
+            "Private Channel: No valid ticket_id, redirecting to Global Announcement Dialog.",
+          );
+          window.dispatchEvent(
+            new CustomEvent("new-announcement", {
+              detail: {
+                ...notification,
+                id: notification.id || Math.random().toString(36).substr(2, 9),
+                title,
+                description: message,
+                is_read: false,
+                created_at: notification.created_at || new Date().toISOString(),
+              },
+            }),
+          );
           return;
         }
 
-        addNotification({
-          title,
-          message,
-          type: "private",
-          ticket_id: finalTicketId,
-        });
+        // Trigger the premium card notification for ticket-related events
+        if (hasTicketId && !isAnnouncement) {
+          showTicketNotice({
+            id: `ticket-notif-${finalTicketId}`, // Deduplication ID
+            ticketNumber: ticketNumber || String(finalTicketId),
+            subject: title,
+            message: message,
+            type: isStatusChangeToOpen || isStatusChangeToClosed ? "status_update" : "message",
+            onClick: () => {
+              router.push(`/ticket?ticketId=${finalTicketId}`);
+            }
+          });
+        }
+
+        // Always add to persistent context if it's not a global announcement
+        if (!isAnnouncement) {
+          addNotification({
+            title,
+            message,
+            type: "private",
+            ticket_id: finalTicketId,
+          });
+        }
+
         if (finalTicketId) {
-          // Add a larger delay to ensure backend DB state is fully updated before refresh, 
-          // and to let the user see the notification and ticket before it quickly moves to 'open' tab
           setTimeout(() => {
             window.dispatchEvent(
               new CustomEvent("ticket-updated", {
-                detail: { ...notification, ticket_id: ticketId },
+                detail: {
+                  ...notification,
+                  ticket_id: finalTicketId,
+                  ticket_number: ticketNumber, // Added for robust matching
+                  is_open: isStatusChangeToOpen,
+                  is_closed: isStatusChangeToClosed,
+                  type: "status_update",
+                },
               }),
             );
-          }, 5000);
-        }
-
-        // Prevent showing toast if the user is currently on the same ticket's chat view
-        let isCurrentlyActive = false;
-        if (typeof window !== "undefined" && finalTicketId) {
-          const w = window as any;
-
-          const matchById =
-            w.currentActiveTicketId &&
-            String(w.currentActiveTicketId) === String(finalTicketId);
-          const matchByNumber =
-            w.currentActiveTicketNumber &&
-            String(w.currentActiveTicketNumber).includes(String(finalTicketId));
-
-          if (
-            window.location.pathname.includes("/ticket") &&
-            (matchById || matchByNumber)
-          ) {
-            isCurrentlyActive = true;
-          }
-        }
-
-        if (!isCurrentlyActive) {
-          const toastId = finalTicketId ? `toast-${finalTicketId}` : `toast-${title}`;
-          const handleClick = () => {
-            if (finalTicketId) {
-              router.push(`/ticket?ticketId=${finalTicketId}`);
-              toast.dismiss(toastId);
-            }
-          };
-
-          toast.success(
-            <div onClick={handleClick} className="w-full cursor-pointer font-medium">
-              {title}
-            </div>,
-            {
-              id: toastId, // Strict deduplication ID
-              description: (
-                <div onClick={handleClick} className="w-full h-full cursor-pointer mt-1">
-                  {message}
-                </div>
-              ),
-              duration: 10000,
-              action: finalTicketId
-                ? {
-                    label: "Reply",
-                    onClick: handleClick,
-                  }
-                : undefined,
-            }
-          );
+          }, 1000);
         }
       });
     }

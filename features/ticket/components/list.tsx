@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   Search,
   Plus,
@@ -22,6 +22,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { AddTicketDialog } from "./add-ticket-dialog";
 import { ReopenTicketDialog } from "./reopen-ticket-dialog";
+import { showTicketNotice } from "./ticket-notification-toast";
 import { useAuth } from "@/hooks/useAuth";
 
 import { toast } from "sonner";
@@ -55,6 +56,7 @@ interface Ticket {
 function TicketListContent() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   // Read ticketId from URL once on mount (for notification navigation). Not reactive.
   const initialTicketIdRef = useRef<string | null>(
@@ -188,11 +190,13 @@ function TicketListContent() {
     if (!searchTerm.trim() || allRawTickets.length === 0) return;
 
     const term = searchTerm.toLowerCase().trim();
-    
+
     // Find all matches
     const allMatches = allRawTickets.filter((t: any) => {
       const subjectMatch = t.subject?.toLowerCase().includes(term);
-      const idStr = t.ticket_number ? String(t.ticket_number).toLowerCase() : "";
+      const idStr = t.ticket_number
+        ? String(t.ticket_number).toLowerCase()
+        : "";
       const idMatch =
         idStr.includes(term) ||
         String(t.id).toLowerCase().includes(term) ||
@@ -206,7 +210,9 @@ function TicketListContent() {
     if (allMatches.length === 0) return; // Ignore if no match at all
 
     // Check if current tab has any of the matches
-    const hasMatchInCurrentTab = allMatches.some((t: any) => t.status === activeTab);
+    const hasMatchInCurrentTab = allMatches.some(
+      (t: any) => t.status === activeTab,
+    );
 
     // If current tab has NO matches, but we found a match in another tab, switch to it!
     if (!hasMatchInCurrentTab) {
@@ -224,37 +230,48 @@ function TicketListContent() {
           setListLoading(true);
         }
         isBackgroundRefresh.current = false;
-        const response: any = await ticketService.getTickets(activeTab);
-        if (response && response.tickets) {
-          const mappedTickets: Ticket[] = response.tickets.map(
-            (t: ApiTicket) => ({
-              id: String(t.id),
-              subject: t.subject,
-              lastMessage: t.description,
-              status: t.status,
-              user: t.user?.name || "Unknown",
-              userId: String(t.user?.id || ""),
-              date: new Date(t.createdAt * 1000).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              }),
-              ticketId: `T-${t.ticket_number}`,
-              messages: [
-                {
-                  id: `m-${t.id}`,
-                  text: t.description,
-                  sender: t.user?.name || "User",
-                  senderId: t.user?.id || "",
-                  time: new Date(t.createdAt * 1000).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }),
-                  isAdmin: false,
-                },
-              ],
+        const statusParam = activeTab || "open";
+        console.log(`📡 FETCHING tickets for status: ${statusParam}`);
+        const response: any = await ticketService.getTickets(statusParam);
+
+        // Robustly find the tickets array in the response
+        const ticketsArray = Array.isArray(response)
+          ? response
+          : response?.tickets || response?.data || [];
+
+        console.log(
+          `✅ TICKETS RECEIVED: ${ticketsArray.length} items`,
+          ticketsArray,
+        );
+
+        if (Array.isArray(ticketsArray)) {
+          const mappedTickets: Ticket[] = ticketsArray.map((t: ApiTicket) => ({
+            id: String(t.id),
+            subject: t.subject,
+            lastMessage: t.description,
+            status: t.status,
+            user: t.user?.name || "Unknown",
+            userId: String(t.user?.id || ""),
+            date: new Date(t.createdAt * 1000).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
             }),
-          );
+            ticketId: `T-${t.ticket_number}`,
+            messages: [
+              {
+                id: `m-${t.id}`,
+                text: t.description,
+                sender: t.user?.name || "User",
+                senderId: t.user?.id || "",
+                time: new Date(t.createdAt * 1000).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+                isAdmin: false,
+              },
+            ],
+          }));
           setTickets((prev) => {
             return mappedTickets.map((newT) => {
               const oldT = prev.find((p) => p.id === newT.id);
@@ -338,6 +355,60 @@ function TicketListContent() {
   useEffect(() => {
     const handleTicketUpdate = (event: any) => {
       console.log("📥 RECEIVED ticket-updated event:", event.detail);
+      const data = event.detail;
+      const ticketId = String(data.ticket_id || data.data?.ticket_id || "");
+      const ticketNumber = String(data.ticket_number || "");
+      const isOpen = data.is_open;
+      const isClosed = data.is_closed;
+
+      // Robust matching helper
+      const isMatch = (t: any) => {
+        if (!t) return false;
+        const matchById = ticketId && String(t.id) === ticketId;
+        const matchByNumber =
+          ticketNumber &&
+          (String(t.ticketId) === ticketNumber ||
+            String(t.ticketId) === `T-${ticketNumber}`);
+        return matchById || matchByNumber;
+      };
+
+      const activeMatch = activeTicket && isMatch(activeTicket);
+      const anyMatchInList = tickets.some((t) => isMatch(t));
+
+      // 1. Update active ticket status immediately for real-time unlock and tab switch
+      if (activeMatch || anyMatchInList) {
+        console.log(
+          `✅ MATCH found (Active: ${!!activeMatch}, In List: ${!!anyMatchInList}). Checking status transition...`,
+        );
+
+        if (isOpen) {
+          console.log("🔄 Forcing Tab Switch to 'open'...");
+          if (activeMatch) {
+            setActiveTicket((prev) =>
+              prev ? { ...prev, status: "open" } : null,
+            );
+          }
+          setActiveTab("open"); // Auto-switch tab to 'open'
+        } else if (isClosed) {
+          console.log("🔄 Forcing Tab Switch to 'closed'...");
+          if (activeMatch) {
+            setActiveTicket((prev) =>
+              prev ? { ...prev, status: "closed" } : null,
+            );
+          }
+          setActiveTab("closed"); // Auto-switch tab to 'closed'
+        }
+      }
+
+      // 2. Update the tickets array locally to reflect status change immediately
+      if (isOpen || isClosed) {
+        setTickets((prev) =>
+          prev.map((t) =>
+            isMatch(t) ? { ...t, status: isOpen ? "open" : "closed" } : t,
+          ),
+        );
+      }
+
       isBackgroundRefresh.current = true;
       setRefreshTrigger((prev) => prev + 1);
     };
@@ -345,7 +416,7 @@ function TicketListContent() {
     window.addEventListener("ticket-updated", handleTicketUpdate);
     return () =>
       window.removeEventListener("ticket-updated", handleTicketUpdate);
-  }, []);
+  }, [activeTicket?.id, activeTicket?.ticketId, tickets, setActiveTab]);
 
   const [messagesLoading, setMessagesLoading] = useState(false);
   useEffect(() => {
@@ -659,7 +730,9 @@ function TicketListContent() {
     };
   }, [activeTicket?.id]);
 
-  const filteredTickets = (searchTerm.trim() ? allMappedTickets : tickets).filter((ticket) => {
+  const filteredTickets = (
+    searchTerm.trim() ? allMappedTickets : tickets
+  ).filter((ticket) => {
     if (!searchTerm.trim()) return true;
     const term = searchTerm.toLowerCase().trim();
 
@@ -673,6 +746,7 @@ function TicketListContent() {
 
     return subjectMatch || idMatch || descMatch;
   });
+
   const addTicket = async (data: { subject: string; message: string }) => {
     try {
       setLoading(true);
@@ -680,19 +754,26 @@ function TicketListContent() {
         data.subject,
         data.message,
       );
-      toast.success("Ticket created successfully");
-
-      // Switch to pending tab where the new ticket is
+      showTicketNotice({
+        ticketNumber: response?.id || response?.uuid || "NEW",
+        subject: data.subject,
+        message: data.message,
+        type: "creation",
+        onClick: () => {
+          const tid =
+            response?.id ||
+            response?.uuid ||
+            response?.ticket?.id ||
+            response?.ticket?.uuid;
+          if (tid) router.push(`/ticket?ticketId=${tid}`);
+        },
+      });
       await setActiveTab("pending");
-
-      // Robust ID detection from response
       const newTicketId =
         response?.uuid ||
         response?.id ||
         response?.ticket?.id ||
         response?.ticket?.uuid;
-
-      // Refresh list and stats
       const [ticketsResponse, statsResponse]: any = await Promise.all([
         ticketService.getTickets("pending"),
         ticketService.getTickets(),
@@ -715,8 +796,6 @@ function TicketListContent() {
           messages: [],
         }));
         setTickets(mappedTickets);
-
-        // Find and set active ticket immediately
         const ticketToOpen = newTicketId
           ? mappedTickets.find((t: any) => t.id === newTicketId)
           : mappedTickets[0]; // Fallback to newest if ID not found
@@ -750,14 +829,8 @@ function TicketListContent() {
       setLoading(true);
       await ticketService.reopenTicket(activeTicket.id, description);
       toast.success("Ticket reopened successfully");
-
-      // Refresh stats and list
       setRefreshTrigger((prev) => prev + 1);
-
-      // Switch to pending tab and keep the ticket open
       setActiveTab("pending");
-
-      // Update local state to reflect the new status immediately
       if (activeTicket) {
         setActiveTicket({ ...activeTicket, status: "pending" });
         setTickets((prev) =>
@@ -825,7 +898,7 @@ function TicketListContent() {
       });
       setMessageInput("");
     } catch (error) {
-      toast.error("Failed to send message");
+      console.error("Failed to send message");
     } finally {
       setIsSending(false);
     }
@@ -835,7 +908,7 @@ function TicketListContent() {
     <div className="flex flex-col h-auto md:h-[calc(100vh-3rem)] bg-background md:py-3 space-y-4 md:space-y-6 md:overflow-hidden">
       <Card className="rounded-[20px] md:rounded-[20px] border border-border/50 shadow-sm bg-card overflow-hidden shrink-0">
         <CardContent className="px-4 md:px-8 flex flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-1 md:gap-3 w-full md:w-auto">
+          <div className="flex items-center gap-2 md:gap-3 min-w-0">
             <div className="relative group shrink-0">
               <div className="absolute inset-0 bg-primary/20 blur-xl opacity-20 group-hover:opacity-30 transition-opacity" />
               <div className="relative p-2.5 md:p-3.5 bg-primary rounded-[15px] md:rounded-[20px] shadow-lg shadow-primary/20 flex items-center justify-center">
@@ -890,10 +963,10 @@ function TicketListContent() {
           </div>
 
           {/* Mobile Actions */}
-          <div className="md:hidden flex items-center gap-2">
+          <div className="md:hidden flex items-center shrink-0">
             <AddTicketDialog
               onAddTicket={addTicket}
-              className="rounded-xl bg-[#0F172A] p-2.5 h-10 w-10 text-white flex items-center justify-center shadow-lg"
+              className="rounded-xl bg-[#0F172A] hover:bg-[#1E293B] h-10 w-10 text-white flex items-center justify-center shadow-lg transition-all active:scale-90"
             />
           </div>
         </CardContent>
@@ -920,34 +993,38 @@ function TicketListContent() {
             </div>
 
             <div className="flex p-1.5 bg-muted/50 rounded-2xl border border-border relative z-20 shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)]">
-              {(["pending", "open", "closed"] as const).map((tab) => (
-                <Button
-                  key={tab}
-                  variant="ghost"
-                  size="sm"
-                  className={`flex-1 h-10 text-[11px] font-black uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 cursor-pointer select-none transition-all duration-300 ${
-                    activeTab === tab
-                      ? "bg-background text-primary shadow-sm border border-border/50 scale-[1.02]"
-                      : "text-muted-foreground hover:text-foreground hover:bg-background/40"
-                  }`}
-                  onClick={() => {
-                    setActiveTab(tab);
-                  }}
-                >
-                  {tab}
-                  {stats[tab] > 0 && (
-                    <span
-                      className={`px-1.5 py-0.5 rounded-md text-[10px] transition-colors ${
-                        activeTab === tab
-                          ? "bg-primary/10 text-primary"
-                          : "bg-muted-foreground/10 text-muted-foreground"
-                      }`}
-                    >
-                      {stats[tab]}
-                    </span>
-                  )}
-                </Button>
-              ))}
+              {(["pending", "open", "closed"] as const).map((tab) => {
+                const currentTab = activeTab || "open";
+                const isActive = currentTab === tab;
+                return (
+                  <Button
+                    key={tab}
+                    variant="ghost"
+                    size="sm"
+                    className={`flex-1 h-10 text-[11px] font-black uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 cursor-pointer select-none transition-all duration-300 ${
+                      isActive
+                        ? "bg-background text-primary shadow-sm border border-border/50 scale-[1.02]"
+                        : "text-muted-foreground hover:text-foreground hover:bg-background/40"
+                    }`}
+                    onClick={() => {
+                      setActiveTab(tab);
+                    }}
+                  >
+                    {tab}
+                    {stats[tab] > 0 && (
+                      <span
+                        className={`px-1.5 py-0.5 rounded-md text-[10px] transition-colors ${
+                          isActive
+                            ? "bg-primary/10 text-primary"
+                            : "bg-muted-foreground/10 text-muted-foreground"
+                        }`}
+                      >
+                        {stats[tab]}
+                      </span>
+                    )}
+                  </Button>
+                );
+              })}
             </div>
           </div>
 

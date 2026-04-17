@@ -391,7 +391,7 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
         <Plus className="mr-2 h-4 w-4" />
         Add Student
       </Button>
-      <DialogContent className="w-[70vw] sm:max-w-[800px] p-0 overflow-hidden gap-0 border-0 shadow-2xl rounded-2xl">
+      <DialogContent className="w-[95vw] sm:max-w-[600px] md:max-w-[800px] p-0 overflow-hidden gap-0 border-0 shadow-2xl rounded-2xl max-h-[96vh]">
         <DialogHeader className="p-6 pb-2 border-b-0">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-[#e6f4ea] rounded-2xl">
@@ -413,7 +413,7 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
             onSubmit={form.handleSubmit(onSubmit)}
             className="flex flex-col"
           >
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 px-6 pb-6 pt-2 max-h-[70vh] overflow-y-auto custom-scrollbar">
+            <div className="grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-2 px-4 md:px-6 pb-6 pt-2 max-h-[calc(96vh-180px)] overflow-y-auto custom-scrollbar">
               {/* Personal Information Section */}
               <div className="md:col-span-2 mt-2">
                 <h4 className="text-[11px] font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-2">
@@ -851,19 +851,19 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
               />
             </div>
 
-            <div className="pt-6 pb-6 px-6 bg-card flex justify-end gap-4 border-t border-border">
+            <div className="pt-4 md:pt-6 pb-6 px-6 bg-card flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 border-t border-border">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={() => setOpen(false)}
-                className="hover:bg-transparent hover:text-foreground text-muted-foreground font-bold"
+                className="hover:bg-transparent hover:text-foreground text-muted-foreground font-bold w-full sm:w-auto order-2 sm:order-1"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-xl px-8 h-11 font-bold min-w-[140px]"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-xl px-8 h-11 font-bold w-full sm:min-w-[140px] order-1 sm:order-2"
               >
                 {isLoading ? (
                   <>

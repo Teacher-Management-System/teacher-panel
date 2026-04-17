@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { getToken, deleteToken } from "firebase/messaging";
 import { getFirebaseMessaging, isFirebaseConfigured } from "@/lib/firebase";
 import profileService from "@/features/profile/aou.service";
@@ -26,7 +26,23 @@ export function useFcm() {
         return;
       }
 
+      // ✅ KEY FIX: If already denied, browser will silently ignore
+      // requestPermission(). Return early so we don't confuse the flow.
+      const currentPermission =
+        typeof Notification !== "undefined"
+          ? Notification.permission
+          : "default";
+
+      if (currentPermission === "denied") {
+        console.warn(
+          "FCM: Permission is blocked. User must allow from browser site settings.",
+        );
+        setPermission("denied");
+        return;
+      }
+
       if (!isSilent) setLoading(true);
+
       try {
         const messaging = await getFirebaseMessaging();
         if (!messaging) {
@@ -63,7 +79,6 @@ export function useFcm() {
             `/firebase-messaging-sw.js?${firebaseConfigParams}`,
           );
 
-          // Wait for service worker to be active to avoid "no active Service Worker" error
           if (!registration.active) {
             console.log("FCM: Waiting for Service Worker to activate...");
             await new Promise<void>((resolve) => {
@@ -88,7 +103,7 @@ export function useFcm() {
           }
         }
       } catch (error) {
-        console.error("Error specialized in useFcm:", error);
+        console.error("Error in useFcm:", error);
       } finally {
         setLoading(false);
       }

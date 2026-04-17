@@ -60,6 +60,23 @@ export default function StudentList() {
   const [batches, setBatches] = useState<any[]>([]);
   const [isFree, setIsFree] = useState(false);
   const { user } = useAuth();
+  const [isSearching, setIsSearching] = useState(false);
+  const [localSearch, setLocalSearch] = useState(search || "");
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localSearch !== search) {
+        setIsSearching(true);
+        setSearch(localSearch || null);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [localSearch, setSearch, search]);
+  useEffect(() => {
+    setLocalSearch(search || "");
+    if (!search && !localSearch) setIsSearching(false);
+  }, [search]);
+
   const isPending = user?.status === "pending";
   const [showJoinNowModal, setShowJoinNowModal] = useState(false);
 
@@ -106,7 +123,7 @@ export default function StudentList() {
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
+      if (!isSearching) setLoading(true);
       try {
         const queryParams = {
           page,
@@ -135,6 +152,7 @@ export default function StudentList() {
         console.error("Failed to fetch students:", error);
       } finally {
         setLoading(false);
+        setIsSearching(false);
       }
     };
 
@@ -142,6 +160,7 @@ export default function StudentList() {
   }, [page, perPage, search, sort, status, batchFilter, refreshKey]);
 
   const clearFilters = () => {
+    setIsSearching(false);
     setSearch(null);
     setStatus(null);
     setBatchFilter(null);
@@ -350,8 +369,8 @@ export default function StudentList() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
                 <Input
                   placeholder="Search students..."
-                  value={search ?? ""}
-                  onChange={(event) => setSearch(event.target.value)}
+                  value={localSearch}
+                  onChange={(event) => setLocalSearch(event.target.value)}
                   className="pl-10 h-10 md:h-11 w-full bg-muted/30 border-none rounded-xl focus-visible:ring-primary/20 transition-all"
                 />
               </div>

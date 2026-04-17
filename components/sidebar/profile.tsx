@@ -30,8 +30,8 @@ export function Profile({
         <Button
           variant="ghost"
           className={showDetails 
-            ? "h-auto w-full p-2 justify-start gap-3 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8" 
-            : "h-8 w-8 relative"}
+            ? "h-auto w-full p-2 justify-start gap-3 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8 dark:border dark:border-border" 
+            : "h-8 w-8 relative dark:border dark:border-border"}
         >
           <Avatar className="h-8 w-8 rounded-lg shrink-0">
             <AvatarImage src={user?.avatar} alt={displayName} />

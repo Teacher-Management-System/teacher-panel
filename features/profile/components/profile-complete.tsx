@@ -276,7 +276,7 @@ export default function ProfileComplete({ onEdit }: { onEdit: () => void }) {
             </div>
 
             <div className="bg-muted/50 rounded-[20px] p-6 mb-6 border border-border/50">
-              <p className="text-[10px] font-extrabold text-muted-foreground/60 uppercase tracking-[0.15em] mb-2 hidden sm:block">
+              <p className="text-[10px] font-extrabold text-muted-foreground/60 uppercase tracking-[0.15em] mb-2">
                 Current Address
               </p>
               <p className="text-sm sm:text-base font-bold text-foreground leading-snug">
@@ -388,7 +388,7 @@ function InfoRow({
         <Icon className="w-5 h-5 text-muted-foreground/60 stroke-[2]" />
       </div>
       <div>
-        <p className="text-[10px] font-extrabold text-muted-foreground/60 uppercase tracking-widest hidden sm:block mb-1">
+        <p className="text-[10px] font-extrabold text-muted-foreground/60 uppercase tracking-widest mb-1">
           {label}
         </p>
         <p className="text-[15px] font-bold text-foreground">{value}</p>

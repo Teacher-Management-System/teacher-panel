@@ -41,4 +41,5 @@ export interface User {
     front: string | null;
     back: string | null;
   };
+  user?: any;
 }

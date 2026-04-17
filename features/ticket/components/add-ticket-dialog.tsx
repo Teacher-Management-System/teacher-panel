@@ -3,6 +3,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { Plus, Ticket } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Dialog,
   DialogContent,
@@ -22,10 +23,19 @@ interface AddTicketDialogProps {
 }
 
 export function AddTicketDialog({ onAddTicket, className }: AddTicketDialogProps) {
+  const { status } = useAuth();
   const [open, setOpen] = React.useState(false);
   const [subject, setSubject] = React.useState("");
   const [message, setMessage] = React.useState("");
   const [loading, setLoading] = React.useState(false);
+
+  const handleTriggerClick = (e: React.MouseEvent) => {
+    if (status === "pending") {
+      e.preventDefault();
+      e.stopPropagation();
+      window.dispatchEvent(new CustomEvent("open-join-now-popup"));
+    }
+  };
 
   const onSubmit = async () => {
     if (subject.trim() && message.trim()) {
@@ -45,10 +55,10 @@ export function AddTicketDialog({ onAddTicket, className }: AddTicketDialogProps
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger asChild onClick={handleTriggerClick}>
         <Button className={className || "rounded-lg md:rounded-[20px] bg-primary hover:bg-primary/90 h-10 md:h-14 px-3 md:px-8 shadow-lg shadow-primary/20 text-primary-foreground font-black flex items-center gap-1.5 md:gap-3 border-none transition-all active:scale-95 w-full"}>
           <Plus className="h-4 w-4 md:h-6 md:w-6 stroke-[3]" />
-          <span className="text-[11px] md:text-[16px] tracking-tight uppercase tracking-wider">New Ticket</span>
+          <span className="hidden md:inline text-[11px] md:text-[16px] tracking-tight uppercase tracking-wider">New Ticket</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[480px] rounded-[32px] p-8 border border-border bg-card shadow-2xl">

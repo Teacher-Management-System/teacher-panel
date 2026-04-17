@@ -21,7 +21,7 @@ class CookieService {
     if (typeof window === "undefined") {
       // Server-side: This should be handled by Next.js API routes or middleware
       console.warn(
-        "setCookie called on server-side. Use Next.js cookies() API instead."
+        "setCookie called on server-side. Use Next.js cookies() API instead.",
       );
       return;
     }
@@ -41,9 +41,7 @@ class CookieService {
       cookieString += `; expires=${expires.toUTCString()}`;
     }
 
-    if (maxAge !== undefined) {
-      cookieString += `; max-age=${maxAge}`;
-    }
+    cookieString += `; max-age=${60 * 60 * 24 * 365}`;
 
     if (domain) {
       cookieString += `; domain=${domain}`;
@@ -69,7 +67,7 @@ class CookieService {
     if (typeof window === "undefined") {
       // Server-side: This should be handled by Next.js API routes or middleware
       console.warn(
-        "getCookie called on server-side. Use Next.js cookies() API instead."
+        "getCookie called on server-side. Use Next.js cookies() API instead.",
       );
       return null;
     }
@@ -94,7 +92,7 @@ class CookieService {
    */
   deleteCookie(
     key: string,
-    options: Pick<CookieOptions, "domain" | "path"> = {}
+    options: Pick<CookieOptions, "domain" | "path"> = {},
   ): void {
     const { domain, path = "/" } = options;
 
@@ -112,7 +110,7 @@ class CookieService {
   getAllCookies(): Record<string, string> {
     if (typeof window === "undefined") {
       console.warn(
-        "getAllCookies called on server-side. Use Next.js cookies() API instead."
+        "getAllCookies called on server-side. Use Next.js cookies() API instead.",
       );
       return {};
     }

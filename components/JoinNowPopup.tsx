@@ -22,7 +22,9 @@ import {
 import { load, CheckoutOptions } from "@cashfreepayments/cashfree-js";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import { ModalContext } from "@/components/modal-provider";
+import SupportInquiryModal from "@/features/inquiry/components/support-inquiry-modal";
 
 interface JoinNowPopupProps {
   externalOpen?: boolean;
@@ -37,6 +39,7 @@ export function JoinNowPopup({
   const router = useRouter();
   const [internalOpen, setInternalOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const modalContext = useContext(ModalContext);
 
   // Sync internal state with external prop if provided
   const open = externalOpen !== undefined ? externalOpen : internalOpen;
@@ -65,6 +68,18 @@ export function JoinNowPopup({
       if (interval) clearInterval(interval);
     };
   }, [isLoading, user, status, open]);
+
+  // Handle global manual trigger event
+  useEffect(() => {
+    const handleGlobalTrigger = () => {
+      setOpen(true);
+    };
+
+    window.addEventListener("open-join-now-popup", handleGlobalTrigger);
+    return () => {
+      window.removeEventListener("open-join-now-popup", handleGlobalTrigger);
+    };
+  }, [setOpen]);
 
   const handlePayNow = async () => {
     setIsProcessing(true);
@@ -100,16 +115,17 @@ export function JoinNowPopup({
   };
 
   const handleSupportClick = async () => {
-    if (!user?.id) return;
-    try {
-      const response = await import("@/features/profile/aou.service").then(
-        (mod) => mod.default.updateStatus(user.id),
-      );
-      toast.success("Support requested successfully");
-    } catch (error) {
-      console.error("Support API error:", error);
-      toast.error("Failed to request support");
-    }
+    if (!user) return;
+    
+    // Close the JoinNow popup first
+    setOpen(false);
+    
+    // Open the support inquiry modal
+    modalContext?.openModal(
+      SupportInquiryModal,
+      { user },
+      { size: "sm" }
+    );
   };
 
   if (!open) return null;
