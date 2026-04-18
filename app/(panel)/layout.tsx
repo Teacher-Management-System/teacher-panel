@@ -22,7 +22,7 @@ export default function DashboardLayout({
       <AppSidebar />
       <SidebarInset>
         <Header />
-        <main className="max-w-[85rem] mx-auto w-full px-4 md:px-0 py-4">
+        <main className="max-w-[87rem] mx-auto w-full px-4 sm:px-6 lg:px-5 py-4">
           {children}
         </main>
       </SidebarInset>

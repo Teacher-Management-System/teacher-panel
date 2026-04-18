@@ -51,9 +51,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 
 const Dashboard = () => {
-  const [selectedRange, setSelectedRange] = useState<string>("Today");
+  const [selectedRange, setSelectedRange] = useState<string>("30D");
   const [date, setDate] = useState<DateRange | undefined>({
-    from: startOfDay(new Date()),
+    from: startOfDay(subDays(new Date(), 29)),
     to: endOfDay(new Date()),
   });
 
@@ -148,9 +148,9 @@ const Dashboard = () => {
       value: data?.stats.active_students || 0,
       change: data?.stats.total_students
         ? `${Math.round(
-            ((data.stats.active_students || 0) / data.stats.total_students) *
-              100,
-          )}%`
+          ((data.stats.active_students || 0) / data.stats.total_students) *
+          100,
+        )}%`
         : "0%",
       changeLabel: "active rate",
       trend: "up",
@@ -171,9 +171,9 @@ const Dashboard = () => {
       value: data?.stats.pending_students || 0,
       change: data?.stats.total_students
         ? `${Math.round(
-            ((data.stats.pending_students || 0) / data.stats.total_students) *
-              100,
-          )}%`
+          ((data.stats.pending_students || 0) / data.stats.total_students) *
+          100,
+        )}%`
         : "0%",
       changeLabel: "of total",
       trend: "down",
@@ -232,7 +232,7 @@ const Dashboard = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 animate-slide-up">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2 animate-slide-up">
         <div>
           <div className="flex items-center gap-3 mb-1">
             <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground">
@@ -281,7 +281,7 @@ const Dashboard = () => {
             </Button>
           )} */}
 
-          <div className="flex flex-wrap items-center gap-1 bg-muted/40 p-1.5 rounded-2xl border shadow-sm backdrop-blur-sm">
+          <div className="flex flex-wrap items-center gap-2 bg-muted/40 p-1.5 rounded-2xl border shadow-sm backdrop-blur-sm">
             {["Today", "7D", "15D", "30D"].map((range) => (
               <Button
                 key={range}
@@ -346,7 +346,7 @@ const Dashboard = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 sm:mb-8">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-2">
         {stats.map((stat, index) => (
           <Card
             key={index}
@@ -393,7 +393,7 @@ const Dashboard = () => {
       </div>
 
       {/* Charts Row */}
-      <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+      <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 mb-2">
         {/* Earnings Chart */}
         <Card
           className="shadow-lg animate-fade-in"
@@ -562,7 +562,7 @@ const Dashboard = () => {
       </div>
 
       {/* Bottom Row */}
-      <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 pb-8">
+      <div className="grid lg:grid-cols-3 gap-6 lg:gap-8 pb-8">
         {/* Student Status Pie Chart */}
         <Card
           className="shadow-lg animate-fade-in"
@@ -686,11 +686,10 @@ const Dashboard = () => {
                 className="flex items-start gap-3 pb-4 border-b border-border/50 last:border-0 last:pb-0"
               >
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    activity.status === "success"
-                      ? "bg-success/10 text-success"
-                      : "bg-primary/10 text-primary"
-                  }`}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${activity.status === "success"
+                    ? "bg-success/10 text-success"
+                    : "bg-primary/10 text-primary"
+                    }`}
                 >
                   <CreditCard className="w-5 h-5" />
                 </div>
