@@ -46,11 +46,9 @@ export default function SupportInquiryModal({ user, onConfirm }: SupportInquiryM
       await inquiryService.paymentInquiry({
         message: values.message,
       });
-      toast.success("Support inquiry sent successfully!");
       if (onConfirm) onConfirm();
     } catch (error) {
       console.error(error);
-      toast.error("Failed to send inquiry. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

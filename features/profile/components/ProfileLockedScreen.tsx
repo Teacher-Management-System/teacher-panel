@@ -11,18 +11,22 @@ import {
   CheckCircle2,
   Star,
   Loader2,
+  Headset,
 } from "lucide-react";
 import { load, CheckoutOptions } from "@cashfreepayments/cashfree-js";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import profileService from "@/features/profile/aou.service";
+import { ModalContext } from "@/components/modal-provider";
+import SupportInquiryModal from "@/features/inquiry/components/support-inquiry-modal";
 
 const ProfileLockedScreen = () => {
-  const { isPending, isLoading } = useAuth();
+  const { user, isPending, isLoading } = useAuth();
   const [isPaying, setIsPaying] = useState(false);
   const router = useRouter();
+  const modalContext = useContext(ModalContext);
 
   useEffect(() => {
     if (!isLoading && !isPending) {
@@ -61,6 +65,12 @@ const ProfileLockedScreen = () => {
       setIsPaying(false);
     }
   };
+
+  const handleSupportClick = async () => {
+    if (!user) return;
+
+    modalContext?.openModal(SupportInquiryModal, { user }, { size: "sm" });
+  };
   return (
     <div className="relative flex items-center justify-center min-h-[70vh] w-full overflow-hidden">
       {/* Background Decorative Elements */}
@@ -73,7 +83,15 @@ const ProfileLockedScreen = () => {
         {/* Premium Banner */}
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-75" />
 
-        <CardContent className="p-8 sm:p-12 flex flex-col items-center text-center space-y-8">
+        <CardContent className="p-8 sm:p-12 flex flex-col items-center text-center space-y-8 relative">
+          <button
+            onClick={handleSupportClick}
+            className="absolute top-4 right-4 p-2 rounded-full bg-muted border border-border text-muted-foreground hover:text-primary transition-colors hover:scale-110 active:scale-95 z-10"
+            title="Support"
+          >
+            <Headset className="w-5 h-5" />
+          </button>
+
           {/* Hero Icon */}
           <div className="relative group">
             <div className="absolute inset-0 bg-primary/30 rounded-full blur-2xl group-hover:blur-3xl transition-all duration-500" />

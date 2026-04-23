@@ -56,7 +56,7 @@ export function AddTicketDialog({ onAddTicket, className }: AddTicketDialogProps
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild onClick={handleTriggerClick}>
-        <Button className={className || "rounded-lg md:rounded-[20px] bg-primary hover:bg-primary/90 h-10 md:h-14 px-3 md:px-8 shadow-lg shadow-primary/20 text-primary-foreground font-black flex items-center gap-1.5 md:gap-3 border-none transition-all active:scale-95 w-full"}>
+        <Button className={className || "rounded-lg md:rounded-[20px] bg-primary hover:bg-primary/90 h-10 md:h-14 px-3 md:px-8 text-primary-foreground font-black flex items-center gap-1.5 md:gap-3 border-none transition-all active:scale-95 w-full"}>
           <Plus className="h-4 w-4 md:h-6 md:w-6 stroke-[3]" />
           <span className="hidden md:inline text-[11px] md:text-[16px] tracking-tight uppercase tracking-wider">New Ticket</span>
         </Button>
@@ -118,7 +118,7 @@ export function AddTicketDialog({ onAddTicket, className }: AddTicketDialogProps
           <Button
             onClick={onSubmit}
             disabled={loading}
-            className="h-14 rounded-[22px] bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-[15px] shadow-lg shadow-primary/20 border-none transition-all active:scale-scale-95"
+            className="h-14 rounded-[22px] bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-[15px] border-none transition-all active:scale-scale-95"
           >
             {loading ? (
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-foreground"></div>

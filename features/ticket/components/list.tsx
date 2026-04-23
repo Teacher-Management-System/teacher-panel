@@ -958,7 +958,7 @@ function TicketListContent() {
             </div>
             <AddTicketDialog
               onAddTicket={addTicket}
-              className="rounded-[20px] bg-[#0F172A] hover:bg-[#1E293B] h-12 px-8 shadow-xl shadow-slate-200 text-white font-black flex items-center gap-3 border-none transition-all active:scale-95 whitespace-nowrap"
+              className="rounded-[20px] bg-[#0F172A] hover:bg-[#1E293B] h-12 px-8 text-white font-black flex items-center gap-3 border-none transition-all active:scale-95 whitespace-nowrap"
             />
           </div>
 
@@ -966,7 +966,7 @@ function TicketListContent() {
           <div className="md:hidden flex items-center shrink-0">
             <AddTicketDialog
               onAddTicket={addTicket}
-              className="rounded-xl bg-[#0F172A] hover:bg-[#1E293B] h-10 w-10 text-white flex items-center justify-center shadow-lg transition-all active:scale-90"
+              className="rounded-xl bg-[#0F172A] hover:bg-[#1E293B] h-10 w-10 text-white flex items-center justify-center transition-all active:scale-90"
             />
           </div>
         </CardContent>
