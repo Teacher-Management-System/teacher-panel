@@ -113,6 +113,7 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
     useState(false);
   const [showJoinNowModal, setShowJoinNowModal] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isAddBatchDialogOpen, setIsAddBatchDialogOpen] = useState(false);
   const { user: currentUser, status } = useAuth();
   const router = useRouter();
 
@@ -256,7 +257,10 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
       await studentService.create(payload);
       setOpen(false);
       form.reset();
-      setIsEmailVerified(false); // Reset verification for next time
+      setIsEmailVerified(false);
+      setOtpValue("");
+      setVerificationId(null);
+      setResendCooldown(0);
       if (onSuccess) {
         onSuccess();
       }
@@ -284,6 +288,7 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
       });
       setIsEmailVerified(true);
       setShowOtpModal(false);
+      setOtpValue("");
 
       // Auto-submit the student creation upon successful OTP verification
       await submitStudentData(form.getValues() as StudentFormValues);
@@ -350,13 +355,6 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
       }
 
       if (!isCompleted || !hasAadhar) {
-        if (!hasAadhar) {
-          toast.info(
-            "Please upload your Aadhar documents (front & back) to add students",
-          );
-        } else {
-          toast.info("Please complete your profile details to add students");
-        }
         setShowCompleteProfileModal(true);
         return;
       }
@@ -552,15 +550,15 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                           selected={
                             field.value && typeof field.value === "string"
                               ? (() => {
-                                  const parsed = parse(
-                                    field.value,
-                                    "yyyy-MM-dd",
-                                    new Date(),
-                                  );
-                                  return !isNaN(parsed.getTime())
-                                    ? parsed
-                                    : undefined;
-                                })()
+                                const parsed = parse(
+                                  field.value,
+                                  "yyyy-MM-dd",
+                                  new Date(),
+                                );
+                                return !isNaN(parsed.getTime())
+                                  ? parsed
+                                  : undefined;
+                              })()
                               : undefined
                           }
                           onSelect={(date) => {
@@ -793,7 +791,13 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                     </FormLabel>
                     <div className="flex gap-2">
                       <Select
-                        onValueChange={field.onChange}
+                        onValueChange={(val) => {
+                          if (val === "add-new-batch") {
+                            setIsAddBatchDialogOpen(true);
+                          } else {
+                            field.onChange(val);
+                          }
+                        }}
                         value={field.value}
                         disabled={isLoading}
                       >
@@ -803,17 +807,26 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {batches.map((batch) => (
-                            <SelectItem
-                              key={batch.id}
-                              value={batch.id.toString()}
-                            >
-                              {batch.name}
+                          {batches.length > 0 ? (
+                            batches.map((batch) => (
+                              <SelectItem
+                                key={batch.id}
+                                value={batch.id.toString()}
+                              >
+                                {batch.name}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="add-new-batch" className="text-emerald-600 font-bold">
+                              <Plus className="mr-2 h-4 w-4 inline" />
+                              Add New Batch
                             </SelectItem>
-                          ))}
+                          )}
                         </SelectContent>
                       </Select>
                       <AddBatchDialog
+                        open={isAddBatchDialogOpen}
+                        onOpenChange={setIsAddBatchDialogOpen}
                         onSuccess={async (newBatch) => {
                           const batchesList = await fetchBatchesList();
                           const batchId =

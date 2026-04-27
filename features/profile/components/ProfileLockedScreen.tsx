@@ -11,7 +11,7 @@ import {
   CheckCircle2,
   Star,
   Loader2,
-  Headset,
+  MessageCircleQuestion,
 } from "lucide-react";
 import { load, CheckoutOptions } from "@cashfreepayments/cashfree-js";
 import { useAuth } from "@/hooks/useAuth";
@@ -86,10 +86,10 @@ const ProfileLockedScreen = () => {
         <CardContent className="p-8 sm:p-12 flex flex-col items-center text-center space-y-8 relative">
           <button
             onClick={handleSupportClick}
-            className="absolute top-4 right-4 p-2 rounded-full bg-muted border border-border text-muted-foreground hover:text-primary transition-colors hover:scale-110 active:scale-95 z-10"
-            title="Support"
+            className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 transition-all shadow-sm z-10"
           >
-            <Headset className="w-5 h-5" />
+            <MessageCircleQuestion className="w-4 h-4" />
+            <span className="text-[10px] font-bold uppercase tracking-wider">Inquiry Now</span>
           </button>
 
           {/* Hero Icon */}

@@ -22,14 +22,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import profileService from "../aou.service";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
 
 interface DocumentState {
   file: File | null;
@@ -69,7 +61,6 @@ export default function DocumentDetails({
     isUploading: false,
     isUploaded: false,
   });
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const frontInputRef = useRef<HTMLInputElement>(null);
   const backInputRef = useRef<HTMLInputElement>(null);
@@ -158,12 +149,8 @@ export default function DocumentDetails({
           isUploading: false,
         }));
         if (type === "aadhar_back") {
-          if (!isProfileCompleted) {
-            setShowSuccessModal(true);
-          } else {
-            router.push("/profile");
-          }
-          onSuccess?.();
+          await onSuccess?.();
+          router.push("/profile");
         }
       } else {
         toast.error(response?.message || "Upload failed");
@@ -365,13 +352,10 @@ export default function DocumentDetails({
           <Button
             type="button"
             className="w-full sm:w-auto px-8 h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-none transition-all hover:-translate-y-0.5 flex items-center gap-2"
-            onClick={() => {
+            onClick={async () => {
               if (aadharFront.isUploaded && aadharBack.isUploaded) {
-                if (isProfileCompleted) {
-                  router.push("/profile");
-                } else {
-                  setShowSuccessModal(true);
-                }
+                await onSuccess?.();
+                router.push("/profile");
               } else {
                 toast.error("Please upload both sides of Aadhar card first");
               }
@@ -383,79 +367,6 @@ export default function DocumentDetails({
         </div>
       </div>
 
-      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-        <DialogContent className="sm:max-w-[440px] w-[calc(100%-2rem)] mx-auto rounded-[32px] p-8 pb-10 border border-border shadow-2xl overflow-hidden [&>button]:hidden bg-card">
-          {/* Top gradient accent */}
-          <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 opacity-90" />
-
-          <div className="flex flex-col items-center justify-center text-center mt-4">
-            {/* Custom squircle icon */}
-            <div className="relative mb-10 mt-2">
-              <div className="absolute inset-0 bg-[#0bb882] rounded-[32px] rotate-6 blur-xl opacity-40 scale-110" />
-              <div className="relative bg-[#0bb882] text-white w-28 h-28 rounded-[36px] flex items-center justify-center rotate-[-3deg] shadow-lg">
-                <div className="bg-white rounded-full p-2.5 flex items-center justify-center rotate-[3deg] shadow-sm">
-                  <Check className="w-10 h-10 text-[#0bb882] stroke-[4]" />
-                </div>
-              </div>
-            </div>
-
-            <h2 className="text-3xl font-extrabold text-foreground tracking-tight mb-4 font-display">
-              Profile Completed!
-            </h2>
-
-            <p className="text-[15px] font-medium text-muted-foreground leading-relaxed mb-10 px-2">
-              Great job! Your profile is now 100% complete.{" "}
-              <br className="hidden sm:block" />
-              You've unlocked all the features of the{" "}
-              <br className="hidden sm:block" />
-              <span className="font-bold text-[#5b21b6]">
-                Aerophantom Academy
-              </span>{" "}
-              panel.
-            </p>
-
-            <div className="flex flex-col w-full gap-3 mb-10">
-              <Button
-                asChild
-                className="w-full h-[56px] rounded-2xl bg-foreground hover:bg-foreground/90 text-background font-bold text-[15px] shadow-lg transition-all hover:-translate-y-0.5"
-              >
-                <Link href="/dashboard">Go to Dashboard</Link>
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full h-[56px] rounded-2xl bg-muted/50 hover:bg-muted text-foreground font-bold text-[15px] transition-colors"
-                onClick={() => window.location.reload()}
-              >
-                View My Profile
-              </Button>
-            </div>
-
-            {/* Footer avatars */}
-            <div className="flex flex-row items-center justify-center gap-3">
-              <div className="flex -space-x-3">
-                <img
-                  className="w-8 h-8 rounded-full border-2 border-card bg-muted object-cover"
-                  src="https://i.pravatar.cc/100?img=68"
-                  alt="Student"
-                />
-                <img
-                  className="w-8 h-8 rounded-full border-2 border-card bg-muted object-cover"
-                  src="https://i.pravatar.cc/100?img=32"
-                  alt="Student"
-                />
-                <img
-                  className="w-8 h-8 rounded-full border-2 border-card bg-muted object-cover"
-                  src="https://i.pravatar.cc/100?img=47"
-                  alt="Student"
-                />
-              </div>
-              <span className="text-[11px] font-bold text-muted-foreground/40 uppercase tracking-[0.10em]">
-                Joined 2k+ Students
-              </span>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

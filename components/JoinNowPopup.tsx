@@ -17,12 +17,12 @@ import {
   Sparkles,
   Star,
   CheckCircle2,
-  Headset,
+  MessageCircleQuestion,
 } from "lucide-react";
 import { load, CheckoutOptions } from "@cashfreepayments/cashfree-js";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { ModalContext } from "@/components/modal-provider";
 import SupportInquiryModal from "@/features/inquiry/components/support-inquiry-modal";
 
@@ -45,29 +45,41 @@ export function JoinNowPopup({
   const open = externalOpen !== undefined ? externalOpen : internalOpen;
   const setOpen = onOpenChange || setInternalOpen;
 
+  const showCountRef = useRef(0);
+
   useEffect(() => {
     if (externalOpen !== undefined) return;
-    if (!isLoading && user && status === "pending") {
-      setOpen(true);
-    } else {
+    
+    // If not pending, don't show at all
+    if (!isLoading && (!user || status !== "pending")) {
       setOpen(false);
+      return;
+    }
+
+    // Logic for showing only twice
+    if (!isLoading && user && status === "pending" && showCountRef.current < 2) {
+      // First show at 30s
+      const firstTimer = setTimeout(() => {
+        if (showCountRef.current === 0) {
+          setOpen(true);
+          showCountRef.current = 1;
+        }
+      }, 30000);
+
+      // Second show at 90s (30s + 60s)
+      const secondTimer = setTimeout(() => {
+        if (showCountRef.current === 1) {
+          setOpen(true);
+          showCountRef.current = 2;
+        }
+      }, 90000);
+
+      return () => {
+        clearTimeout(firstTimer);
+        clearTimeout(secondTimer);
+      };
     }
   }, [isLoading, user, status, externalOpen]);
-
-  // Logic to show popup every 10 seconds if it's closed
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-
-    if (!isLoading && user && status === "pending" && !open) {
-      interval = setInterval(() => {
-        setOpen(true);
-      }, 40000);
-    }
-
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isLoading, user, status, open]);
 
   // Handle global manual trigger event
   useEffect(() => {
@@ -150,10 +162,10 @@ export function JoinNowPopup({
 
               <button
                 onClick={handleSupportClick}
-                className="absolute top-0 right-0 p-2 rounded-full bg-muted border border-border text-muted-foreground hover:text-primary transition-colors hover:scale-110 active:scale-95"
-                title="Support"
+                className="absolute top-0 right-0 flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 transition-all shadow-sm"
               >
-                <Headset className="w-5 h-5" />
+                <MessageCircleQuestion className="w-4 h-4" />
+                <span className="text-[10px] font-bold uppercase tracking-wider">Inquiry Now</span>
               </button>
             </div>
 

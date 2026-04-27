@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -84,74 +83,38 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
   useEffect(() => {
     if (user) {
-      const data = user;
+      const d = user as any;
+      const u = d?.user || d;
+
       setFormData({
-        fullName: data.name || data.user?.name || "",
-        fatherName: data.father_name || data.user?.father_name || "",
-        gender:
-          data.gender || data.user?.gender
-            ? (() => {
-                const g = String(data.gender || data.user?.gender)
-                  .toLowerCase()
-                  .trim();
-                if (g === "male" || g === "m") return "male";
-                if (g === "female" || g === "f") return "female";
-                if (g === "other" || g === "o") return "other";
-                return "";
-              })()
-            : "",
-        dob:
-          data.dob || data.user?.dob
-            ? new Date(
-                !isNaN(Number(data.dob || data.user?.dob)) &&
-                  Math.abs(Number(data.dob || data.user?.dob)) < 100000000000
-                  ? Number(data.dob || data.user?.dob) * 1000
-                  : data.dob || data.user?.dob,
-              )
-            : undefined,
-        contactNumber:
-          data.mobile || data.user?.mobile
-            ? String(data.mobile || data.user?.mobile).replace(/^\+91/, "")
-            : "",
-        email: data.email || data.user?.email || "",
-        qualification: (() => {
-          const q = String(
-            data.qualification_level ||
-              data.user?.qualification_level ||
-              data.user?.qualification ||
-              "",
-          )
-            .toLowerCase()
-            .trim();
-          if (q.includes("under")) return "undergraduate";
-          if (q === "graduate") return "graduate";
-          if (q.includes("post")) return "postgraduate";
-          return (
-            ((data.qualification_level ||
-              data.user?.qualification_level ||
-              data.user?.qualification) as Qualification) || ""
+        fullName: u?.name || d?.name || "",
+        fatherName: u?.father_name || d?.father_name || "",
+        gender: (u?.gender || d?.gender || "").toLowerCase().trim(),
+        dob: (() => {
+          const dobValue = u?.dob || d?.dob;
+          if (!dobValue) return undefined;
+          return new Date(
+            !isNaN(Number(dobValue)) && Math.abs(Number(dobValue)) < 100000000000
+              ? Number(dobValue) * 1000
+              : dobValue,
           );
         })(),
-        currentStatus:
-          ((data.current_status ||
-            data.user?.current_status) as CurrentStatus) || "",
-        collegeName: data.college_name || data.user?.college_name || "",
-        course: data.course || data.user?.course || "",
-        year:
-          data.year || data.user?.year
-            ? String(data.year || data.user?.year)
-            : "",
-        organizationName:
-          data.organization_name || data.user?.organization_name || "",
-        designation: data.designation || data.user?.designation || "",
-        monthlyPaymentExpectation:
-          data.monthly_payment_expectation ||
-          data.user?.monthly_payment_expectation
-            ? String(
-                data.monthly_payment_expectation ||
-                  data.user?.monthly_payment_expectation,
-              )
-            : "",
+        contactNumber: String(u?.mobile || d?.mobile || "").replace(/^\+91/, ""),
+        email: u?.email || d?.email || "",
+        qualification: (() => {
+          const q = String(u?.qualification_level || d?.qualification_level || "").toLowerCase().trim();
+          if (q.includes("under")) return "undergraduate";
+          if (q.includes("post")) return "postgraduate";
+          if (q.includes("grad")) return "graduate";
+          return "";
+        })(),
+        currentStatus: (u?.current_status || d?.current_status || "").toLowerCase().trim() as CurrentStatus,
+        collegeName: u?.college_name || d?.college_name || "",
+        course: u?.course || d?.course || "",
+        year: String(u?.year || d?.year || ""),
+        organizationName: u?.organization_name || d?.organization_name || "",
+        designation: u?.designation || d?.designation || "",
+        monthlyPaymentExpectation: String(u?.monthly_payment_expectation || d?.monthly_payment_expectation || ""),
       });
     }
   }, [user]);
@@ -302,6 +265,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 Gender
               </Label>
               <Select
+                key={formData.gender}
                 value={formData.gender}
                 onValueChange={(value) => handleInputChange("gender", value)}
                 disabled={isProfileCompleted}
@@ -427,6 +391,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 Highest Qualification
               </Label>
               <Select
+                key={formData.qualification}
                 value={formData.qualification}
                 onValueChange={(value: Qualification) =>
                   handleInputChange("qualification", value)
@@ -457,7 +422,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                       ? "border-indigo-500 bg-indigo-500/10 shadow-sm ring-1 ring-indigo-500/50"
                       : "border-border bg-muted/30 hover:bg-muted/50",
                     (isProfileCompleted && "cursor-default opacity-80") ||
-                      "cursor-pointer",
+                    "cursor-pointer",
                   )}
                   onClick={() =>
                     !isProfileCompleted &&
@@ -487,7 +452,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                       ? "border-emerald-500 bg-emerald-500/10 shadow-sm ring-1 ring-emerald-500/50"
                       : "border-border bg-muted/30 hover:bg-muted/50",
                     (isProfileCompleted && "cursor-default opacity-80") ||
-                      "cursor-pointer",
+                    "cursor-pointer",
                   )}
                   onClick={() =>
                     !isProfileCompleted &&
@@ -517,7 +482,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                       ? "border-orange-500 bg-orange-500/10 shadow-sm ring-1 ring-orange-500/50"
                       : "border-border bg-muted/30 hover:bg-muted/50",
                     (isProfileCompleted && "cursor-default opacity-80") ||
-                      "cursor-pointer",
+                    "cursor-pointer",
                   )}
                   onClick={() =>
                     !isProfileCompleted &&
@@ -634,7 +599,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                     <Home className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground/40" />
                     <Input
                       id="organizationName"
-                      placeholder="Enter company name"
+                      placeholder="Enter organization name"
                       className="pl-10 bg-muted/50 border-border rounded-xl h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
                       value={formData.organizationName}
                       onChange={(e) =>
@@ -655,7 +620,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                     <Briefcase className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground/40" />
                     <Input
                       id="designation"
-                      placeholder="e.g. Teacher"
+                      placeholder="Enter your designation"
                       className="pl-10 bg-muted/50 border-border rounded-xl h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
                       value={formData.designation}
                       onChange={(e) =>

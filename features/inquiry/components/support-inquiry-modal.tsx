@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Send, Headset, Loader2, Sparkles, MessageSquare } from "lucide-react";
+import { Send, MessageCircleQuestion, Loader2, Sparkles, MessageSquare } from "lucide-react";
 import inquiryService from "../api.service";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -59,11 +59,11 @@ export default function SupportInquiryModal({ user, onConfirm }: SupportInquiryM
       <DialogHeader>
         <div className="flex items-center gap-4 mb-2">
           <div className="p-3 bg-primary/10 rounded-full">
-            <Headset className="w-6 h-6 text-primary animate-pulse" />
+            <MessageCircleQuestion className="w-6 h-6 text-primary animate-pulse" />
           </div>
           <div>
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
-              Contact Support <Sparkles className="w-4 h-4 text-yellow-500" />
+              Inquiry Now <Sparkles className="w-4 h-4 text-yellow-500" />
             </DialogTitle>
             <DialogDescription>
               We're here to help you get started
