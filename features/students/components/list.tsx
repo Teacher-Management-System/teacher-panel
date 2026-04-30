@@ -20,6 +20,7 @@ import {
 
 import { cn } from "@/lib/utils";
 import { AddStudentDialog } from "./add-student-dialog";
+import { GenerateLinkDialog } from "./generate-link-dialog";
 import { JoinNowPopup } from "@/components/JoinNowPopup";
 import {
   Select,
@@ -229,7 +230,10 @@ export default function StudentList() {
               <span className="font-bold text-[13px] md:text-sm">Batches</span>
             </Button>
           </div>
-          <div className="col-span-2 md:col-span-1">
+          <div className="col-span-1 md:flex-none md:w-[190px]">
+            <GenerateLinkDialog />
+          </div>
+          <div className="col-span-1 md:flex-none md:w-[150px]">
             <AddStudentDialog onSuccess={refreshData} />
           </div>
         </div>

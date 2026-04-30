@@ -25,6 +25,10 @@ class StudentService extends BaseService {
     return await this.get("batches");
   }
 
+  async getFormUrl() {
+    return await this.get("form-url");
+  }
+
   async sendOtp(data: { email: string; event: string }) {
     return await this.post("send-otp", data);
   }
