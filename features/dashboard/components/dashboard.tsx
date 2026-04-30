@@ -89,9 +89,7 @@ const Dashboard = () => {
         const params: any = {};
         if (date?.from) {
           params.start_date = format(date.from, "yyyy-MM-dd");
-        }
-        if (date?.to) {
-          params.end_date = format(date.to, "yyyy-MM-dd");
+          params.end_date = format(date?.to || date.from, "yyyy-MM-dd");
         }
         const response = (await dashboardService.getDashboardData(
           params,
