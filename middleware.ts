@@ -12,6 +12,7 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/privacy") ||
     pathname.startsWith("/faq") ||
     pathname.startsWith("/inquiry") ||
+    pathname === "/manifest.json" ||
     pathname === "/firebase-messaging-sw.js";
   const isProtectedButNotAuthRoute = !isAuthRoute && !isPublicRoute;
 
@@ -37,6 +38,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|api|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|api|manifest\\.json|firebase-messaging-sw\\.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

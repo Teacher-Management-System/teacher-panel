@@ -267,6 +267,9 @@ export default function AnnouncementDialog() {
               <DialogTitle className="text-2xl md:text-3xl font-extrabold tracking-tight">
                 {data.title}
               </DialogTitle>
+              <DialogDescription className="sr-only">
+                {data.description || "System Announcement"}
+              </DialogDescription>
             </div>
 
             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground bg-muted/30 p-3 rounded-2xl">
