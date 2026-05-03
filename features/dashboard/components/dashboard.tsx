@@ -257,13 +257,11 @@ const Dashboard = () => {
         <div className="flex items-center gap-3">
           {userStatus === "pending" && (
             <Button
-              asChild
-              className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm rounded-lg flex items-center gap-2 px-4 transition-all animate-bounce-subtle"
+              onClick={() => window.dispatchEvent(new CustomEvent("open-join-now-popup"))}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm rounded-lg flex items-center gap-2 px-4 transition-all animate-bounce-subtle cursor-pointer"
             >
-              <Link href="/profile/unlockProfile">
-                <IndianRupee className="w-4 h-4" />
-                <span className="font-semibold">Enroll Now</span>
-              </Link>
+              <IndianRupee className="w-4 h-4" />
+              <span className="font-semibold">Enroll Now</span>
             </Button>
           )}
 

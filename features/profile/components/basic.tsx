@@ -651,7 +651,7 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                   <Input
                     id="monthlyPaymentExpectation"
                     type="number"
-                    placeholder="Enter expected salary"
+                    placeholder="Enter expected earnings"
                     className="pl-12 bg-muted/50 border-border rounded-xl h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
                     value={formData.monthlyPaymentExpectation}
                     onChange={(e) =>

@@ -138,16 +138,34 @@ export default function NotificationListener() {
         }
 
         // Trigger the premium card notification for ticket-related events
-        if (hasTicketId && !isAnnouncement) {
+        const isCurrentTicket =
+          typeof window !== "undefined" &&
+          ((finalTicketId &&
+            String(finalTicketId) ===
+              String((window as any).currentActiveTicketId)) ||
+            (ticketNumber &&
+              String(ticketNumber).replace(/\D/g, "") ===
+                String((window as any).currentActiveTicketNumber || "").replace(
+                  /\D/g,
+                  "",
+                )) ||
+            (window.location.pathname === "/ticket" &&
+              new URLSearchParams(window.location.search).get("ticketId") ===
+                String(finalTicketId)));
+
+        if (hasTicketId && !isAnnouncement && !isCurrentTicket) {
           showTicketNotice({
             id: `ticket-notif-${finalTicketId}`, // Deduplication ID
             ticketNumber: ticketNumber || String(finalTicketId),
             subject: title,
             message: message,
-            type: isStatusChangeToOpen || isStatusChangeToClosed ? "status_update" : "message",
+            type:
+              isStatusChangeToOpen || isStatusChangeToClosed
+                ? "status_update"
+                : "message",
             onClick: () => {
               router.push(`/ticket?ticketId=${finalTicketId}`);
-            }
+            },
           });
         }
 

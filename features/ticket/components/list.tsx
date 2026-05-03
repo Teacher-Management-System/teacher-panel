@@ -507,8 +507,8 @@ function TicketListContent() {
               m.isAdmin !== undefined
                 ? m.isAdmin
                 : (m.sender?.name || m.user?.name || "")
-                    .trim()
-                    .toLowerCase() !== activeTicket.user?.trim().toLowerCase(),
+                  .trim()
+                  .toLowerCase() !== activeTicket.user?.trim().toLowerCase(),
           }));
 
           setCurrentPage(targetPage);
@@ -595,7 +595,7 @@ function TicketListContent() {
               m.isAdmin !== undefined
                 ? m.isAdmin
                 : m.sender?.name?.trim().toLowerCase() !==
-                  activeTicket.user?.trim().toLowerCase(),
+                activeTicket.user?.trim().toLowerCase(),
           }));
 
           setCurrentPage(prevPage);
@@ -680,13 +680,13 @@ function TicketListContent() {
                   messages: prev.messages.map((msg) =>
                     msg.time === "Just now" && msg.text === (m.body || m.text)
                       ? {
-                          ...msg,
-                          id: m.id,
-                          senderId: senderId,
-                          isAdmin:
-                            senderName?.trim().toLowerCase() !==
-                            prev.user?.trim().toLowerCase(),
-                        }
+                        ...msg,
+                        id: m.id,
+                        senderId: senderId,
+                        isAdmin:
+                          senderName?.trim().toLowerCase() !==
+                          prev.user?.trim().toLowerCase(),
+                      }
                       : msg,
                   ),
                 };
@@ -701,9 +701,9 @@ function TicketListContent() {
               senderId: senderId,
               time: m.createdAt
                 ? new Date(m.createdAt * 1000).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
                 : "Just now",
               isAdmin:
                 senderName?.trim().toLowerCase() !==
@@ -754,20 +754,6 @@ function TicketListContent() {
         data.subject,
         data.message,
       );
-      showTicketNotice({
-        ticketNumber: response?.id || response?.uuid || "NEW",
-        subject: data.subject,
-        message: data.message,
-        type: "creation",
-        onClick: () => {
-          const tid =
-            response?.id ||
-            response?.uuid ||
-            response?.ticket?.id ||
-            response?.ticket?.uuid;
-          if (tid) router.push(`/ticket?ticketId=${tid}`);
-        },
-      });
       await setActiveTab("pending");
       const newTicketId =
         response?.uuid ||
@@ -883,10 +869,10 @@ function TicketListContent() {
       const updatedTickets = tickets.map((t) =>
         t.id === activeTicket.id
           ? {
-              ...t,
-              messages: [...t.messages, newMessage],
-              lastMessage: newMessage.text,
-            }
+            ...t,
+            messages: [...t.messages, newMessage],
+            lastMessage: newMessage.text,
+          }
           : t,
       );
 
@@ -1001,11 +987,10 @@ function TicketListContent() {
                     key={tab}
                     variant="ghost"
                     size="sm"
-                    className={`flex-1 h-10 text-[11px] font-black uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 cursor-pointer select-none transition-all duration-300 ${
-                      isActive
+                    className={`flex-1 h-10 text-[11px] font-black uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 cursor-pointer select-none transition-all duration-300 ${isActive
                         ? "bg-background text-primary shadow-sm border border-border/50 scale-[1.02]"
                         : "text-muted-foreground hover:text-foreground hover:bg-background/40"
-                    }`}
+                      }`}
                     onClick={() => {
                       setActiveTab(tab);
                     }}
@@ -1013,11 +998,10 @@ function TicketListContent() {
                     {tab}
                     {stats[tab] > 0 && (
                       <span
-                        className={`px-1.5 py-0.5 rounded-md text-[10px] transition-colors ${
-                          isActive
+                        className={`px-1.5 py-0.5 rounded-md text-[10px] transition-colors ${isActive
                             ? "bg-primary/10 text-primary"
                             : "bg-muted-foreground/10 text-muted-foreground"
-                        }`}
+                          }`}
                       >
                         {stats[tab]}
                       </span>
@@ -1044,11 +1028,10 @@ function TicketListContent() {
                         setActiveTicket(ticket);
                       }
                     }}
-                    className={`rounded-[20px] md:rounded-[28px] cursor-pointer transition-all duration-300 border shadow-sm relative group overflow-hidden ${
-                      activeTicket?.id === ticket.id
+                    className={`rounded-[20px] md:rounded-[28px] cursor-pointer transition-all duration-300 border shadow-sm relative group overflow-hidden ${activeTicket?.id === ticket.id
                         ? "bg-card border-primary/40 shadow-primary/5 scale-[1.02] z-10"
                         : "bg-card/40 border-border hover:border-primary/20 hover:shadow-primary/5 hover:translate-x-1"
-                    }`}
+                      }`}
                   >
                     <div className="px-3 relative">
                       {activeTicket?.id === ticket.id && (
@@ -1066,24 +1049,22 @@ function TicketListContent() {
                             </span>
                           </div>
                           <Badge
-                            className={`text-[8px] uppercase font-black px-1.5 py-0.5 rounded border-transparent shrink-0 leading-none ${
-                              ticket.status === "pending"
+                            className={`text-[8px] uppercase font-black px-1.5 py-0.5 rounded border-transparent shrink-0 leading-none ${ticket.status === "pending"
                                 ? "bg-orange-500/10 text-orange-500"
                                 : ticket.status === "open"
                                   ? "bg-primary/10 text-primary border-primary/20"
                                   : "bg-muted-foreground/10 text-muted-foreground"
-                            }`}
+                              }`}
                           >
                             {ticket.status}
                           </Badge>
                         </div>
                         <div className="flex flex-col">
                           <h4
-                            className={`capitalize font-bold text-[14px] leading-tight transition-colors line-clamp-1 ${
-                              activeTicket?.id === ticket.id
+                            className={`capitalize font-bold text-[14px] leading-tight transition-colors line-clamp-1 ${activeTicket?.id === ticket.id
                                 ? "text-primary"
                                 : "text-foreground"
-                            }`}
+                              }`}
                           >
                             {ticket.subject}
                           </h4>
@@ -1187,13 +1168,12 @@ function TicketListContent() {
                     >
                       <div className="flex-shrink-0 relative">
                         <div
-                          className={`w-8 h-8 md:w-11 md:h-11 rounded-full border-2 md:border-4 border-card shadow-md flex items-center justify-center overflow-hidden ${
-                            isMe
+                          className={`w-8 h-8 md:w-11 md:h-11 rounded-full border-2 md:border-4 border-card shadow-md flex items-center justify-center overflow-hidden ${isMe
                               ? "bg-primary"
                               : message.isAdmin
                                 ? "bg-muted"
                                 : "bg-muted/60"
-                          }`}
+                            }`}
                         >
                           <span className="text-[10px] md:text-xs font-black text-white uppercase">
                             {message.sender.charAt(0)}
@@ -1211,11 +1191,10 @@ function TicketListContent() {
                             {message.sender}
                           </span>
                           <span
-                            className={`text-[7px] md:text-[8px] font-black uppercase tracking-tight md:tracking-widest px-1 md:px-1.5 py-0.5 rounded-md ${
-                              message.isAdmin
+                            className={`text-[7px] md:text-[8px] font-black uppercase tracking-tight md:tracking-widest px-1 md:px-1.5 py-0.5 rounded-md ${message.isAdmin
                                 ? "bg-indigo-500/10 text-indigo-400"
                                 : "bg-primary/10 text-primary"
-                            }`}
+                              }`}
                           >
                             {message.isAdmin ? "AGENT" : "TEACHER"}
                           </span>
@@ -1224,11 +1203,10 @@ function TicketListContent() {
                           </span>
                         </div>
                         <div
-                          className={`px-4 py-2 md:px-5 md:py-3 rounded-xl md:rounded-[22px] shadow-sm text-[14px] md:text-[15px] font-medium leading-relaxed ${
-                            isMe
+                          className={`px-4 py-2 md:px-5 md:py-3 rounded-xl md:rounded-[22px] shadow-sm text-[14px] md:text-[15px] font-medium leading-relaxed ${isMe
                               ? `bg-primary text-primary-foreground rounded-tr-none shadow-primary/20`
                               : `bg-card text-foreground border border-border rounded-tl-none shadow-sm`
-                          }`}
+                            }`}
                           dangerouslySetInnerHTML={{ __html: message.text }}
                         />
                       </div>

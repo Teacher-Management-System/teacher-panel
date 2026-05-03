@@ -3,6 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import { GraduationCap, LogOut } from "lucide-react";
+import Link from "next/link";
 
 import { NavGroup } from "@/components/sidebar/nav-group";
 import {
@@ -63,7 +64,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar collapsible="icon" {...props} className="bg-background border-r border-sidebar-border dark:bg-background">
       <div className="flex h-full flex-col bg-background dark:bg-background">
         <SidebarHeader className="h-16 border-b border-sidebar-border flex items-center px-6 group-data-[collapsible=icon]:px-0">
-          <div className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center">
+          <Link href={user ? "/dashboard" : "/"} className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center cursor-pointer group hover:opacity-80 transition-opacity">
             <div className="flex items-center justify-center w-12 h-12 flex-shrink-0">
               <NextImage
                 src="/logo-icon.png"
@@ -84,7 +85,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </span>
               )}
             </div>
-          </div>
+          </Link>
         </SidebarHeader>
         <SidebarContent>
           <nav className="flex flex-1 flex-col space-y-4">

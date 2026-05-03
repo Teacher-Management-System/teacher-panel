@@ -52,14 +52,14 @@ interface AddBatchDialogProps {
 }
 
 // Inner form component to lazily initialize the form only when dialog is open
-function AddBatchForm({ 
-  batch, 
-  onClose, 
-  onSuccess 
-}: { 
-  batch?: Batch, 
-  onClose: () => void, 
-  onSuccess?: (batch?: any) => void 
+function AddBatchForm({
+  batch,
+  onClose,
+  onSuccess
+}: {
+  batch?: Batch,
+  onClose: () => void,
+  onSuccess?: (batch?: any) => void
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -71,13 +71,13 @@ function AddBatchForm({
       location: batch?.location || "",
       start_date: batch?.start_date
         ? format(
-            new Date(
-              typeof batch.start_date === "number"
-                ? batch.start_date * 1000
-                : batch.start_date,
-            ),
-            "yyyy-MM-dd",
-          )
+          new Date(
+            typeof batch.start_date === "number"
+              ? batch.start_date * 1000
+              : batch.start_date,
+          ),
+          "yyyy-MM-dd",
+        )
         : "",
     },
   });
@@ -144,7 +144,7 @@ function AddBatchForm({
                 <div className="relative">
                   <School className="absolute left-3.5 top-[14px] h-[18px] w-[18px] text-muted-foreground" />
                   <Input
-                    placeholder="e.g. Room 101 or Online"
+                    placeholder="Enter batch location"
                     className="pl-11 h-12 bg-muted/50 border-border border-2 rounded-2xl shadow-none ring-0 focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary transition-all font-semibold text-foreground placeholder:text-muted-foreground"
                     {...field}
                   />
@@ -217,8 +217,8 @@ function AddBatchForm({
           >
             Cancel
           </Button>
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             disabled={isLoading}
             className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_4px_14px_0_rgba(95,92,235,0.39)] rounded-2xl px-8 h-12 font-bold transition-all"
           >
@@ -289,10 +289,10 @@ export function AddBatchDialog({
         </DialogHeader>
 
         {open && (
-          <AddBatchForm 
-            batch={batch} 
-            onClose={() => setOpen(false)} 
-            onSuccess={onSuccess} 
+          <AddBatchForm
+            batch={batch}
+            onClose={() => setOpen(false)}
+            onSuccess={onSuccess}
           />
         )}
       </DialogContent>
