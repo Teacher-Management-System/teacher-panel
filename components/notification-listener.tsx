@@ -93,12 +93,26 @@ export default function NotificationListener() {
         let message = rawMessage;
 
         const isStatusChangeToOpen =
-          rawTitle.toLowerCase().includes("assign") ||
-          rawMessage.toLowerCase().includes("assign") ||
-          rawTitle.toLowerCase().includes("assing") ||
-          rawMessage.toLowerCase().includes("assing") ||
-          rawTitle.toLowerCase().includes("open") ||
-          rawMessage.toLowerCase().includes("open");
+          (rawTitle.toLowerCase().includes("open") ||
+            rawMessage.toLowerCase().includes("open") ||
+            rawTitle.toLowerCase().includes("assign") ||
+            rawMessage.toLowerCase().includes("assign") ||
+            rawTitle.toLowerCase().includes("assing") ||
+            rawMessage.toLowerCase().includes("assing")) &&
+          !rawTitle.toLowerCase().includes("reopen") &&
+          !rawMessage.toLowerCase().includes("reopen");
+
+        const isStatusChangeToPending =
+          rawTitle.toLowerCase().includes("reopen") ||
+          rawMessage.toLowerCase().includes("reopen") ||
+          rawTitle.toLowerCase().includes("pending") ||
+          rawMessage.toLowerCase().includes("pending");
+
+        const isStatusChangeToClosed =
+          rawTitle.toLowerCase().includes("closed") ||
+          rawMessage.toLowerCase().includes("closed") ||
+          rawTitle.toLowerCase().includes("resolved") ||
+          rawMessage.toLowerCase().includes("resolved");
 
         // Customize ticket assignment/opening notification ONLY if it's actually a ticket notification
         if (!isAnnouncement && (hasTicketId || isTicketNotification)) {
@@ -110,12 +124,6 @@ export default function NotificationListener() {
             message = `Your ticket ${numStr} is open and ready for chat.`;
           }
         }
-
-        const isStatusChangeToClosed =
-          rawTitle.toLowerCase().includes("closed") ||
-          rawMessage.toLowerCase().includes("closed") ||
-          rawTitle.toLowerCase().includes("resolved") ||
-          rawMessage.toLowerCase().includes("resolved");
 
         // STRICT FILTER: If it's an announcement, treat as global announcement update
         if (isAnnouncement) {
@@ -189,6 +197,7 @@ export default function NotificationListener() {
                   ticket_number: ticketNumber, // Added for robust matching
                   is_open: isStatusChangeToOpen,
                   is_closed: isStatusChangeToClosed,
+                  is_pending: isStatusChangeToPending,
                   type: "status_update",
                 },
               }),

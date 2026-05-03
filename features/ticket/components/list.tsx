@@ -360,6 +360,7 @@ function TicketListContent() {
       const ticketNumber = String(data.ticket_number || "");
       const isOpen = data.is_open;
       const isClosed = data.is_closed;
+      const isPending = data.is_pending;
 
       // Robust matching helper
       const isMatch = (t: any) => {
@@ -397,14 +398,27 @@ function TicketListContent() {
             );
           }
           setActiveTab("closed"); // Auto-switch tab to 'closed'
+        } else if (isPending) {
+          console.log("🔄 Forcing Tab Switch to 'pending'...");
+          if (activeMatch) {
+            setActiveTicket((prev) =>
+              prev ? { ...prev, status: "pending" } : null,
+            );
+          }
+          setActiveTab("pending"); // Auto-switch tab to 'pending'
         }
       }
 
       // 2. Update the tickets array locally to reflect status change immediately
-      if (isOpen || isClosed) {
+      if (isOpen || isClosed || isPending) {
         setTickets((prev) =>
           prev.map((t) =>
-            isMatch(t) ? { ...t, status: isOpen ? "open" : "closed" } : t,
+            isMatch(t)
+              ? {
+                  ...t,
+                  status: isOpen ? "open" : isClosed ? "closed" : "pending",
+                }
+              : t,
           ),
         );
       }
