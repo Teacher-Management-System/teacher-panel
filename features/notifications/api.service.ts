@@ -18,6 +18,10 @@ export class NotificationService extends BaseService {
   sendTestNotification(): Promise<any> {
     return this.post("/test", {});
   }
+
+  getById(id: string): Promise<any> {
+    return this.get(id);
+  }
 }
 
 const notificationService = new NotificationService();

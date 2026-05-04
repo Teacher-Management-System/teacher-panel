@@ -20,6 +20,7 @@ export function AnnouncementNotificationToast({
   const handleClick = (e: React.MouseEvent) => {
     if (onClick) {
       onClick();
+      toast.dismiss(id);
     }
   };
 

@@ -20,6 +20,10 @@ import {
   Clock,
   ChevronLeft,
   ChevronRight,
+  CheckCircle2,
+  User,
+  ExternalLink,
+  X,
 } from "lucide-react";
 import { stripHtml, parseDate } from "@/lib/utils";
 import { format } from "date-fns";
@@ -36,6 +40,7 @@ import { useAuth } from "@/hooks/useAuth";
 export default function AnnouncementDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [data, setData] = useState<NotificationItem | null>(null);
+  const [isMarkingRead, setIsMarkingRead] = useState(false);
   const { isActive, isLoading } = useAuth();
 
   useEffect(() => {
@@ -174,6 +179,27 @@ export default function AnnouncementDialog() {
     setIsOpen(open);
   };
 
+  const handleAcknowledge = async () => {
+    if (!data || isMarkingRead) return;
+    
+    setIsMarkingRead(true);
+    try {
+      await notificationService.markAsRead(data.id);
+      
+      // Notify other components (like the list page)
+      window.dispatchEvent(new CustomEvent("announcement-read", { detail: data.id }));
+      
+      // Close the dialog after successful acknowledgment
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Failed to acknowledge announcement:", error);
+    } finally {
+      setIsMarkingRead(false);
+    }
+  };
+
+  const isAcknowledged = data.acknowledged || data.is_read;
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] rounded-3xl border-none shadow-2xl overflow-hidden max-w-[600px] w-[95vw] max-h-[90vh] flex flex-col p-0 z-[10000]">
@@ -258,6 +284,25 @@ export default function AnnouncementDialog() {
               </DialogDescription>
             </div>
 
+            <div className="flex flex-wrap items-center gap-3">
+              {isAcknowledged ? (
+                <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 px-3 py-1 flex items-center gap-1.5 font-bold rounded-full">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  Acknowledged
+                </Badge>
+              ) : (
+                <Badge className="bg-rose-500/10 text-rose-600 border-rose-500/20 px-3 py-1 flex items-center gap-1.5 font-bold rounded-full">
+                  <Clock className="h-3.5 w-3.5" />
+                  Not Acknowledged
+                </Badge>
+              )}
+              {data.type && (
+                <Badge variant="outline" className="capitalize px-3 py-1 rounded-full font-bold">
+                  {String(data.type).split('\\').pop()?.replace(/Notification$/, '') || data.type}
+                </Badge>
+              )}
+            </div>
+
             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground bg-muted/30 p-3 rounded-2xl">
               <div className="flex items-center gap-1.5 px-2 border-r border-border last:border-0 border-opacity-50">
                 <Calendar className="h-4 w-4 text-cyan-500" />
@@ -269,32 +314,51 @@ export default function AnnouncementDialog() {
                   <span className="font-medium">{formattedTime}</span>
                 </div>
               )}
+              {isAcknowledged && (data.acknowledged_at || data.acknowledged_by) && (
+                <div className="flex items-center gap-1.5 px-2 border-r border-border last:border-0 border-opacity-50">
+                  <User className="h-4 w-4 text-emerald-500" />
+                  <span className="font-medium text-emerald-600">
+                    Read by {data.acknowledged_by || "User"}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="relative">
               <div className="absolute -left-4 top-0 bottom-0 w-1 bg-cyan-500/20 rounded-full" />
-              <p className="text-base leading-relaxed text-foreground/90 font-medium whitespace-pre-wrap break-words">
-                {stripHtml(data.description || "")}
-              </p>
+              <div 
+                className="text-base leading-relaxed text-foreground/90 font-medium whitespace-pre-wrap break-words prose prose-sm max-w-none dark:prose-invert"
+                dangerouslySetInnerHTML={{ __html: data.description || "" }}
+              />
             </div>
           </div>
         </div>
 
-        <DialogFooter className="px-6 md:px-8 pb-6 md:pb-8 pt-4 flex-shrink-0 bg-background border-t border-border/5">
+        <DialogFooter className="px-6 md:px-8 pb-6 md:pb-8 pt-4 flex-shrink-0 bg-background border-t border-border/5 flex-row gap-3">
           <Button
-            onClick={() => {
-              const currentData = data;
-              handleClose(false);
-              setTimeout(() => {
-                window.dispatchEvent(
-                  new CustomEvent("new-announcement", { detail: currentData }),
-                );
-              }, 50);
-            }}
-            className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-bold h-12 rounded-2xl shadow-xl shadow-cyan-600/20 transition-all active:scale-[0.98]"
+            variant="outline"
+            onClick={() => handleClose(false)}
+            className="flex-1 rounded-2xl h-12 font-bold border-muted hover:bg-muted transition-all"
           >
-            Open
+            Close
           </Button>
+          {!isAcknowledged ? (
+            <Button
+              onClick={handleAcknowledge}
+              disabled={isMarkingRead}
+              className="flex-[2] bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold h-12 rounded-2xl shadow-xl shadow-emerald-600/20 transition-all active:scale-[0.98]"
+            >
+              {isMarkingRead ? "Acknowledging..." : "Acknowledge"}
+            </Button>
+          ) : (
+            <Button
+              disabled
+              className="flex-[2] bg-emerald-100 text-emerald-600 font-bold h-12 rounded-2xl border border-emerald-200"
+            >
+              <CheckCircle2 className="mr-2 h-4 w-4" />
+              Acknowledged
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

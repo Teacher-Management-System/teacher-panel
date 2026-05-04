@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { useNotifications } from "@/context/notification-context";
 import { stripHtml } from "@/lib/utils";
 import { showTicketNotice } from "@/features/ticket/components/ticket-notification-toast";
+import notificationService from "@/features/notifications/api.service";
 
 export default function NotificationListener() {
   const { user, isActive } = useAuth();
@@ -29,10 +30,18 @@ export default function NotificationListener() {
       if (!isActive) return;
       console.log("WebSocket Announcement Received:", data);
 
-      // Dispatch global event with full data for the list page to handle
+      // Normalize data to ensure title, description, and attachments are top-level
+      const normalizedData = {
+        ...data,
+        title: data.title || data.data?.title,
+        description: data.description || data.content || data.body || data.data?.description || data.data?.content || data.data?.body,
+        attachments: data.attachments || data.attachment || data.image || data.data?.attachments || data.data?.attachment || data.data?.image,
+      };
+
+      // Dispatch global event with normalized data
       window.dispatchEvent(
         new CustomEvent("new-announcement", {
-          detail: data,
+          detail: normalizedData,
         }),
       );
     });
@@ -40,26 +49,83 @@ export default function NotificationListener() {
     if (user?.id) {
       const channelName = `notifications.${user.id}`;
       privateChannel = echo.private(channelName);
+
+      privateChannel.listen("AnnouncementEvent", (data: any) => {
+        if (!isActive) return;
+        console.log("Private WebSocket Announcement Received:", data);
+
+        const normalizedData = {
+          ...data,
+          id: data.id || `ann-ws-${Math.random().toString(36).substr(2, 9)}`,
+          title: data.title || data.data?.title,
+          description: data.description || data.content || data.body || data.message || data.data?.description || data.data?.content || data.data?.body || data.data?.message,
+          attachments: data.attachments || data.attachment || data.image || data.data?.attachments || data.data?.attachment || data.data?.image,
+          is_read: false,
+          created_at: data.created_at || data.data?.created_at || new Date().toISOString(),
+          send_at: data.send_at || data.data?.send_at || data.created_at || new Date().toISOString(),
+        };
+
+        window.dispatchEvent(
+          new CustomEvent("new-announcement", {
+            detail: normalizedData,
+          }),
+        );
+      });
+
       privateChannel.notification((notification: any) => {
-        const data = notification.data || notification;
-        const rawTitle = data.title || notification.title || "New Message";
+        console.log("Raw Private Notification:", notification);
+        let payload = notification.data || notification;
+        console.log("Initial Payload:", payload);
+        if (typeof payload === 'string') {
+          try {
+            payload = JSON.parse(payload);
+            console.log("Parsed Payload:", payload);
+          } catch (e) {
+            console.error("Failed to parse notification data", e);
+          }
+        }
+        // Handle double-nested data property often seen in Laravel broadcasts
+        const nestedData = (typeof payload === 'object' && payload !== null) ? (payload.data || {}) : {};
+
+        const rawTitle = payload.title || nestedData.title || notification.title || "New Message";
         const rawMessage =
-          data.body ||
-          data.message ||
+          payload.description ||
+          nestedData.description ||
+          payload.message ||
+          nestedData.message ||
+          payload.body ||
+          nestedData.body ||
+          payload.content ||
+          nestedData.content ||
           notification.body ||
           notification.message ||
+          notification.description ||
           "You have a new update.";
 
+        // Normalize attachment: empty string from FCM must be treated as no attachment
+        const normalizeAttachment = (val: any) =>
+          val && val !== "" && val !== "null" && val !== "undefined" ? val : undefined;
+
+        const rawAttachments =
+          normalizeAttachment(payload.attachments) ??
+          normalizeAttachment(nestedData.attachments) ??
+          normalizeAttachment(payload.attachment) ??
+          normalizeAttachment(nestedData.attachment) ??
+          normalizeAttachment(payload.image) ??
+          normalizeAttachment(nestedData.image) ??
+          normalizeAttachment(payload.images) ??
+          normalizeAttachment(nestedData.images);
+
         const ticketId =
-          data.ticket_id ||
-          data.data?.ticket_id ||
+          payload.ticket_id ||
+          payload.data?.ticket_id ||
           notification.ticket_id ||
           notification.data?.ticket_id;
 
         let ticketNumber =
-          data.ticket_number ||
-          data.data?.ticket_number ||
-          data.ticket?.ticket_number;
+          payload.ticket_number ||
+          payload.data?.ticket_number ||
+          payload.ticket?.ticket_number;
 
         // Fallback to extract ticket number if it is not explicitly provided by backend
         if (!ticketNumber) {
@@ -130,28 +196,84 @@ export default function NotificationListener() {
           console.log(
             "Private Channel: No valid ticket_id, redirecting to Global Announcement Dialog.",
           );
-          window.dispatchEvent(
-            new CustomEvent("new-announcement", {
-              detail: {
-                ...notification,
-                id: notification.id || Math.random().toString(36).substr(2, 9),
-                title,
-                description: message,
-                is_read: false,
-                created_at: notification.created_at || notification.data?.created_at || new Date().toISOString(),
-                send_at: 
-                  notification.send_at || 
-                  notification.sendAt || 
-                  notification.scheduled_at || 
-                  notification.data?.send_at || 
-                  notification.data?.sendAt || 
-                  notification.data?.scheduled_at || 
-                  notification.created_at || 
-                  notification.data?.created_at || 
-                  new Date().toISOString(),
-              },
-            }),
-          );
+
+          // Base detail built from FCM payload (used as fallback while API fetch is in progress)
+          const baseDetail = {
+            ...notification,
+            ...payload,
+            ...(typeof nestedData === 'object' ? nestedData : {}),
+            id: notification.id || payload.id || Math.random().toString(36).substr(2, 9),
+            title: rawTitle,
+            description: rawMessage,
+            attachments: rawAttachments,
+            is_read: false,
+            created_at: notification.created_at || payload.created_at || nestedData.created_at || new Date().toISOString(),
+            send_at:
+              notification.send_at ||
+              payload.send_at ||
+              nestedData.send_at ||
+              notification.sendAt ||
+              payload.sendAt ||
+              nestedData.sendAt ||
+              notification.scheduled_at ||
+              payload.scheduled_at ||
+              nestedData.scheduled_at ||
+              notification.created_at ||
+              payload.created_at ||
+              nestedData.created_at ||
+              new Date().toISOString(),
+          };
+
+          // Try to fetch full announcement data from API using announcement_id
+          // FCM payload has a 4KB size limit so description/attachment may be truncated.
+          // We prefer the full DB record if we have an ID to look up.
+          const announcementId =
+            payload.announcement_id ||
+            nestedData.announcement_id ||
+            payload.id ||
+            nestedData.id ||
+            notification.id;
+
+          if (announcementId) {
+            notificationService
+              .getById(announcementId)
+              .then((response: any) => {
+                // API response is wrapped: { data: { ... }, success: true }
+                const fullAnnouncement = response?.data ?? response;
+
+                if (!fullAnnouncement?.id) {
+                  console.warn("FCM: Could not fetch full announcement, using FCM payload as-is.");
+                  window.dispatchEvent(new CustomEvent("new-announcement", { detail: baseDetail }));
+                  return;
+                }
+
+                const detail = {
+                  ...baseDetail,
+                  title: fullAnnouncement.title || baseDetail.title,
+                  description: fullAnnouncement.description || baseDetail.description,
+                  attachments:
+                    normalizeAttachment(fullAnnouncement.attachment) ??
+                    normalizeAttachment(fullAnnouncement.attachments) ??
+                    baseDetail.attachments,
+                  announcement_type: fullAnnouncement.type || baseDetail.announcement_type,
+                  send_at: fullAnnouncement.send_at || baseDetail.send_at,
+                  created_at: fullAnnouncement.created_at || baseDetail.created_at,
+                };
+
+                console.log("FCM Announcement enriched from API:", detail);
+                window.dispatchEvent(new CustomEvent("new-announcement", { detail }));
+              })
+              .catch(() => {
+                // API fetch failed — fall back to FCM payload
+                console.warn("FCM: API fetch failed, using FCM payload as fallback.");
+                window.dispatchEvent(new CustomEvent("new-announcement", { detail: baseDetail }));
+              });
+          } else {
+            // No ID to look up — dispatch FCM payload as-is
+            console.log("Dispatched Announcement Detail (no ID for API fetch):", baseDetail);
+            window.dispatchEvent(new CustomEvent("new-announcement", { detail: baseDetail }));
+          }
+
           return;
         }
 
@@ -160,16 +282,16 @@ export default function NotificationListener() {
           typeof window !== "undefined" &&
           ((finalTicketId &&
             String(finalTicketId) ===
-              String((window as any).currentActiveTicketId)) ||
+            String((window as any).currentActiveTicketId)) ||
             (ticketNumber &&
               String(ticketNumber).replace(/\D/g, "") ===
-                String((window as any).currentActiveTicketNumber || "").replace(
-                  /\D/g,
-                  "",
-                )) ||
+              String((window as any).currentActiveTicketNumber || "").replace(
+                /\D/g,
+                "",
+              )) ||
             (window.location.pathname === "/ticket" &&
               new URLSearchParams(window.location.search).get("ticketId") ===
-                String(finalTicketId)));
+              String(finalTicketId)));
 
         if (hasTicketId && !isAnnouncement && !isCurrentTicket) {
           showTicketNotice({
