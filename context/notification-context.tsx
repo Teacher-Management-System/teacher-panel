@@ -10,6 +10,7 @@ export interface Notification {
   read: boolean;
   type?: string;
   ticket_id?: string;
+  data?: any;
 }
 
 interface NotificationContextType {

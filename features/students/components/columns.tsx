@@ -130,7 +130,10 @@ export const createColumns = (
             <span className="font-medium text-foreground">
               {row.getValue("name")}
             </span>
-            <span className="text-xs text-muted-foreground">
+            <span
+              className="text-xs text-muted-foreground truncate max-w-[150px]"
+              title={row.original.email || ""}
+            >
               {row.original.email || "-"}
             </span>
           </div>

@@ -323,21 +323,26 @@ export default function DocumentDetails({
         </div>
 
         {/* Verification Note Alert */}
-        <div className="mt-6 flex items-start gap-3 p-4 bg-amber-500/10 rounded-2xl border border-amber-500/20 text-amber-500">
-          <div className="bg-card rounded-full p-1 shadow-sm mt-0.5 border border-amber-500/20">
-            <AlertCircle className="w-4 h-4 text-amber-500" strokeWidth={2.5} />
+        {!(aadharFront.isUploaded && aadharBack.isUploaded) && (
+          <div className="mt-6 flex items-start gap-3 p-4 bg-amber-500/10 rounded-2xl border border-amber-500/20 text-amber-500">
+            <div className="bg-card rounded-full p-1 shadow-sm mt-0.5 border border-amber-500/20">
+              <AlertCircle
+                className="w-4 h-4 text-amber-500"
+                strokeWidth={2.5}
+              />
+            </div>
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-widest text-amber-500 mb-1">
+                Verification Note
+              </h4>
+              <p className="text-xs text-amber-500/80 font-medium">
+                Your documents will be verified by our team within 24-48 hours.
+                Please ensure the uploaded images are clear and all details are
+                visible.
+              </p>
+            </div>
           </div>
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-widest text-amber-500 mb-1">
-              Verification Note
-            </h4>
-            <p className="text-xs text-amber-500/80 font-medium">
-              Your documents will be verified by our team within 24-48 hours.
-              Please ensure the uploaded images are clear and all details are
-              visible.
-            </p>
-          </div>
-        </div>
+        )}
       </section>
 
       {/* Footer actions */}

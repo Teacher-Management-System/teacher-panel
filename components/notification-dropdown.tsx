@@ -15,6 +15,8 @@ import { useNotifications } from "@/context/notification-context";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { Badge } from "./ui/badge";
+import { Megaphone } from "lucide-react";
 
 export function NotificationDropdown() {
   const router = useRouter();
@@ -25,13 +27,19 @@ export function NotificationDropdown() {
     clearNotifications,
   } = useNotifications();
 
-  const filteredNotifications = notifications.filter(n => !!n.ticket_id);
+  const filteredNotifications = notifications.filter(n => !!n.ticket_id || n.type === "announcement");
   const filteredUnreadCount = filteredNotifications.filter(n => !n.read).length;
 
-  const handleNotificationClick = (id: string, ticketId?: string) => {
-    markAsRead(id);
-    if (ticketId) {
-      router.push(`/ticket?ticketId=${ticketId}`);
+  const handleNotificationClick = (notification: any) => {
+    if (notification.type === "announcement" && notification.data) {
+      window.dispatchEvent(
+        new CustomEvent("new-announcement", {
+          detail: notification.data,
+        }),
+      );
+    } else if (notification.ticket_id) {
+      markAsRead(notification.id);
+      router.push(`/ticket?ticketId=${notification.ticket_id}`);
     }
   };
 
@@ -98,18 +106,30 @@ export function NotificationDropdown() {
                 )}
                 onSelect={(e) => {
                   e.preventDefault();
-                  handleNotificationClick(n.id, n.ticket_id);
+                  handleNotificationClick(n);
                 }}
               >
                 <div className="flex w-full items-center justify-between gap-1">
-                  <span className={cn("text-xs font-semibold", !n.read && "text-primary")}>
-                    {n.title}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {n.type === "announcement" && (
+                      <Megaphone className="h-3 w-3 text-cyan-500" />
+                    )}
+                    <span className={cn("text-xs font-semibold", !n.read && "text-primary")}>
+                      {n.title}
+                    </span>
+                  </div>
                   <span className="text-[10px] text-muted-foreground">{n.time}</span>
                 </div>
-                <p className="text-xs text-muted-foreground line-clamp-2">
-                  {n.message}
-                </p>
+                <div className="flex items-center gap-2 w-full mt-1">
+                  <p className="text-xs text-muted-foreground line-clamp-1 flex-1">
+                    {n.message}
+                  </p>
+                  {n.type === "announcement" && (
+                    <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 bg-cyan-500/10 text-cyan-600 border-cyan-500/20">
+                      Update
+                    </Badge>
+                  )}
+                </div>
               </DropdownMenuItem>
             ))
           )}

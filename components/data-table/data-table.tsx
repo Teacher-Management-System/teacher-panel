@@ -35,13 +35,13 @@ export function DataTable<TData>({
 }: DataTableProps<TData>) {
   return (
     <div
-      className={cn("flex w-full flex-col gap-2.5 overflow-auto", className)}
+      className={cn("flex w-full max-w-full flex-col gap-2.5 overflow-hidden", className)}
       {...props}
     >
       {children}
       <div
         className={cn(
-          "relative overflow-hidden rounded-md transition-colors duration-300",
+          "relative overflow-x-auto custom-scrollbar rounded-md transition-colors duration-300 min-w-0",
           isPending
             ? "bg-zinc-100/90 border-zinc-200 dark:bg-zinc-900/50 dark:border-zinc-800"
             : "bg-card dark:bg-transparent border border-border dark:border-border/50",

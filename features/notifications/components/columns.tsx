@@ -46,7 +46,7 @@ export function createColumns(
         return (
           <div 
             className={cn(
-              "font-bold max-w-[250px] truncate cursor-pointer hover:underline transition-all",
+              "font-bold max-w-[200px] truncate cursor-pointer hover:underline transition-all",
               !notification.is_read ? "text-cyan-600" : "text-foreground opacity-70"
             )}
             onClick={() => onView(notification)}
@@ -133,7 +133,7 @@ export function createColumns(
       cell: ({ row }) => {
         const description = row.getValue("description") as string;
         return (
-          <div className="text-sm text-muted-foreground line-clamp-1 max-w-[400px]">
+          <div className="text-sm text-muted-foreground line-clamp-1 max-w-[300px]" title={stripHtml(description)}>
             {stripHtml(description)}
           </div>
         );
@@ -165,7 +165,7 @@ export function createColumns(
         return (
           <Badge 
             variant="outline" 
-            className="bg-rose-500/10 text-rose-600 border-rose-500/20 px-3 py-1 flex items-center gap-1.5 w-fit font-bold cursor-pointer hover:bg-rose-500 hover:text-white transition-all group rounded-lg"
+            className="bg-rose-500/10 text-rose-600 border-rose-500/20 px-3 py-1 flex items-center gap-1.5 w-fit font-bold cursor-pointer hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-all group rounded-lg"
             onClick={() => onMarkAsRead(notification.id)}
             title="Click to acknowledge"
           >
@@ -176,7 +176,7 @@ export function createColumns(
       },
     },
     {
-      accessorKey: "send_at",
+      accessorKey: "acknowledged_at",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Acknowledge At" />
       ),
@@ -185,8 +185,8 @@ export function createColumns(
         if (!notification.is_read) return <span className="text-muted-foreground opacity-40 italic text-xs">Pending...</span>;
         
         return (
-          <div className="flex flex-col gap-0.5">
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <div className="flex flex-col gap-0.5 max-w-[150px] truncate">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground truncate">
               <Clock className="h-3 w-3" />
               {formatDistanceToNow(parseDate(notification.acknowledged_at), { addSuffix: true })}
             </div>
@@ -200,12 +200,22 @@ export function createColumns(
       },
     },
     {
-      accessorKey: "created_at",
+      accessorKey: "send_at",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Create At" />
+        <DataTableColumnHeader column={column} title="Send At" />
       ),
       cell: ({ row }) => {
-        const date = row.getValue("created_at") as string;
+        const notification = row.original;
+        const date = 
+          notification.send_at || 
+          (notification as any).sendAt || 
+          notification.scheduled_at || 
+          (notification as any).data?.send_at || 
+          (notification as any).data?.sendAt || 
+          (notification as any).data?.scheduled_at || 
+          notification.created_at;
+          
+        if (!date) return <span className="text-muted-foreground opacity-40 italic text-xs">N/A</span>;
         return (
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Clock className="h-3.5 w-3.5" />
@@ -223,13 +233,13 @@ export function createColumns(
       cell: ({ row }) => (
         <div className="flex items-center justify-end pr-4">
           <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-cyan-600 hover:bg-cyan-50 rounded-full transition-all"
+            variant="outline"
+            size="sm"
+            className="h-8 px-3 text-xs font-bold border-cyan-500/30 text-cyan-600 hover:bg-cyan-500 hover:text-white rounded-lg transition-all flex items-center gap-1.5"
             onClick={() => onView(row.original)}
-            title="View Details"
           >
-            <Eye className="h-4 w-4" />
+            <Eye className="h-3.5 w-3.5" />
+            View
           </Button>
         </div>
       ),

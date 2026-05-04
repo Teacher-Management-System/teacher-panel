@@ -138,7 +138,17 @@ export default function NotificationListener() {
                 title,
                 description: message,
                 is_read: false,
-                created_at: notification.created_at || new Date().toISOString(),
+                created_at: notification.created_at || notification.data?.created_at || new Date().toISOString(),
+                send_at: 
+                  notification.send_at || 
+                  notification.sendAt || 
+                  notification.scheduled_at || 
+                  notification.data?.send_at || 
+                  notification.data?.sendAt || 
+                  notification.data?.scheduled_at || 
+                  notification.created_at || 
+                  notification.data?.created_at || 
+                  new Date().toISOString(),
               },
             }),
           );
@@ -177,15 +187,21 @@ export default function NotificationListener() {
           });
         }
 
-        // Always add to persistent context if it's not a global announcement
-        if (!isAnnouncement) {
-          addNotification({
+        // Always add to persistent context
+        addNotification({
+          title,
+          message,
+          type: isAnnouncement ? "announcement" : "private",
+          ticket_id: finalTicketId,
+          data: isAnnouncement ? {
+            ...notification,
+            id: notification.id || Math.random().toString(36).substr(2, 9),
             title,
-            message,
-            type: "private",
-            ticket_id: finalTicketId,
-          });
-        }
+            description: message,
+          } : undefined
+        });
+
+        if (isAnnouncement) return;
 
         if (finalTicketId) {
           setTimeout(() => {

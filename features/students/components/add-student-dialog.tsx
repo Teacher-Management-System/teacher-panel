@@ -912,7 +912,10 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
               <DialogDescription className="text-muted-foreground text-[15px] font-medium leading-relaxed max-w-[300px] text-center">
                 We've sent a 6-digit verification code to
                 <br />
-                <span className="font-extrabold text-foreground text-[15px] mt-1.5 block flex justify-center w-full">
+                <span
+                  className="font-extrabold text-foreground text-[15px] mt-1.5 block truncate w-full text-center"
+                  title={form.getValues("email")}
+                >
                   {form.getValues("email")}
                 </span>
               </DialogDescription>

@@ -44,13 +44,16 @@ export function StudentDetailsDialog({
     label: string;
     value: string | undefined | null;
   }) => (
-    <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-      <div className="p-2 bg-card rounded-md shadow-sm border border-border">
+    <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors overflow-hidden">
+      <div className="p-2 bg-card rounded-md shadow-sm border border-border shrink-0">
         <Icon className="h-4 w-4 text-primary" />
       </div>
-      <div>
-        <p className="text-xs font-medium text-muted-foreground">{label}</p>
-        <p className="text-sm font-medium text-foreground mt-0.5">
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-medium text-muted-foreground truncate">{label}</p>
+        <p
+          className="text-sm font-medium text-foreground mt-0.5 truncate"
+          title={value || ""}
+        >
           {value || "Not provided"}
         </p>
       </div>

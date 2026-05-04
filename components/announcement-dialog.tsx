@@ -53,9 +53,6 @@ export default function AnnouncementDialog() {
         if (response?.notifications && response.notifications.length > 0) {
           setData(response.notifications[0]);
           setIsOpen(true);
-          notificationService.markAsRead().catch((err) => {
-            console.error("Failed to mark all as read:", err);
-          });
         }
       } catch (error) {
         console.error("Failed to fetch unread announcements on load:", error);
@@ -97,10 +94,21 @@ export default function AnnouncementDialog() {
   let formattedDate = "Just now";
   let formattedTime = "";
   try {
-    if (data.created_at) {
-      const dateObj = parseDate(data.created_at);
-      formattedDate = format(dateObj, "PPP");
-      formattedTime = format(dateObj, "p");
+    const displayDate =
+      data.send_at ||
+      (data as any).sendAt ||
+      data.scheduled_at ||
+      (data as any).data?.send_at ||
+      (data as any).data?.scheduled_at ||
+      (data as any).data?.created_at ||
+      data.created_at;
+
+    console.log("displayDate chosen:", displayDate);
+
+    if (displayDate) {
+      const dateObj = parseDate(displayDate);
+      formattedDate = format(dateObj, "MMMM dd, yyyy");
+      formattedTime = format(dateObj, "hh:mm aa");
     }
   } catch (e) {
     console.error("Date formatting error:", e);
@@ -163,28 +171,6 @@ export default function AnnouncementDialog() {
   const attachments = getAttachments();
 
   const handleClose = (open: boolean) => {
-    if (!open && data?.id && data.is_read === false) {
-      // Optimistically close & acknowledge
-      notificationService
-        .markAsRead(data.id)
-        .then(() => {
-          // Tell other components to refresh
-          window.dispatchEvent(new CustomEvent("announcement-read"));
-        })
-        .catch(console.error);
-    } else if (
-      !open &&
-      data?.id &&
-      (data.acknowledged === false || data.acknowledged === undefined)
-    ) {
-      // Fallback if is_read isn't exactly boolean false
-      notificationService
-        .markAsRead(data.id)
-        .then(() => {
-          window.dispatchEvent(new CustomEvent("announcement-read"));
-        })
-        .catch(console.error);
-    }
     setIsOpen(open);
   };
 
@@ -193,7 +179,7 @@ export default function AnnouncementDialog() {
       <DialogContent className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] rounded-3xl border-none shadow-2xl overflow-hidden max-w-[600px] w-[95vw] max-h-[90vh] flex flex-col p-0 z-[10000]">
         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 z-50 flex-shrink-0" />
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar pt-1.5 flex flex-col">
+        <div className="flex-1 overflow-y-auto scrollbar-hide pt-1.5 flex flex-col overflow-x-hidden">
           {attachments.length > 0 && (
             <div className="relative w-full aspect-video bg-zinc-100 overflow-hidden group flex-shrink-0 border-b border-border/5">
               {attachments.length === 1 ? (
@@ -249,7 +235,7 @@ export default function AnnouncementDialog() {
                 <Badge className="bg-cyan-500 text-white border-none mb-2 shadow-lg">
                   New Announcement
                 </Badge>
-                <h2 className="text-2xl font-bold line-clamp-2 drop-shadow-lg">
+                <h2 className="text-2xl font-bold line-clamp-2 drop-shadow-lg break-words">
                   {data.title}
                 </h2>
               </div>
@@ -264,7 +250,7 @@ export default function AnnouncementDialog() {
                   System Announcement
                 </div>
               )}
-              <DialogTitle className="text-2xl md:text-3xl font-extrabold tracking-tight">
+              <DialogTitle className="text-2xl md:text-3xl font-extrabold tracking-tight break-words line-clamp-3 overflow-hidden">
                 {data.title}
               </DialogTitle>
               <DialogDescription className="sr-only">
@@ -296,10 +282,18 @@ export default function AnnouncementDialog() {
 
         <DialogFooter className="px-6 md:px-8 pb-6 md:pb-8 pt-4 flex-shrink-0 bg-background border-t border-border/5">
           <Button
-            onClick={() => handleClose(false)}
+            onClick={() => {
+              const currentData = data;
+              handleClose(false);
+              setTimeout(() => {
+                window.dispatchEvent(
+                  new CustomEvent("new-announcement", { detail: currentData }),
+                );
+              }, 50);
+            }}
             className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-bold h-12 rounded-2xl shadow-xl shadow-cyan-600/20 transition-all active:scale-[0.98]"
           >
-            Close Announcement
+            Open
           </Button>
         </DialogFooter>
       </DialogContent>

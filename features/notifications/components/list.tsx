@@ -41,6 +41,7 @@ export default function NotificationList() {
     "status",
     parseAsString.withDefault("all"),
   );
+  const [viewId] = useQueryState("view", parseAsString);
 
   const [refreshKey, setRefreshKey] = useState(0);
   const refreshData = () => setRefreshKey((prev) => prev + 1);
@@ -49,6 +50,16 @@ export default function NotificationList() {
   const [selectedAnnouncement, setSelectedAnnouncement] =
     useState<NotificationItem | null>(null);
   const [isMarkingRead, setIsMarkingRead] = useState(false);
+
+  // Auto-open detail if view param is present
+  useEffect(() => {
+    if (viewId && data.length > 0) {
+      const notification = data.find((n) => n.id === viewId);
+      if (notification) {
+        setTimeout(() => handleViewDetail(notification), 100);
+      }
+    }
+  }, [viewId, data]);
 
   const handleMarkAsReadClick = (id: string) => {
     setSelectedAnnouncement(data.find((n) => n.id === id) || null);
@@ -143,7 +154,7 @@ export default function NotificationList() {
   const hasFilters = !!search || status !== "all";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-full overflow-x-hidden min-w-0">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
@@ -219,9 +230,7 @@ export default function NotificationList() {
         </div>
       </div>
 
-      {/* <div className="rounded-xl overflow-hidden border border-border/50 bg-background/50 shadow-sm"> */}
       <DataTable table={table} isLoading={loading} isPending={false} />
-      {/* </div> */}
       {/* </CardContent>
       </Card> */}
 

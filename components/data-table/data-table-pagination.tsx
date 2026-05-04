@@ -60,7 +60,10 @@ export function DataTablePagination<TData>({
             </SelectContent>
           </Select>
         </div>
-        <div className="flex items-center justify-center font-medium text-sm">
+        <div 
+          className="flex items-center justify-center font-medium text-sm"
+          suppressHydrationWarning
+        >
           Page {table.getState().pagination.pageIndex + 1} of{" "}
           {table.getPageCount()}
         </div>

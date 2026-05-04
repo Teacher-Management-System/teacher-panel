@@ -88,8 +88,8 @@ const Dashboard = () => {
         setLoading(true);
         const params: any = {};
         if (date?.from) {
-          params.start_date = format(date.from, "yyyy-MM-dd");
-          params.end_date = format(date?.to || date.from, "yyyy-MM-dd");
+          params.start_date = Math.floor(date.from.getTime() / 1000);
+          params.end_date = Math.floor((date?.to || date.from).getTime() / 1000);
         }
         const response = (await dashboardService.getDashboardData(
           params,
