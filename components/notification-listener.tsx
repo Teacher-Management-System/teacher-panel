@@ -22,12 +22,11 @@ export default function NotificationListener() {
 
     const publicChannel = echo.channel("notification-channel");
     publicChannel.listen("NotificationEvent", (data: any) => {
-      if (!isActive) return;
+      // Allow even if not active, as long as authenticated (echo check handles auth for private, this is public)
       console.log("Public Notification:", data);
       toast.info(data.message || "New update available!");
     });
     publicChannel.listen("AnnouncementEvent", (data: any) => {
-      if (!isActive) return;
       console.log("WebSocket Announcement Received:", data);
 
       // Normalize data to ensure title, description, and attachments are top-level
@@ -51,7 +50,6 @@ export default function NotificationListener() {
       privateChannel = echo.private(channelName);
 
       privateChannel.listen("AnnouncementEvent", (data: any) => {
-        if (!isActive) return;
         console.log("Private WebSocket Announcement Received:", data);
 
         const normalizedData = {

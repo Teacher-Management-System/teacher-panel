@@ -44,10 +44,8 @@ export default function AnnouncementDialog() {
   const { isActive, isLoading } = useAuth();
 
   useEffect(() => {
-    if (isLoading || !isActive) return;
-
-    // Check for unread announcements on load/login
     const checkUnreadAnnouncements = async () => {
+      if (isLoading || !isActive) return;
       const authToken = cookieService.getCookie("authToken");
       if (!authToken) return;
 
@@ -67,10 +65,7 @@ export default function AnnouncementDialog() {
     // Delay slightly to ensure smooth initial page load
     const timeout = setTimeout(checkUnreadAnnouncements, 1500);
 
-    const handleNewAnnouncement = async (event: any) => {
-      // Small defensive check even though effect is restricted
-      if (!isActive) return;
-
+    const handleNewAnnouncement = (event: any) => {
       const announcement = event.detail as any;
       if (!announcement) return;
 
@@ -78,14 +73,12 @@ export default function AnnouncementDialog() {
         "Global Dialog: Full Announcement Data Received",
         announcement,
       );
-      console.log(
-        "Global Dialog: Attachment URL detected",
-        announcement.attachment || announcement.image,
-      );
       setData(announcement);
       setIsOpen(true);
     };
 
+    // Always listen for the event if mounted, regardless of isActive status
+    // This allows pending users to manually view announcements
     window.addEventListener("new-announcement", handleNewAnnouncement);
     return () => {
       clearTimeout(timeout);
@@ -181,14 +174,14 @@ export default function AnnouncementDialog() {
 
   const handleAcknowledge = async () => {
     if (!data || isMarkingRead) return;
-    
+
     setIsMarkingRead(true);
     try {
       await notificationService.markAsRead(data.id);
-      
+
       // Notify other components (like the list page)
       window.dispatchEvent(new CustomEvent("announcement-read", { detail: data.id }));
-      
+
       // Close the dialog after successful acknowledgment
       setIsOpen(false);
     } catch (error) {
@@ -326,7 +319,7 @@ export default function AnnouncementDialog() {
 
             <div className="relative">
               <div className="absolute -left-4 top-0 bottom-0 w-1 bg-cyan-500/20 rounded-full" />
-              <div 
+              <div
                 className="text-base leading-relaxed text-foreground/90 font-medium whitespace-pre-wrap break-words prose prose-sm max-w-none dark:prose-invert"
                 dangerouslySetInnerHTML={{ __html: data.description || "" }}
               />
