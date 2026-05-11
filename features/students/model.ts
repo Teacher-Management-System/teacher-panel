@@ -27,6 +27,7 @@ export interface Student {
   school_name?: string;
   class?: string;
   batch?: Batch;
+  is_profile_completed?: boolean;
 }
 
 export interface PaymentStatusResponse {

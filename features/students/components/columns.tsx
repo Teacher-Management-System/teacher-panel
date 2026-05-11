@@ -44,7 +44,11 @@ export const createColumns = (
       header: ({ table }) => {
         const pendingStudents = table
           .getFilteredRowModel()
-          .rows.filter((row) => row.original.status === "pending");
+          .rows.filter(
+            (row) =>
+              row.original.status === "pending" &&
+              row.original.is_profile_completed,
+          );
         const allPendingSelected =
           pendingStudents.length > 0 &&
           pendingStudents.every((row) => row.getIsSelected());
@@ -66,13 +70,13 @@ export const createColumns = (
                 row.toggleSelected(!!value);
               });
             }}
-            aria-label="Select all pending students"
+            aria-label="Select all pending students with completed profile"
           />
         );
       },
       cell: ({ row }) => {
         const student = row.original;
-        if (student.status !== "pending") {
+        if (student.status !== "pending" || !student.is_profile_completed) {
           return null;
         }
 
@@ -252,7 +256,12 @@ export const createColumns = (
       ),
       cell: ({ row }) => {
         const status = row.getValue("status") as string;
-        const getStatusStyles = (status: string) => {
+        const isProfileCompleted = row.original.is_profile_completed;
+
+        const getStatusStyles = (status: string, completed: boolean) => {
+          if (!completed) {
+            return "bg-rose-100/50 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800";
+          }
           switch (status) {
             case "active":
               return "bg-emerald-100/50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800";
@@ -268,13 +277,19 @@ export const createColumns = (
           }
         };
 
+        const getStatusLabel = (status: string, completed: boolean) => {
+          if (!completed) return "Pending Profile";
+          if (status === "pending") return "Pending Payment";
+          return status;
+        };
+
         return (
           <div className="flex justify-center w-full">
             <Badge
               variant="outline"
-              className={`capitalize font-medium border px-2.5 py-0.5 rounded-md shadow-sm ${getStatusStyles(status)}`}
+              className={`capitalize font-medium border px-2.5 py-0.5 rounded-md shadow-sm ${getStatusStyles(status, !!isProfileCompleted)}`}
             >
-              {status}
+              {getStatusLabel(status, !!isProfileCompleted)}
             </Badge>
           </div>
         );
@@ -285,7 +300,11 @@ export const createColumns = (
       header: ({ table }) => {
         const selectedPendingRows = table
           .getFilteredSelectedRowModel()
-          .rows.filter((row) => row.original.status === "pending");
+          .rows.filter(
+            (row) =>
+              row.original.status === "pending" &&
+              row.original.is_profile_completed,
+          );
 
         if (selectedPendingRows.length === 0) {
           return (
@@ -364,7 +383,8 @@ export const createColumns = (
           );
         }
 
-        if (student.status !== "pending") return null;
+        if (student.status !== "pending" || !student.is_profile_completed)
+          return null;
 
         const handlePayment = async () => {
           setIsLoading(true);

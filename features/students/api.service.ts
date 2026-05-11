@@ -14,7 +14,7 @@ class StudentService extends BaseService {
   }
 
   async update(id: string, data: any) {
-    return await this.put(id, data);
+    return await this.patch(id, data);
   }
 
   async deleteStudent(id: string) {
