@@ -13,28 +13,26 @@ const steps = [
   {
     icon: UserPlus,
     number: "01",
-    title: "Register",
-    description: "Apply to become a Robotics Partner.",
+    title: "Apply",
+    description: "Join the Aerophantom educator ecosystem.",
   },
   {
     icon: GraduationCap,
     number: "02",
     title: "Get Trained",
-    description: "Complete technical + teaching certification.",
+    description: "Complete structured educator training and curriculum understanding.",
   },
   {
     icon: Users,
     number: "03",
-    title: "Onboard Students",
-    description:
-      "Add students using your unique ID. They appear directly in your dashboard.",
+    title: "Setup & Promote",
+    description: "Receive kits, marketing materials, and onboarding support.",
   },
   {
     icon: Rocket,
     number: "04",
-    title: "Start Teaching & Earning",
-    description:
-      "Receive kits, content, marketing tools, and begin your robotics classes.",
+    title: "Start Teaching",
+    description: "Launch your batches and start building your Robotics learning center.",
   },
 ];
 

@@ -5,11 +5,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 const HeroSection = () => {
-  const features = [
-    "Complete Educator Training",
-    "Ready Curriculum & Teaching System",
-    "Marketing & Growth Support",
-  ];
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -35,7 +30,7 @@ const HeroSection = () => {
   };
 
   return (
-    <section className="relative min-h-screen flex items-center pt-16 overflow-hidden">
+    <section className="relative min-h-screen flex items-center pt-24 pb-32 overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 gradient-hero" />
 
@@ -132,9 +127,9 @@ const HeroSection = () => {
               variants={itemVariants}
               className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6"
             >
-              Start your own
+              Start Your Own
               <span className="text-gradient block mt-2">
-                Robotics and AI Training Center
+                Robotics & AI Learning Center
               </span>
             </motion.h1>
 
@@ -143,9 +138,11 @@ const HeroSection = () => {
               variants={itemVariants}
               className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-8"
             >
-              Teach Robotics in your city with full support. We provide
-              training, kits, curriculum, student platform, and marketing — so
-              you can focus on teaching and earning.
+              Launch future-ready Robotics, AI, Electronics, and Innovation
+              classes from your existing space with Aerophantom’s educator
+              ecosystem. We provide training, curriculum, practical resources,
+              marketing support, and management systems, making it easy to start
+              confidently.
             </motion.p>
 
             {/* Features List */}
@@ -153,7 +150,11 @@ const HeroSection = () => {
               variants={itemVariants}
               className="flex flex-wrap justify-center lg:justify-start gap-3 mb-10"
             >
-              {features.map((feature, index) => (
+              {[
+                "Dedicated Educator’s Training",
+                "Ready Curriculum & Teaching System",
+                "Marketing & Student Support",
+              ].map((feature, index) => (
                 <motion.div
                   key={index}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card shadow-md border border-border/50 hover:border-primary/30 transition-colors"
@@ -176,18 +177,18 @@ const HeroSection = () => {
                 whileTap={{ scale: 0.98 }}
               >
                 <Button
-                  variant="outline"
+                  variant="default"
                   size="lg"
                   asChild
                   className="shadow-lg shadow-primary/25"
                 >
-                  <Link href="/inquiry">
-                    Inquire Now{" "}
+                  <Link href="/auth/login">
+                    Access Panel
                     <motion.div
                       animate={{ x: [0, 5, 0] }}
                       transition={{ duration: 1.5, repeat: Infinity }}
                     >
-                      <ArrowRight className="w-5 h-5" />
+                      <ArrowRight className="w-5 h-5 ml-2" />
                     </motion.div>
                   </Link>
                 </Button>
@@ -196,13 +197,8 @@ const HeroSection = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <Button
-                  variant="default"
-                  size="lg"
-                  asChild
-                  className="border-2"
-                >
-                  <Link href="/auth/login">Access Panel</Link>
+                <Button variant="outline" size="lg" asChild className="border-2">
+                  <Link href="/inquiry">Inquire Now</Link>
                 </Button>
               </motion.div>
             </motion.div>
@@ -210,10 +206,20 @@ const HeroSection = () => {
             {/* Trust Indicators */}
             <motion.p
               variants={itemVariants}
-              className="mt-8 text-sm text-muted-foreground"
+              className="mt-8 text-sm text-muted-foreground flex items-center justify-center lg:justify-start gap-6"
             >
-              ✓ Affordable &nbsp;&nbsp; ✓ Ready to Start &nbsp;&nbsp; ✓ Hustle
-              Free
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-success" /> Low
+                Investment Model
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-success" /> Start
+                from Home
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-success" /> Hustle
+                Free
+              </span>
             </motion.p>
           </motion.div>
 
@@ -296,7 +302,7 @@ const HeroSection = () => {
       </div>
 
       {/* Bottom Wave */}
-      <div className="absolute bottom-0 left-0 right-0 translate-y-1/2 md:translate-y-1/3 z-20">
+      <div className="absolute bottom-0 left-0 right-0 translate-y-[80%] z-20">
         <svg
           viewBox="0 0 1440 120"
           fill="none"
