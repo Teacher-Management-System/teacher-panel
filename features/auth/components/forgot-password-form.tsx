@@ -68,8 +68,9 @@ export function ForgotPasswordForm({
     if (resendCooldown > 0) return;
     setLoading(true);
     try {
-      await authService.forgotPassword({ email });
+      await authService.resendOtp({ email, event: "forgotPassword" });
       setResendCooldown(60);
+      toast.success("OTP resent successfully!");
     } catch (error: any) {
       console.error(error.response?.data?.message || "Failed to resend OTP");
     } finally {

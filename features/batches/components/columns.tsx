@@ -85,13 +85,6 @@ const StatusCell = ({ row, table }: { row: any; table: any }) => {
 
 const ActionCell = ({ row, table }: { row: any; table: any }) => {
   const batch = row.original;
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
-  const handleDelete = async () => {
-    await batchService.deleteBatch(batch.id as number);
-    toast.success("Batch deleted successfully");
-    table.options.meta?.onRefresh?.();
-  };
 
   return (
     <div className="flex items-center gap-2">
@@ -109,32 +102,6 @@ const ActionCell = ({ row, table }: { row: any; table: any }) => {
           </Button>
         }
       />
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-        onClick={() => setShowDeleteConfirm(true)}
-        title="Delete Batch"
-      >
-        <Trash2 className="h-4 w-4" />
-      </Button>
-
-      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-        <DialogContent showCloseButton={false} className="sm:max-w-[425px]">
-          <ConfirmDialog
-            options={{
-              title: "Delete Batch",
-              description:
-                "Are you sure you want to delete this batch? This action cannot be undone.",
-              confirmText: "Yes, Delete",
-              cancelText: "Cancel",
-              variant: "destructive",
-              onConfirm: handleDelete,
-            }}
-            closeModal={(result) => setShowDeleteConfirm(false)}
-          />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

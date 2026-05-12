@@ -87,7 +87,17 @@ export function DataTable<TData>({
               ))}
             </TableHeader>
             <TableBody className="relative">
-              {table.getRowModel().rows?.length ? (
+              {isLoading && !table.getRowModel().rows?.length ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    {table.getAllColumns().map((column, j) => (
+                      <TableCell key={j}>
+                        <div className="h-6 w-full animate-pulse rounded bg-muted" />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
                   <TableRow
                     key={row.id}
@@ -120,7 +130,7 @@ export function DataTable<TData>({
               )}
             </TableBody>
           </Table>
-          {isLoading && (
+          {isLoading && table.getRowModel().rows?.length > 0 && (
             <div className="bg-background/80 absolute inset-0 z-10 flex items-center justify-center backdrop-blur-sm">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Loader className="size-5 animate-spin" />

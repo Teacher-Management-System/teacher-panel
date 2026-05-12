@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Link2, Copy, Download, QrCode, Loader2 } from "lucide-react";
+import { Link2, Copy, Download, QrCode, Loader2, ExternalLink } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import CompleteProfilePopup from "@/components/CompleteProfilePopup";
@@ -172,9 +172,21 @@ export function GenerateLinkDialog() {
                       type="button"
                       variant="secondary"
                       size="icon"
+                      onClick={() => window.open(link, "_blank")}
+                      disabled={!link}
+                      className="h-11 w-11 rounded-xl shrink-0 hover:bg-primary hover:text-primary-foreground transition-colors"
+                      title="Open in new tab"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="icon"
                       onClick={handleCopy}
                       disabled={!link}
                       className="h-11 w-11 rounded-xl shrink-0 hover:bg-primary hover:text-primary-foreground transition-colors"
+                      title="Copy link"
                     >
                       <Copy className="h-4 w-4" />
                     </Button>

@@ -37,6 +37,7 @@ class StudentService extends BaseService {
     verification_id: string;
     otp: string;
     email: string;
+    event: string;
   }) {
     return await this.post("verify-otp", data);
   }

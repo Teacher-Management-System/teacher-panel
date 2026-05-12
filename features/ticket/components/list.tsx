@@ -177,12 +177,27 @@ function TicketListContent() {
             ],
           }));
           setAllMappedTickets(mappedAllTickets);
+
+          // Sync activeTicket status with fresh data from backend
+          setActiveTicket((prevActive) => {
+            if (!prevActive) return null;
+            const freshTicket = allTickets.find((t) => String(t.id) === prevActive.id);
+            if (freshTicket && freshTicket.status !== prevActive.status) {
+              // Status changed on backend (e.g., admin approved) → update and switch tab
+              setActiveTab(freshTicket.status as any);
+              return { ...prevActive, status: freshTicket.status as Ticket["status"] };
+            }
+            return prevActive;
+          });
         }
       } catch (error) {
         console.error("Failed to fetch ticket stats:", error);
       }
     };
     fetchStats();
+    // Poll every 15s to detect admin status changes (e.g., pending → open)
+    const pollInterval = setInterval(fetchStats, 15000);
+    return () => clearInterval(pollInterval);
   }, [refreshTrigger]);
 
   // Handle cross-tab automatic navigation on search
@@ -299,6 +314,8 @@ function TicketListContent() {
                 lastMessage: prevActive.lastMessage,
               };
             }
+            // Ticket not found in current tab list → preserve but don't change status
+            // fetchStats will correct the status via its own sync logic
             return prevActive;
           });
 
@@ -415,9 +432,9 @@ function TicketListContent() {
           prev.map((t) =>
             isMatch(t)
               ? {
-                  ...t,
-                  status: isOpen ? "open" : isClosed ? "closed" : "pending",
-                }
+                ...t,
+                status: isOpen ? "open" : isClosed ? "closed" : "pending",
+              }
               : t,
           ),
         );
@@ -815,7 +832,6 @@ function TicketListContent() {
         });
       }
     } catch (error) {
-      toast.error("Failed to create ticket");
       console.error(error);
     } finally {
       setLoading(false);
@@ -828,19 +844,16 @@ function TicketListContent() {
     try {
       setLoading(true);
       await ticketService.reopenTicket(activeTicket.id, description);
-      toast.success("Ticket reopened successfully");
-      setRefreshTrigger((prev) => prev + 1);
-      setActiveTab("pending");
       if (activeTicket) {
-        setActiveTicket({ ...activeTicket, status: "pending" });
+        setActiveTicket({ ...activeTicket, status: "open" });
         setTickets((prev) =>
           prev.map((t) =>
-            t.id === activeTicket.id ? { ...t, status: "pending" } : t,
+            t.id === activeTicket.id ? { ...t, status: "open" } : t,
           ),
         );
       }
+      setActiveTab("open"); // This triggers fetchTickets with status="open"
     } catch (error) {
-      toast.error("Failed to reopen ticket");
       console.error(error);
     } finally {
       setLoading(false);
@@ -1002,8 +1015,8 @@ function TicketListContent() {
                     variant="ghost"
                     size="sm"
                     className={`flex-1 h-10 text-[11px] font-black uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 cursor-pointer select-none transition-all duration-300 ${isActive
-                        ? "bg-background text-primary shadow-sm border border-border/50 scale-[1.02]"
-                        : "text-muted-foreground hover:text-foreground hover:bg-background/40"
+                      ? "bg-background text-primary shadow-sm border border-border/50 scale-[1.02]"
+                      : "text-muted-foreground hover:text-foreground hover:bg-background/40"
                       }`}
                     onClick={() => {
                       setActiveTab(tab);
@@ -1013,8 +1026,8 @@ function TicketListContent() {
                     {stats[tab] > 0 && (
                       <span
                         className={`px-1.5 py-0.5 rounded-md text-[10px] transition-colors ${isActive
-                            ? "bg-primary/10 text-primary"
-                            : "bg-muted-foreground/10 text-muted-foreground"
+                          ? "bg-primary/10 text-primary"
+                          : "bg-muted-foreground/10 text-muted-foreground"
                           }`}
                       >
                         {stats[tab]}
@@ -1043,8 +1056,8 @@ function TicketListContent() {
                       }
                     }}
                     className={`rounded-[20px] md:rounded-[28px] cursor-pointer transition-all duration-300 border shadow-sm relative group overflow-hidden ${activeTicket?.id === ticket.id
-                        ? "bg-card border-primary/40 shadow-primary/5 scale-[1.02] z-10"
-                        : "bg-card/40 border-border hover:border-primary/20 hover:shadow-primary/5 hover:translate-x-1"
+                      ? "bg-card border-primary/40 shadow-primary/5 scale-[1.02] z-10"
+                      : "bg-card/40 border-border hover:border-primary/20 hover:shadow-primary/5 hover:translate-x-1"
                       }`}
                   >
                     <div className="px-3 relative">
@@ -1064,10 +1077,10 @@ function TicketListContent() {
                           </div>
                           <Badge
                             className={`text-[8px] uppercase font-black px-1.5 py-0.5 rounded border-transparent shrink-0 leading-none ${ticket.status === "pending"
-                                ? "bg-orange-500/10 text-orange-500"
-                                : ticket.status === "open"
-                                  ? "bg-primary/10 text-primary border-primary/20"
-                                  : "bg-muted-foreground/10 text-muted-foreground"
+                              ? "bg-orange-500/10 text-orange-500"
+                              : ticket.status === "open"
+                                ? "bg-primary/10 text-primary border-primary/20"
+                                : "bg-muted-foreground/10 text-muted-foreground"
                               }`}
                           >
                             {ticket.status}
@@ -1076,8 +1089,8 @@ function TicketListContent() {
                         <div className="flex flex-col">
                           <h4
                             className={`capitalize font-bold text-[14px] leading-tight transition-colors line-clamp-1 ${activeTicket?.id === ticket.id
-                                ? "text-primary"
-                                : "text-foreground"
+                              ? "text-primary"
+                              : "text-foreground"
                               }`}
                           >
                             {ticket.subject}
@@ -1183,10 +1196,10 @@ function TicketListContent() {
                       <div className="flex-shrink-0 relative">
                         <div
                           className={`w-8 h-8 md:w-11 md:h-11 rounded-full border-2 md:border-4 border-card shadow-md flex items-center justify-center overflow-hidden ${isMe
-                              ? "bg-primary"
-                              : message.isAdmin
-                                ? "bg-muted"
-                                : "bg-muted/60"
+                            ? "bg-primary"
+                            : message.isAdmin
+                              ? "bg-muted"
+                              : "bg-muted/60"
                             }`}
                         >
                           <span className="text-[10px] md:text-xs font-black text-white uppercase">
@@ -1206,8 +1219,8 @@ function TicketListContent() {
                           </span>
                           <span
                             className={`text-[7px] md:text-[8px] font-black uppercase tracking-tight md:tracking-widest px-1 md:px-1.5 py-0.5 rounded-md ${message.isAdmin
-                                ? "bg-indigo-500/10 text-indigo-400"
-                                : "bg-primary/10 text-primary"
+                              ? "bg-indigo-500/10 text-indigo-400"
+                              : "bg-primary/10 text-primary"
                               }`}
                           >
                             {message.isAdmin ? "AGENT" : "TEACHER"}
@@ -1218,8 +1231,8 @@ function TicketListContent() {
                         </div>
                         <div
                           className={`px-4 py-2 md:px-5 md:py-3 rounded-xl md:rounded-[22px] shadow-sm text-[14px] md:text-[15px] font-medium leading-relaxed ${isMe
-                              ? `bg-primary text-primary-foreground rounded-tr-none shadow-primary/20`
-                              : `bg-card text-foreground border border-border rounded-tl-none shadow-sm`
+                            ? `bg-primary text-primary-foreground rounded-tr-none shadow-primary/20`
+                            : `bg-card text-foreground border border-border rounded-tl-none shadow-sm`
                             }`}
                           dangerouslySetInnerHTML={{ __html: message.text }}
                         />

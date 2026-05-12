@@ -127,25 +127,34 @@ export const columns: ColumnDef<Payment>[] = [
       if (!dateVal)
         return <div className="text-center text-muted-foreground">-</div>;
 
-      // Handle both seconds (Unix timestamp) and milliseconds or ISO strings
       let date: Date;
       const numVal = Number(dateVal);
 
       if (!isNaN(numVal)) {
-        // If it's a number, check if it's seconds (small) or ms (large)
-        // 10000000000 is roughly year 2286, so anything smaller is likely seconds
         date = new Date(numVal < 10000000000 ? numVal * 1000 : numVal);
       } else {
         date = new Date(dateVal);
       }
 
+      const formattedDate = date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+      const formattedTime = date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      }).toUpperCase();
+
       return (
-        <div className="text-center text-muted-foreground">
-          {date.toLocaleDateString("en-IN", {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-          })}
+        <div className="flex flex-col items-center text-center">
+          <span className="font-extrabold italic text-[#0f172a] text-[13px] leading-tight">
+            {formattedDate}
+          </span>
+          <span className="text-[11px] text-[#64748b] font-semibold mt-0.5 tracking-tight">
+            {formattedTime}
+          </span>
         </div>
       );
     },
@@ -177,13 +186,13 @@ export const columns: ColumnDef<Payment>[] = [
         <>
           <div className="flex items-center gap-3">
             <Button
-              variant="secondary"
-              size="sm"
-              className="h-9 font-semibold border-0"
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 bg-indigo-50/80 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-full border border-indigo-100/50 shadow-sm transition-all duration-300 group"
               onClick={() => setShowDialog(true)}
+              title="View Payment Details"
             >
-              <Eye className="mr-2 h-4 w-4" />
-              View
+              <Eye className="h-4 w-4 group-hover:scale-110 transition-transform" />
             </Button>
           </div>
           <PaymentViewDialog

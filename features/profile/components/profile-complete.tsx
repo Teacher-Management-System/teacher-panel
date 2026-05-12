@@ -245,7 +245,7 @@ export default function ProfileComplete({ onEdit }: { onEdit: () => void }) {
               <InfoRow
                 icon={BookOpen}
                 label="Course"
-                value={profile?.course || "N/A"}
+                value={profile?.course?.title || profile?.course?.name || "N/A"}
               />
               <InfoRow
                 icon={Phone}

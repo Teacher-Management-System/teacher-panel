@@ -220,10 +220,15 @@ export function EditStudentDialog({
         dob: normalizeDate(student.dob),
         school_name: student.school_name || "",
         class: student.class?.toString() || "",
-        category_id:
-          (student.category?.id || student.category_id)?.toString() || "",
-        course_id: (student.course?.id || student.course_id)?.toString() || "",
-        batch_id: (student.batch?.id)?.toString() || "",
+        category_id: (Array.isArray(student.category)
+          ? student.category[0]?.id || student.category_id
+          : (student.category as any)?.id || student.category_id
+        )?.toString() || "",
+        course_id: (Array.isArray(student.course)
+          ? student.course[0]?.id || student.course_id
+          : (student.course as any)?.id || student.course_id
+        )?.toString() || "",
+        batch_id: student.batch?.id?.toString() || "",
       });
     }
   }, [student, open, form]);

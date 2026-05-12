@@ -285,6 +285,7 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
         verification_id: verificationId,
         otp: otpValue,
         email: email,
+        event: "email-verify",
       });
       setIsEmailVerified(true);
       setShowOtpModal(false);

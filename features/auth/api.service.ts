@@ -29,8 +29,8 @@ class authService extends BaseService {
     return await this.post("register", data);
   }
 
-  async sendOtp(data: { email: string; event: string }) {
-    return await this.post("send-otp", data);
+  async resendOtp(data: { email: string; event: string }) {
+    return await this.post("resend-otp", data);
   }
 }
 

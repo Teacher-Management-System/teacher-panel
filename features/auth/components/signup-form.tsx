@@ -99,9 +99,10 @@ export function SignupForm() {
     if (resendCooldown > 0) return;
     setIsLoading(true);
     try {
-      const values = form.getValues();
-      values.email = values.email.toLowerCase();
-      const response: any = await authService.register(values);
+      const response: any = await authService.resendOtp({
+        email: registeredEmail,
+        event: "register",
+      });
       if (response) {
         toast.success("OTP resent successfully!");
         setResendCooldown(60);
@@ -417,6 +418,10 @@ export function SignupForm() {
                                 placeholder="+91 XXXXX XXXXX"
                                 className="pl-[52px] h-[56px] bg-[#f8f9fa] border-[#f1f5f9] border-2 rounded-2xl shadow-none ring-0 focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary transition-all font-semibold text-slate-700 text-[15px]"
                                 {...field}
+                                onChange={(e) => {
+                                  const value = e.target.value.replace(/\D/g, "");
+                                  field.onChange(value);
+                                }}
                               />
                             </div>
                           </FormControl>

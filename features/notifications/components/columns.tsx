@@ -206,20 +206,43 @@ export function createColumns(
       ),
       cell: ({ row }) => {
         const notification = row.original;
-        const date = 
-          notification.send_at || 
-          (notification as any).sendAt || 
-          notification.scheduled_at || 
-          (notification as any).data?.send_at || 
-          (notification as any).data?.sendAt || 
-          (notification as any).data?.scheduled_at || 
+        const dateVal =
+          notification.send_at ||
+          (notification as any).sendAt ||
+          notification.scheduled_at ||
+          (notification as any).data?.send_at ||
+          (notification as any).data?.sendAt ||
+          (notification as any).data?.scheduled_at ||
           notification.created_at;
-          
-        if (!date) return <span className="text-muted-foreground opacity-40 italic text-xs">N/A</span>;
+
+        if (!dateVal)
+          return (
+            <span className="text-muted-foreground opacity-40 italic text-xs">
+              N/A
+            </span>
+          );
+
+        const date = parseDate(dateVal);
+        const formattedDate = date.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        });
+        const formattedTime = date.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }).toUpperCase();
+
         return (
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Clock className="h-3.5 w-3.5" />
-            {formatDistanceToNow(parseDate(date), { addSuffix: true })}
+          <div className="flex flex-col items-start gap-0.5">
+            <span className="font-extrabold italic text-[#0f172a] text-[12px] leading-tight flex items-center gap-1">
+              <Clock className="h-3 w-3 text-indigo-500" />
+              {formattedDate}
+            </span>
+            <span className="text-[10px] text-[#64748b] font-semibold tracking-tight pl-4">
+              {formattedTime}
+            </span>
           </div>
         );
       },
@@ -233,13 +256,13 @@ export function createColumns(
       cell: ({ row }) => (
         <div className="flex items-center justify-end pr-4">
           <Button
-            variant="outline"
-            size="sm"
-            className="h-8 px-3 text-xs font-bold border-cyan-500/30 text-cyan-600 hover:bg-cyan-500 hover:text-white rounded-lg transition-all flex items-center gap-1.5"
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 bg-indigo-50/80 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-full border border-indigo-100/50 shadow-sm transition-all duration-300 group"
             onClick={() => onView(row.original)}
+            title="View Announcement"
           >
-            <Eye className="h-3.5 w-3.5" />
-            View
+            <Eye className="h-4 w-4 group-hover:scale-110 transition-transform" />
           </Button>
         </div>
       ),

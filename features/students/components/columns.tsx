@@ -1,17 +1,9 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Eye, Edit, Trash, ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { Eye, Edit, Trash, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
 import { load, CheckoutOptions } from "@cashfreepayments/cashfree-js";
 import {
@@ -236,13 +228,25 @@ export const createColumns = (
         if (!dateVal) return <div className="text-muted-foreground">-</div>;
         const date = new Date(Number(dateVal) * 1000);
 
+        const formattedDate = date.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        });
+        const formattedTime = date.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }).toUpperCase();
+
         return (
-          <div className="text-muted-foreground text-center">
-            {date.toLocaleDateString("en-IN", {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-            })}
+          <div className="flex flex-col items-center text-center">
+            <span className="font-extrabold italic text-[#0f172a] text-[13px] leading-tight">
+              {formattedDate}
+            </span>
+            <span className="text-[11px] text-[#64748b] font-semibold mt-0.5 tracking-tight">
+              {formattedTime}
+            </span>
           </div>
         );
       },
@@ -483,43 +487,40 @@ function ActionCell({ row, refreshData }: { row: any; refreshData: () => void })
 
   return (
     <>
-      <div className="flex justify-end">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+      <div className="flex justify-end items-center gap-2.5 pr-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9 bg-indigo-50/80 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-full border border-indigo-100/50 shadow-sm transition-all duration-300 group"
+          onClick={() => setShowDetailsDialog(true)}
+          title="View Details"
+        >
+          <Eye className="h-4 w-4 group-hover:scale-110 transition-transform" />
+        </Button>
+
+        {student.status === "pending" && (
+          <>
             <Button
               variant="ghost"
-              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+              size="icon"
+              className="h-9 w-9 bg-amber-50/80 text-amber-600 hover:bg-amber-600 hover:text-white rounded-full border border-amber-100/50 shadow-sm transition-all duration-300 group"
+              onClick={() => setShowEditDialog(true)}
+              title="Edit Student"
             >
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
+              <Edit className="h-4 w-4 group-hover:scale-110 transition-transform" />
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[160px]">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => setShowDetailsDialog(true)}>
-              <Eye className="mr-2 h-4 w-4 text-muted-foreground" />
-              View Details
-            </DropdownMenuItem>
-
-            {student.status === "pending" && (
-              <>
-                <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
-                  <Edit className="mr-2 h-4 w-4 text-muted-foreground" />
-                  Edit Student
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/50"
-                  onClick={() => setShowDeleteDialog(true)}
-                  disabled={isDeleting}
-                >
-                  <Trash className="mr-2 h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
-              </>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 bg-rose-50/80 text-rose-600 hover:bg-rose-600 hover:text-white rounded-full border border-rose-100/50 shadow-sm transition-all duration-300 group"
+              onClick={() => setShowDeleteDialog(true)}
+              disabled={isDeleting}
+              title="Delete"
+            >
+              <Trash className="h-4 w-4 group-hover:scale-110 transition-transform" />
+            </Button>
+          </>
+        )}
       </div>
 
       <EditStudentDialog

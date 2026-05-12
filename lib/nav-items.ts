@@ -15,11 +15,11 @@ export const navData = {
     {
       title: "",
       items: [
-        {
-          title: "Aero",
-          url: "/aero",
-          icon: Sparkles,
-        },
+        // {
+        //   title: "Aero",
+        //   url: "/aero",
+        //   icon: Sparkles,
+        // },
         {
           title: "Dashboard",
           url: "/dashboard",
