@@ -16,13 +16,64 @@ const fontMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Aerophantom",
-  description: "Aerophantom - Student Management System",
+  title: {
+    default: "Aerophantom | Educator Ecosystem",
+    template: "%s | Aerophantom",
+  },
+  description: "Aerophantom is a premium educator ecosystem portal helping teachers start their own Robotics Training Program. Get curriculum, hardware, and marketing support.",
+  keywords: ["Robotics Education", "Teacher Training", "STEM", "Educator Program", "Student Management System", "Aerophantom"],
+  authors: [{ name: "Aerophantom" }],
+  creator: "Aerophantom",
+  publisher: "Aerophantom",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL("https://aerophantom.com"), // Fallback if needed
+  openGraph: {
+    title: "Aerophantom | Educator Ecosystem",
+    description: "Empowering educators to start their own Robotics Training Program with complete curriculum and support.",
+    url: "https://aerophantom.com",
+    siteName: "Aerophantom",
+    images: [
+      {
+        url: "/logo.png",
+        width: 800,
+        height: 600,
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Aerophantom | Educator Ecosystem",
+    description: "Empowering educators to start their own Robotics Training Program with complete curriculum and support.",
+    images: ["/logo.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  category: "education",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "Aerophantom",
+  },
+  icons: {
+    icon: "/logo-icon.png",
+    shortcut: "/logo-icon.png",
+    apple: "/logo-icon.png",
   },
 };
 

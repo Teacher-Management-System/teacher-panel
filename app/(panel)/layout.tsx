@@ -8,9 +8,13 @@ import NotificationListener from "@/components/notification-listener";
 import AnnouncementDialog from "@/components/announcement-dialog";
 
 export const metadata: Metadata = {
-  title: "Aerophantom - Teacher Panel",
-  description: "A Teacher Panel for Aerophantom to manage all the things",
+  title: {
+    default: "Educator Panel",
+    template: "%s | Educator Panel",
+  },
+  description: "Manage your students, batches, and training programs with the Aerophantom Educator Panel.",
 };
+
 
 export default function DashboardLayout({
   children,
