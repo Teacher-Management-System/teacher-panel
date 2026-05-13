@@ -41,15 +41,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const authToken = cookieService.getCookie("authToken");
       if (!authToken) {
         setIsLoading(false);
-        setUser(null); // Ensure user is null if no token
+        setUser(null);
         return;
       }
       const response: any = await profileService.getProfile();
       if (response) {
         const userData = response?.user || response;
-        // If response.user exists, merge top-level fields into it as a fallback
-        const mergedUser = response?.user 
-          ? { ...response, ...response.user } 
+        const mergedUser = response?.user
+          ? { ...response, ...response.user }
           : response;
         setUser(mergedUser as User);
       } else {
