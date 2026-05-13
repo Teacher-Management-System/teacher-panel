@@ -182,7 +182,7 @@ export default function StudentList() {
       const response = await studentService.processPayment(studentIds);
 
       const cashfree = await load({
-        mode: "sandbox",
+        mode: (process.env.NEXT_PUBLIC_CASHFREE_MODE as "sandbox" | "production") || "sandbox",
       });
 
       const checkoutOptions: CheckoutOptions = {
@@ -244,110 +244,110 @@ export default function StudentList() {
       <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-4">
         {loading && data.length === 0
           ? Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i} className="rounded-2xl border bg-card p-6 shadow-sm">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-3 flex-1">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-8 w-16" />
-                  </div>
-                  <Skeleton className="h-12 w-12 rounded-xl" />
+            <Card key={i} className="rounded-2xl border bg-card p-6 shadow-sm">
+              <div className="flex items-start justify-between">
+                <div className="space-y-3 flex-1">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-8 w-16" />
                 </div>
-                <Skeleton className="mt-4 h-1.5 w-full rounded-full" />
-              </Card>
-            ))
+                <Skeleton className="h-12 w-12 rounded-xl" />
+              </div>
+              <Skeleton className="mt-4 h-1.5 w-full rounded-full" />
+            </Card>
+          ))
           : [
-              {
-                label: "Total Students",
-                value: totalStudents,
-                icon: Users,
-                color: "blue",
-                gradient: "from-blue-600 to-indigo-600",
-                lightGradient:
-                  "from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950",
-                border: "border-blue-100 dark:border-blue-900",
-                textColor: "text-blue-700 dark:text-blue-400",
-              },
-              {
-                label: "Active Students",
-                value: activeStudents,
-                icon: UserCheck,
-                color: "emerald",
-                gradient: "from-emerald-600 to-teal-600",
-                lightGradient:
-                  "from-emerald-50 to-teal-50 dark:from-emerald-950 dark:to-teal-950",
-                border: "border-emerald-100 dark:border-emerald-900",
-                textColor: "text-emerald-700 dark:text-emerald-400",
-              },
-              {
-                label: "Pending Students",
-                value: pendingStudents,
-                icon: Clock,
-                color: "amber",
-                gradient: "from-amber-500 to-orange-500",
-                lightGradient:
-                  "from-amber-50 to-orange-50 dark:from-amber-950 dark:to-orange-950",
-                border: "border-amber-100 dark:border-amber-900",
-                textColor: "text-amber-700 dark:text-amber-400",
-              },
-              {
-                label: "Completed",
-                value: completedStudents,
-                icon: CheckCircle,
-                color: "purple",
-                gradient: "from-purple-600 to-violet-600",
-                lightGradient:
-                  "from-purple-50 to-violet-50 dark:from-purple-950 dark:to-violet-950",
-                border: "border-purple-100 dark:border-purple-900",
-                textColor: "text-purple-700 dark:text-purple-400",
-              },
-            ].map((stat, i) => (
-              <Card
-                key={i}
-                className={cn(
-                  "relative overflow-hidden border shadow-sm hover:shadow-md transition-all duration-300 group bg-card rounded-[20px] md:rounded-2xl",
-                  stat.border,
-                )}
-              >
-                {/* Decorative background gradient */}
-                <div
-                  className={`absolute inset-0 bg-gradient-to-br ${stat.lightGradient} opacity-40 group-hover:opacity-60 transition-opacity`}
-                />
+            {
+              label: "Total Students",
+              value: totalStudents,
+              icon: Users,
+              color: "blue",
+              gradient: "from-blue-600 to-indigo-600",
+              lightGradient:
+                "from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950",
+              border: "border-blue-100 dark:border-blue-900",
+              textColor: "text-blue-700 dark:text-blue-400",
+            },
+            {
+              label: "Active Students",
+              value: activeStudents,
+              icon: UserCheck,
+              color: "emerald",
+              gradient: "from-emerald-600 to-teal-600",
+              lightGradient:
+                "from-emerald-50 to-teal-50 dark:from-emerald-950 dark:to-teal-950",
+              border: "border-emerald-100 dark:border-emerald-900",
+              textColor: "text-emerald-700 dark:text-emerald-400",
+            },
+            {
+              label: "Pending Students",
+              value: pendingStudents,
+              icon: Clock,
+              color: "amber",
+              gradient: "from-amber-500 to-orange-500",
+              lightGradient:
+                "from-amber-50 to-orange-50 dark:from-amber-950 dark:to-orange-950",
+              border: "border-amber-100 dark:border-amber-900",
+              textColor: "text-amber-700 dark:text-amber-400",
+            },
+            {
+              label: "Completed",
+              value: completedStudents,
+              icon: CheckCircle,
+              color: "purple",
+              gradient: "from-purple-600 to-violet-600",
+              lightGradient:
+                "from-purple-50 to-violet-50 dark:from-purple-950 dark:to-violet-950",
+              border: "border-purple-100 dark:border-purple-900",
+              textColor: "text-purple-700 dark:text-purple-400",
+            },
+          ].map((stat, i) => (
+            <Card
+              key={i}
+              className={cn(
+                "relative overflow-hidden border shadow-sm hover:shadow-md transition-all duration-300 group bg-card rounded-[20px] md:rounded-2xl",
+                stat.border,
+              )}
+            >
+              {/* Decorative background gradient */}
+              <div
+                className={`absolute inset-0 bg-gradient-to-br ${stat.lightGradient} opacity-40 group-hover:opacity-60 transition-opacity`}
+              />
 
-                {/* Decorative large icon */}
-                <stat.icon
-                  className={`absolute -right-4 -bottom-4 h-24 w-24 md:h-32 md:w-32 ${stat.textColor} opacity-5 rotate-12 group-hover:scale-110 transition-transform duration-500 shrink-0`}
-                />
+              {/* Decorative large icon */}
+              <stat.icon
+                className={`absolute -right-4 -bottom-4 h-24 w-24 md:h-32 md:w-32 ${stat.textColor} opacity-5 rotate-12 group-hover:scale-110 transition-transform duration-500 shrink-0`}
+              />
 
-                <CardContent className="relative p-5 sm:p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-2">
-                      <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                        {stat.label}
-                      </p>
-                      <div className="flex items-baseline gap-2">
-                        <h3 className={`text-3xl font-bold ${stat.textColor}`}>
-                          {stat.value}
-                        </h3>
-                        <div className="text-xs font-medium text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full flex items-center gap-1">
-                          <span>+12%</span>
-                        </div>
+              <CardContent className="relative p-5 sm:p-6">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-2">
+                    <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                      {stat.label}
+                    </p>
+                    <div className="flex items-baseline gap-2">
+                      <h3 className={`text-3xl font-bold ${stat.textColor}`}>
+                        {stat.value}
+                      </h3>
+                      <div className="text-xs font-medium text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                        <span>+12%</span>
                       </div>
                     </div>
-                    <div
-                      className={`p-3 rounded-xl bg-gradient-to-br ${stat.gradient} text-white shadow-lg transform group-hover:-translate-y-1 transition-transform`}
-                    >
-                      <stat.icon className="h-6 w-6" />
-                    </div>
                   </div>
-                  {/* Progress indicator decoration */}
-                  <div className="mt-4 h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                    <div
-                      className={`h-full bg-gradient-to-r ${stat.gradient} w-[70%] rounded-full opacity-80`}
-                    />
+                  <div
+                    className={`p-3 rounded-xl bg-gradient-to-br ${stat.gradient} text-white shadow-lg transform group-hover:-translate-y-1 transition-transform`}
+                  >
+                    <stat.icon className="h-6 w-6" />
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                </div>
+                {/* Progress indicator decoration */}
+                <div className="mt-4 h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                  <div
+                    className={`h-full bg-gradient-to-r ${stat.gradient} w-[70%] rounded-full opacity-80`}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
       </div>
 
       <Card className="rounded-xl border bg-card dark:bg-transparent text-card-foreground shadow-sm">

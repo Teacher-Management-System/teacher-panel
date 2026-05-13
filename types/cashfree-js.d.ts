@@ -9,12 +9,12 @@ declare module "@cashfreepayments/cashfree-js" {
   }
 
   export interface Cashfree {
-    initialise(options: { mode: "sandbox" | "production" }): Promise<void>;
+    initialise(options: { mode: string }): Promise<void>;
     checkout(options: CheckoutOptions): void;
   }
 
   export interface CashfreeConstructor {
-    new (options?: any): Cashfree;
+    new(options?: any): Cashfree;
     (options?: any): Cashfree;
   }
 

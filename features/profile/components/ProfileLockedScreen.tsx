@@ -46,7 +46,9 @@ const ProfileLockedScreen = () => {
         return;
       }
 
-      const cashfree = await load({ mode: "sandbox" });
+      const cashfree = await load({
+        mode: (process.env.NEXT_PUBLIC_CASHFREE_MODE as "sandbox" | "production") || "sandbox",
+      });
 
       const checkoutOptions: CheckoutOptions = {
         paymentSessionId: response.payment_session_id,

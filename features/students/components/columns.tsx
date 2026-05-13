@@ -337,7 +337,7 @@ export const createColumns = (
               throw new Error("No payment session received");
             }
             const cashfree = await load({
-              mode: "sandbox",
+              mode: (process.env.NEXT_PUBLIC_CASHFREE_MODE as "sandbox" | "production") || "sandbox",
             });
 
             const checkoutOptions: CheckoutOptions = {
@@ -406,7 +406,7 @@ export const createColumns = (
             }
 
             const cashfree = await load({
-              mode: "sandbox",
+              mode: (process.env.NEXT_PUBLIC_CASHFREE_MODE as "sandbox" | "production") || "sandbox",
             });
 
             const checkoutOptions: CheckoutOptions = {
