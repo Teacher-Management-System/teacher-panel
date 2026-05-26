@@ -11,7 +11,9 @@ import { LoginSchema } from "../schema";
 import authService from "../api.service";
 import { cookieService } from "@/lib/cookie";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import profileService from "@/features/profile/aou.service";
+import { toast } from "sonner";
 import {
   Loader2,
   GraduationCap,
@@ -47,6 +49,35 @@ function LoginFormContent({
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    const token = searchParams.get("token");
+    if (token) {
+      setLoading(true);
+      // Clear any existing session cookies before setting the impersonation token
+      cookieService.deleteCookie("authToken");
+      cookieService.deleteCookie("user");
+      cookieService.setCookie("authToken", token);
+
+      profileService.getProfile()
+        .then((response: any) => {
+          const userData = response?.user || response;
+          if (userData) {
+            cookieService.setCookie("user", JSON.stringify(userData));
+            // Redirect to dashboard with impersonation token processed
+            window.location.replace("/dashboard");
+          } else {
+            throw new Error("Invalid profile response");
+          }
+        })
+        .catch((error) => {
+          console.error("Auto-login error:", error);
+          cookieService.deleteCookie("authToken");
+          setLoading(false);
+          toast.error("Auto-login failed or token expired.");
+        });
+    }
+  }, [searchParams]);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(LoginSchema),

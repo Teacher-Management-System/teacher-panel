@@ -16,7 +16,10 @@ export function middleware(request: NextRequest) {
     pathname === "/firebase-messaging-sw.js";
   const isProtectedButNotAuthRoute = !isAuthRoute && !isPublicRoute;
 
-  if (authToken && isAuthRoute) {
+  // Allow impersonation token to override an existing session:
+  // if a ?token= query param is present, let the login page process it
+  const hasImpersonationToken = request.nextUrl.searchParams.has("token");
+  if (authToken && isAuthRoute && !hasImpersonationToken) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
   if (!authToken && isProtectedButNotAuthRoute) {
