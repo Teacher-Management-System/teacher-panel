@@ -50,10 +50,10 @@ const FinalCTASection = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="font-display text-4xl md:text-7xl font-bold text-white mb-8 leading-tight"
+            className="font-display text-4xl md:text-6xl font-bold text-white mb-8 leading-tight"
           >
-            Build the Future, <br />
-            <span className="text-white/90">Empower Students</span>
+            Your Students Are Preparing for the Future. <br />
+            <span className="text-white/95">Are You Ready to Teach It?</span>
           </motion.h2>
 
           <motion.p
@@ -61,18 +61,17 @@ const FinalCTASection = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-white/80 text-lg md:text-xl mb-12 max-w-2xl mx-auto"
+            className="text-white/80 text-lg md:text-xl mb-12 max-w-3xl mx-auto leading-relaxed"
           >
-            The demand for Robotics, AI, Automation, and future technology learning is growing exponentially.
-            Don't miss the opportunity to shape the next generation.
+            Join hundreds of educators who are upgrading their skills with Aerophantom and becoming part of the future of technology education.
           </motion.p>
 
           <div className="grid md:grid-cols-2 gap-6 text-left max-w-3xl mx-auto mb-16">
             {[
-              "Create impact in your community",
-              "Build your own identity",
-              "Teach future-ready skills",
-              "Help students prepare for tomorrow",
+              "Upgrade to in-demand 21st-century tech skills",
+              "Get a complete physical hardware kit shipped",
+              "Access student worksheets & ready lesson plans",
+              "Earn a verified shareable teacher certification",
             ].map((item, i) => (
               <motion.div
                 key={i}
@@ -85,7 +84,7 @@ const FinalCTASection = () => {
                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white group-hover:text-primary transition-all">
                   <CheckCircle2 className="w-5 h-5 text-white group-hover:text-primary transition-colors" />
                 </div>
-                <span className="text-white font-semibold text-lg">{item}</span>
+                <span className="text-white font-semibold text-base">{item}</span>
               </motion.div>
             ))}
           </div>
@@ -103,8 +102,8 @@ const FinalCTASection = () => {
               asChild
               className="text-primary font-bold h-16 px-10 rounded-2xl text-lg shadow-2xl hover:scale-105 hover:shadow-primary/50 transition-all bg-white"
             >
-              <Link href="/auth/signup">
-                Become an Educator <Rocket className="ml-2 w-5 h-5" />
+              <Link href="/inquiry">
+                Enroll Now <Rocket className="ml-2 w-5 h-5" />
               </Link>
             </Button>
             <Button

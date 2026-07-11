@@ -47,10 +47,9 @@ const Footer = () => {
                 <NextImage
                   src="/logo-icon.png"
                   alt="Aerophantom Logo"
-                  width={300}
-                  height={300}
+                  width={72}
+                  height={72}
                   className="w-full h-full object-contain"
-                  unoptimized
                 />
               </div>
               <span className="font-display font-bold text-2xl">

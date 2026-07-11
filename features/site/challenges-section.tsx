@@ -5,34 +5,29 @@ import { XCircle, HelpCircle, Layout, TrendingUp, BarChart, Settings, Info } fro
 const ChallengesSection = () => {
   const challenges = [
     {
-      title: "No Step-by-Step Guidance",
-      description: "Many educators are interested but don’t know where to begin.",
+      title: "Unsure Where to Begin",
+      description: "Robotics & AI can seem overwhelming, leaving educators confused about the starting point.",
       icon: HelpCircle,
     },
     {
-      title: "Lack of Structured Curriculum",
-      description: "Most available content is scattered and difficult to teach systematically.",
+      title: "No Structured Curriculum",
+      description: "Lack of a progressive teaching roadmap or standard curriculum customized for school students.",
       icon: Layout,
     },
     {
-      title: "High Setup Investment",
-      description: "Traditional Robotics labs often require ₹5–8 lakh investment and ongoing expenses.",
+      title: "Limited Practical Exposure",
+      description: "Learning mostly through videos with very little experience building real working hardware projects.",
       icon: TrendingUp,
     },
     {
-      title: "Marketing & Student Acquisition",
-      description: "Reaching parents and explaining future skills effectively is a major challenge.",
+      title: "Classroom Delivery Difficulty",
+      description: "Struggling to manage components, troubleshooting code, and conducting hands-on group sessions.",
       icon: BarChart,
     },
     {
-      title: "No Management System",
-      description: "Handling student onboarding, records, payments, and certificates becomes difficult.",
+      title: "Lack of Confidence",
+      description: "Feeling unprepared or hesitant when answering advanced student questions on emerging technologies.",
       icon: Settings,
-    },
-    {
-      title: "Technical Resource Confusion",
-      description: "Choosing the right components, tools, and equipment can be complicated.",
-      icon: Info,
     },
   ];
 
@@ -52,17 +47,16 @@ const ChallengesSection = () => {
           </div>
 
           {/* Heading */}
-          <h2 className="font-display text-4xl md:text-6xl font-bold text-center text-white mb-8 leading-tight">
-            Why Many Educators <br />
-            <span className="text-destructive">Hesitate to Start</span>
+          <h2 className="font-display text-4xl md:text-5xl font-bold text-center text-white mb-8 leading-tight">
+            Bridging the Gap Between <br />
+            <span className="text-destructive">Technology & Teaching</span>
           </h2>
           
           <p className="text-center text-slate-400 text-lg md:text-xl mb-20 max-w-2xl mx-auto leading-relaxed">
-            Starting a robotics center shouldn't feel like rocket science. 
-            We've identified the barriers that hold back great educators.
+            Most teachers are passionate about helping students succeed, but Robotics and AI are relatively new domains. As a result, many educators face common challenges:
           </p>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
             {challenges.map((challenge, index) => (
               <motion.div
                 key={index}
@@ -90,6 +84,17 @@ const ChallengesSection = () => {
               </motion.div>
             ))}
           </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center p-6 rounded-3xl bg-primary/10 border border-primary/20 max-w-2xl mx-auto"
+          >
+            <p className="text-primary font-semibold text-lg">
+              Aerophantom solves these challenges with one complete educator ecosystem.
+            </p>
+          </motion.div>
         </div>
       </div>
     </section>

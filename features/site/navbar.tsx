@@ -52,10 +52,10 @@ const Navbar = () => {
               <NextImage
                 src="/logo-icon.png"
                 alt="Aerophantom Logo"
-                width={300}
-                height={300}
+                width={56}
+                height={56}
+                priority
                 className="w-full h-full object-contain"
-                unoptimized
               />
             </motion.div>
             <span className="font-display font-bold text-xl text-foreground group-hover:text-primary transition-colors">

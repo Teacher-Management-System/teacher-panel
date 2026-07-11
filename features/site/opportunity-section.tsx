@@ -37,14 +37,14 @@ const OpportunitySection = () => {
           <div className="text-center mb-6">
             <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white text-primary font-bold text-xs uppercase tracking-widest border border-primary/10 shadow-sm">
               <Rocket className="w-4 h-4 text-primary" />
-              The Future of Learning
+              The Education is Changing
             </span>
           </div>
 
           {/* Heading */}
-          <h2 className="font-display text-4xl md:text-6xl font-bold text-center text-slate-900 mb-16 leading-tight">
-            Robotics & AI is No Longer <br />
-            <span className="text-gradient">Just an Option</span>
+          <h2 className="font-display text-4xl md:text-5xl font-bold text-center text-slate-900 mb-16 leading-tight">
+            Education is Changing. <br />
+            <span className="text-gradient">Are We Preparing Students for the Future?</span>
           </h2>
 
           <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -56,19 +56,22 @@ const OpportunitySection = () => {
             >
               <div className="space-y-6 text-xl text-slate-600 leading-relaxed">
                 <p className="font-medium text-slate-900">
-                  Technology is evolving at an unprecedented pace, transforming every industry.
+                  Technology is no longer limited to engineering colleges or large industries.
                 </p>
                 <p>
-                  Today's students need more than just theoretical knowledge; they need hands-on exposure to 
-                  Robotics, AI, and Automation to stay relevant in tomorrow's job market.
+                  Artificial Intelligence, Robotics, Automation, and Smart Technologies are becoming a part of every industry and every career.
+                </p>
+                <p className="text-base text-slate-500">
+                  Schools are introducing future skills into classrooms, but one challenge still remains—
+                  <strong> there are not enough trained educators who can confidently teach these technologies.</strong>
                 </p>
               </div>
 
               <div className="grid gap-4">
                 {[
-                  "Bridging the gap between theory and practice",
-                  "Meeting the demand for 21st-century skills",
-                  "Empowering local communities with tech education",
+                  "Emerging AI & Robotics modules in school curricula",
+                  "High demand for teachers with tech competency",
+                  "Need for hands-on, project-based teaching skills",
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm group hover:border-primary/30 transition-all">
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-all">
@@ -87,7 +90,12 @@ const OpportunitySection = () => {
               viewport={{ once: true }}
               className="grid grid-cols-1 sm:grid-cols-2 gap-6"
             >
-              {highlights.map((item, index) => (
+              {[
+                { text: "AI & ML Everywhere", icon: Users },
+                { text: "Robotics in Classrooms", icon: Target },
+                { text: "Hands-on Future Skills", icon: BookOpen },
+                { text: "Confidence to Teach", icon: Lightbulb },
+              ].map((item, index) => (
                 <motion.div
                   key={index}
                   variants={itemVariants}

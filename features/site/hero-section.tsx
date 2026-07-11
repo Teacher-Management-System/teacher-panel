@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 const HeroSection = () => {
 
@@ -118,7 +119,7 @@ const HeroSection = () => {
                 <Sparkles className="w-4 h-4" />
               </motion.div>
               <span className="text-sm font-medium">
-                Trusted by 200+ Teachers
+                India's Practical Teacher Training Program
               </span>
             </motion.div>
 
@@ -127,9 +128,9 @@ const HeroSection = () => {
               variants={itemVariants}
               className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6"
             >
-              Start Your Own
+              The Future of Education Needs
               <span className="text-gradient block mt-2">
-                Robotics & AI Learning Center
+                Future-Ready Educators
               </span>
             </motion.h1>
 
@@ -138,11 +139,10 @@ const HeroSection = () => {
               variants={itemVariants}
               className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-8"
             >
-              Launch future-ready Robotics, AI, Electronics, and Innovation
-              classes from your existing space with Aerophantom’s educator
-              ecosystem. We provide training, curriculum, practical resources,
-              marketing support, and management systems, making it easy to start
-              confidently.
+              Become a Certified Robotics & AI Educator. Master in Robotics,
+              Artificial Intelligence, Electronics, and Project-Based Learning
+              through a structured 6-week hybrid training program designed
+              specifically for educators.
             </motion.p>
 
             {/* Features List */}
@@ -151,9 +151,11 @@ const HeroSection = () => {
               className="flex flex-wrap justify-center lg:justify-start gap-3 mb-10"
             >
               {[
-                "Dedicated Educator’s Training",
-                "Ready Curriculum & Teaching System",
-                "Marketing & Student Support",
+                { text: "Practical Training", emoji: "🎓" },
+                { text: "Hands-on Projects", emoji: "🛠" },
+                { text: "Ready Curriculum", emoji: "📚" },
+                { text: "Certification", emoji: "📜" },
+                { text: "Lifetime Learning Access", emoji: "♾️" },
               ].map((feature, index) => (
                 <motion.div
                   key={index}
@@ -161,8 +163,8 @@ const HeroSection = () => {
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <CheckCircle2 className="w-5 h-5 text-success" />
-                  <span className="text-sm font-medium">{feature}</span>
+                  <span className="text-base">{feature.emoji}</span>
+                  <span className="text-sm font-medium">{feature.text}</span>
                 </motion.div>
               ))}
             </motion.div>
@@ -180,10 +182,10 @@ const HeroSection = () => {
                   variant="default"
                   size="lg"
                   asChild
-                  className="shadow-lg shadow-primary/25"
+                  className="shadow-lg shadow-primary/25 px-8"
                 >
-                  <Link href="/auth/login">
-                    Access Panel
+                  <Link href="/inquiry">
+                    Enroll Now
                     <motion.div
                       animate={{ x: [0, 5, 0] }}
                       transition={{ duration: 1.5, repeat: Infinity }}
@@ -197,8 +199,8 @@ const HeroSection = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <Button variant="outline" size="lg" asChild className="border-2">
-                  <Link href="/inquiry">Inquire Now</Link>
+                <Button variant="outline" size="lg" asChild className="border-2 px-8">
+                  <Link href="/inquiry">Download Brochure</Link>
                 </Button>
               </motion.div>
             </motion.div>
@@ -206,19 +208,16 @@ const HeroSection = () => {
             {/* Trust Indicators */}
             <motion.p
               variants={itemVariants}
-              className="mt-8 text-sm text-muted-foreground flex items-center justify-center lg:justify-start gap-6"
+              className="mt-8 text-sm text-muted-foreground flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2"
             >
               <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-success" /> Low
-                Investment Model
+                <span className="w-1.5 h-1.5 rounded-full bg-success" /> Practical Skill Development
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-success" /> Start
-                from Home
+                <span className="w-1.5 h-1.5 rounded-full bg-success" /> 6-Week Hybrid Mode
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-success" /> Hustle
-                Free
+                <span className="w-1.5 h-1.5 rounded-full bg-success" /> Interactive Live Mentoring
               </span>
             </motion.p>
           </motion.div>
@@ -239,13 +238,20 @@ const HeroSection = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-3xl blur-2xl" />
 
               {/* Main Image */}
-              <motion.img
-                src="/hero-dashboard.png"
-                alt="Aerophantom Dashboard Preview"
-                className="relative rounded-2xl shadow-2xl border border-border/50"
+              <motion.div
+                className="relative rounded-2xl shadow-2xl border border-border/50 overflow-hidden"
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.3 }}
-              />
+              >
+                <Image
+                  src="/hero-dashboard.png"
+                  alt="Aerophantom Dashboard Preview"
+                  width={600}
+                  height={380}
+                  priority
+                  className="w-full h-auto object-cover"
+                />
+              </motion.div>
 
               {/* Floating Cards */}
               <motion.div
@@ -265,8 +271,8 @@ const HeroSection = () => {
                     <CheckCircle2 className="w-5 h-5 text-success" />
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Students</p>
-                    <p className="text-lg font-bold text-foreground">3,500</p>
+                    <p className="text-xs text-muted-foreground">Trained Educators</p>
+                    <p className="text-lg font-bold text-foreground">500+</p>
                   </div>
                 </div>
               </motion.div>
@@ -290,9 +296,9 @@ const HeroSection = () => {
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">
-                      Success Rate
+                      Course Rating
                     </p>
-                    <p className="text-lg font-bold text-foreground">98.5%</p>
+                    <p className="text-lg font-bold text-foreground">4.9/5 ★</p>
                   </div>
                 </div>
               </motion.div>
