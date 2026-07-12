@@ -126,7 +126,7 @@ const HeroSection = () => {
             {/* Main Heading */}
             <motion.h1
               variants={itemVariants}
-              className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6"
+              className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6"
             >
               The Future of Education Needs
               <span className="text-gradient block mt-2">

@@ -22,11 +22,13 @@ const Navbar = () => {
 
   const navLinks = [
     { name: "Home", href: "/" },
-    { name: "Opportunity", href: "/#opportunity" },
-    { name: "Solution", href: "/#solution" },
-    { name: "Curriculum", href: "/#curriculum" },
-    { name: "How It Works", href: "/#how-it-works" },
-    { name: "About", href: "/#about" },
+    { name: "Why Us", href: "/#challenges" },
+    { name: "For Whom", href: "/#who-is-for" },
+    { name: "Roadmap", href: "/#journey" },
+    { name: "Included", href: "/#included" },
+    { name: "Projects", href: "/#projects" },
+    { name: "Certification", href: "/#certification" },
+    { name: "FAQ", href: "/#faq" },
   ];
 
   return (
