@@ -132,6 +132,13 @@
   "pnpm": {
     "overrides": {
       "picomatch": "4.0.3"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "@firebase/util",
+      "protobufjs",
+      "re2",
+      "sharp",
+      "unrs-resolver"
+    ]
   }
 }
