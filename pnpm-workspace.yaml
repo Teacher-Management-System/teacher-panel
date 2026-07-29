@@ -4,3 +4,6 @@ allowBuilds:
   re2: true
   sharp: true
   unrs-resolver: true
+
+overrides:
+  picomatch: 4.0.3

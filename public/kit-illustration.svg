@@ -1,0 +1,80 @@
+<svg width="520" height="380" viewBox="0 0 520 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="kTeal" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#2BD4DB"/>
+      <stop offset="1" stop-color="#149BA1"/>
+    </linearGradient>
+    <linearGradient id="kBox" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#12444B"/>
+      <stop offset="1" stop-color="#0F2530"/>
+    </linearGradient>
+    <filter id="kShadow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#0F172A" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+
+  <!-- backdrop -->
+  <ellipse cx="260" cy="330" rx="210" ry="24" fill="#0E7C82" fill-opacity="0.10"/>
+  <circle cx="260" cy="190" r="160" fill="#1FC0C7" fill-opacity="0.07"/>
+
+  <!-- open box -->
+  <g filter="url(#kShadow)">
+    <path d="M110 210l150-46 150 46v96l-150 46-150-46v-96Z" fill="url(#kBox)"/>
+    <path d="M110 210l150 46v96l-150-46v-96Z" fill="#0F2530"/>
+    <path d="M260 256l150-46v96l-150 46v-96Z" fill="#123A42"/>
+    <!-- open flaps -->
+    <path d="M110 210l-52-34 150-44 52 32-150 46Z" fill="#149BA1"/>
+    <path d="M410 210l52-34-150-44-52 32 150 46Z" fill="#1FC0C7"/>
+    <path d="M110 210l150 46 150-46" stroke="#3EE6EC" stroke-opacity="0.5" stroke-width="2" fill="none"/>
+  </g>
+  <text x="205" y="330" font-family="ui-sans-serif, sans-serif" font-size="17" font-weight="700" fill="#3EE6EC" transform="rotate(17 205 330)">STEM KIT</text>
+
+  <!-- microcontroller board popping out -->
+  <g filter="url(#kShadow)" transform="rotate(-8 210 150)">
+    <rect x="150" y="110" width="120" height="80" rx="10" fill="url(#kTeal)"/>
+    <rect x="176" y="130" width="40" height="40" rx="6" fill="#0F2530"/>
+    <g stroke="#0F2530" stroke-width="3" stroke-linecap="round">
+      <line x1="158" y1="102" x2="158" y2="112"/><line x1="170" y1="102" x2="170" y2="112"/>
+      <line x1="182" y1="102" x2="182" y2="112"/><line x1="194" y1="102" x2="194" y2="112"/>
+    </g>
+    <circle cx="238" cy="136" r="7" fill="#FBBF24"/>
+    <rect x="228" y="152" width="30" height="8" rx="4" fill="#0F2530" opacity="0.5"/>
+    <rect x="228" y="166" width="20" height="8" rx="4" fill="#0F2530" opacity="0.35"/>
+  </g>
+
+  <!-- breadboard -->
+  <g filter="url(#kShadow)" transform="rotate(6 350 140)">
+    <rect x="296" y="106" width="110" height="66" rx="10" fill="#FFFFFF"/>
+    <g fill="#94A3B8">
+      <circle cx="314" cy="124" r="3"/><circle cx="330" cy="124" r="3"/><circle cx="346" cy="124" r="3"/><circle cx="362" cy="124" r="3"/><circle cx="378" cy="124" r="3"/>
+      <circle cx="314" cy="140" r="3"/><circle cx="330" cy="140" r="3"/><circle cx="346" cy="140" r="3"/><circle cx="362" cy="140" r="3"/><circle cx="378" cy="140" r="3"/>
+      <circle cx="314" cy="156" r="3"/><circle cx="330" cy="156" r="3"/><circle cx="346" cy="156" r="3"/><circle cx="362" cy="156" r="3"/><circle cx="378" cy="156" r="3"/>
+    </g>
+    <path d="M330 124c14-18 32-18 48 0" stroke="#1FC0C7" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <path d="M314 156c10 14 26 14 32 0" stroke="#FBBF24" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- ultrasonic sensor -->
+  <g filter="url(#kShadow)" transform="rotate(-4 120 260)">
+    <rect x="60" y="236" width="112" height="52" rx="10" fill="#149BA1"/>
+    <circle cx="92" cy="262" r="17" fill="#0F2530"/>
+    <circle cx="140" cy="262" r="17" fill="#0F2530"/>
+    <circle cx="92" cy="262" r="9" fill="#3EE6EC" fill-opacity="0.55"/>
+    <circle cx="140" cy="262" r="9" fill="#3EE6EC" fill-opacity="0.55"/>
+  </g>
+
+  <!-- jumper wires -->
+  <g stroke-width="5" fill="none" stroke-linecap="round">
+    <path d="M402 246c34-8 48-30 44-58" stroke="#1FC0C7"/>
+    <path d="M410 258c40 0 58-18 62-44" stroke="#FBBF24"/>
+    <path d="M396 236c24-20 22-44 8-62" stroke="#F472B6"/>
+  </g>
+
+  <!-- sparkles -->
+  <g fill="#1FC0C7">
+    <path d="M470 88l4 10 10 4-10 4-4 10-4-10-10-4 10-4 4-10Z"/>
+    <path d="M56 120l3 8 8 3-8 3-3 8-3-8-8-3 8-3 3-8Z" fill-opacity="0.7"/>
+    <circle cx="480" cy="180" r="5" fill-opacity="0.5"/>
+    <circle cx="40" cy="200" r="4" fill-opacity="0.5"/>
+  </g>
+</svg>

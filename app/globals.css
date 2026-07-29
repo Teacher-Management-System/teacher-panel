@@ -96,6 +96,7 @@
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
+  --color-success: hsl(160 84% 39%);
   --color-chart-1: hsl(var(--chart-1));
   --color-chart-2: hsl(var(--chart-2));
   --color-chart-3: hsl(var(--chart-3));
@@ -129,6 +130,17 @@
   --animate-float: float 3s ease-in-out infinite;
   --animate-bounce-in: bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   --animate-bounce-subtle: bounce-subtle 2s ease-in-out infinite;
+  --animate-marquee: marquee 30s linear infinite;
+  --animate-spin-slow: spin 12s linear infinite;
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
 
   @keyframes bounce-subtle {
     0%,
@@ -232,6 +244,25 @@
       rgba(31, 192, 199, 0.05),
       transparent
     );
+  }
+  .bg-dot-pattern {
+    background-image: radial-gradient(
+      rgba(31, 192, 199, 0.25) 1px,
+      transparent 1px
+    );
+    background-size: 22px 22px;
+  }
+  .bg-grid-pattern {
+    background-image: linear-gradient(
+        to right,
+        rgba(31, 192, 199, 0.07) 1px,
+        transparent 1px
+      ),
+      linear-gradient(to bottom, rgba(31, 192, 199, 0.07) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+  .glass-card {
+    @apply bg-white/5 border border-white/10 backdrop-blur-md;
   }
 }
 

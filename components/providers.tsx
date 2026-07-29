@@ -8,7 +8,11 @@ import { ModalProvider } from "@/components/modal-provider";
 import { NotificationProvider } from "@/context/notification-context";
 import { usePathname } from "next/navigation";
 import { AuthProvider } from "@/context/auth-context";
-import FcmHandler from "@/components/fcm-handler";
+import dynamic from "next/dynamic";
+
+const FcmHandler = dynamic(() => import("@/components/fcm-handler"), {
+  ssr: false,
+});
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -35,7 +39,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <ModalProvider>
             <NotificationProvider>
               <NuqsAdapter>
-                <FcmHandler />
+                {!isPublicPage && <FcmHandler />}
                 {children}
               </NuqsAdapter>
             </NotificationProvider>

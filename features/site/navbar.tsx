@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ArrowRight } from "lucide-react";
 import NextImage from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
@@ -22,115 +22,94 @@ const Navbar = () => {
 
   const navLinks = [
     { name: "Home", href: "/" },
-    { name: "Opportunity", href: "/#opportunity" },
-    { name: "Solution", href: "/#solution" },
-    { name: "Curriculum", href: "/#curriculum" },
-    { name: "How It Works", href: "/#how-it-works" },
-    { name: "About", href: "/#about" },
+    { name: "Why Us", href: "/#challenges" },
+    { name: "For Whom", href: "/#who-is-for" },
+    { name: "Roadmap", href: "/#journey" },
+    { name: "Included", href: "/#included" },
+    { name: "Projects", href: "/#projects" },
+    { name: "Certification", href: "/#certification" },
+    { name: "FAQ", href: "/#faq" },
   ];
 
   return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
+    <motion.header
+      initial={{ y: -80, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-background/80 backdrop-blur-xl shadow-lg border-b border-border/50"
-          : "bg-transparent"
+          ? "bg-white backdrop-blur-xl shadow-md border-b border-border/50"
+          : "bg-white border-b border-border/30"
       }`}
     >
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16 md:h-20">
+      <div className="mx-auto max-w-7xl px-4 md:px-6">
+        <div className="flex items-center justify-between h-16 md:h-[72px]">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
+          <Link href="/" className="flex items-center gap-2 group shrink-0">
             <motion.div
-              className="w-14 h-14 flex items-center justify-center"
-              whileHover={{ scale: 1.1, rotate: 5 }}
+              className="w-11 h-11 md:w-12 md:h-12 flex items-center justify-center"
+              whileHover={{ scale: 1.08, rotate: 6 }}
               whileTap={{ scale: 0.95 }}
             >
               <NextImage
                 src="/logo-icon.png"
                 alt="Aerophantom Logo"
-                width={300}
-                height={300}
+                width={48}
+                height={48}
+                priority
                 className="w-full h-full object-contain"
-                unoptimized
               />
             </motion.div>
-            <span className="font-display font-bold text-xl text-foreground group-hover:text-primary transition-colors">
+            <span className="font-display font-bold text-lg md:text-xl text-foreground group-hover:text-primary transition-colors">
               Aerophantom
             </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-1">
-            {navLinks.map((link, index) => (
-              <motion.a
+          <nav className="hidden lg:flex items-center gap-1">
+            {navLinks.map((link) => (
+              <a
                 key={link.name}
                 href={link.href}
-                className="relative px-4 py-2 text-muted-foreground hover:text-foreground transition-colors font-medium"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -2 }}
+                className="relative px-3.5 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-all duration-200"
               >
                 {link.name}
-                <motion.span
-                  className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-primary rounded-full"
-                  whileHover={{ width: "60%" }}
-                  transition={{ duration: 0.2 }}
-                />
-              </motion.a>
+              </a>
             ))}
-          </div>
+          </nav>
 
           {/* Desktop CTA */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-3 shrink-0">
             {!isLoading && (
               <>
                 {user ? (
-                  <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                  <Button
+                    variant="default"
+                    asChild
+                    className="rounded-full shadow-lg shadow-primary/25 px-6"
                   >
+                    <Link href="/dashboard">
+                      Dashboard <ArrowRight className="w-4 h-4 ml-1.5" />
+                    </Link>
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      variant="ghost"
+                      asChild
+                      className="rounded-full font-medium"
+                    >
+                      <Link href="/auth/login">Login</Link>
+                    </Button>
                     <Button
                       variant="default"
                       asChild
-                      className="shadow-lg shadow-primary/25"
+                      className="rounded-full shadow-lg shadow-primary/30 px-6"
                     >
-                      <Link href="/dashboard">Dashboard</Link>
+                      <Link href="/inquiry">
+                        Enroll Now <ArrowRight className="w-4 h-4 ml-1.5" />
+                      </Link>
                     </Button>
-                  </motion.div>
-                ) : (
-                  <>
-                    <motion.div
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.3 }}
-                    >
-                      <Button variant="outline" asChild className="font-medium">
-                        <Link href="/inquiry">Inquire Now</Link>
-                      </Button>
-                    </motion.div>
-                    <motion.div
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.4 }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <Button
-                        variant="default"
-                        asChild
-                        className="shadow-lg shadow-primary/25"
-                      >
-                        <Link href="/auth/login">Login</Link>
-                      </Button>
-                    </motion.div>
                   </>
                 )}
               </>
@@ -139,81 +118,94 @@ const Navbar = () => {
 
           {/* Mobile Menu Button */}
           <motion.button
-            className="md:hidden p-2 rounded-lg hover:bg-muted transition-colors"
+            className="lg:hidden p-2.5 rounded-xl bg-muted/70 border border-border/60 transition-colors"
             onClick={() => setIsOpen(!isOpen)}
-            whileTap={{ scale: 0.95 }}
+            whileTap={{ scale: 0.92 }}
+            aria-label="Toggle menu"
           >
-            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </motion.button>
         </div>
-      </div>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="md:hidden bg-background/95 backdrop-blur-xl border-b border-border overflow-hidden"
-          >
-            <div className="container mx-auto px-4 py-4">
-              <div className="flex flex-col gap-2">
-                {navLinks.map((link, index) => (
-                  <motion.a
-                    key={link.name}
-                    href={link.href}
-                    className="px-4 py-3 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all font-medium"
-                    onClick={() => setIsOpen(false)}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    {link.name}
-                  </motion.a>
-                ))}
-                <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-border">
-                  {!isLoading && (
-                    <>
-                      {user ? (
-                        <Button
-                          variant="default"
-                          asChild
-                          className="w-full"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          <Link href="/dashboard">Dashboard</Link>
-                        </Button>
-                      ) : (
-                        <>
-                          <Button variant="outline" asChild className="w-full">
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="lg:hidden overflow-hidden bg-background/95 backdrop-blur-xl border-t border-border/50 rounded-b-2xl"
+            >
+              <div className="px-4 py-4">
+                <div className="flex flex-col gap-1">
+                  {navLinks.map((link, index) => (
+                    <motion.a
+                      key={link.name}
+                      href={link.href}
+                      className="px-4 py-3 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all font-medium"
+                      onClick={() => setIsOpen(false)}
+                      initial={{ opacity: 0, x: -16 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      {link.name}
+                    </motion.a>
+                  ))}
+                  <div className="flex flex-col gap-2 mt-3 pt-4 border-t border-border">
+                    {!isLoading && (
+                      <>
+                        {user ? (
+                          <Button
+                            variant="default"
+                            asChild
+                            className="w-full rounded-xl"
+                          >
                             <Link
-                              href="/auth/login"
+                              href="/dashboard"
                               onClick={() => setIsOpen(false)}
                             >
-                              Login
+                              Dashboard
                             </Link>
                           </Button>
-                          <Button variant="default" asChild className="w-full">
-                            <Link
-                              href="/auth/login"
-                              onClick={() => setIsOpen(false)}
+                        ) : (
+                          <>
+                            <Button
+                              variant="outline"
+                              asChild
+                              className="w-full rounded-xl"
                             >
-                              Get Started
-                            </Link>
-                          </Button>
-                        </>
-                      )}
-                    </>
-                  )}
+                              <Link
+                                href="/auth/login"
+                                onClick={() => setIsOpen(false)}
+                              >
+                                Login
+                              </Link>
+                            </Button>
+                            <Button
+                              variant="default"
+                              asChild
+                              className="w-full rounded-xl shadow-lg shadow-primary/25"
+                            >
+                              <Link
+                                href="/inquiry"
+                                onClick={() => setIsOpen(false)}
+                              >
+                                Enroll Now
+                              </Link>
+                            </Button>
+                          </>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.header>
   );
 };
 
