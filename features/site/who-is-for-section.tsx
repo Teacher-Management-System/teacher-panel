@@ -38,11 +38,11 @@ export default function WhoIsForSection() {
       ring: "hover:border-purple-500/40",
     },
     {
-      title: "Coaching Institutes & STEM Trainers",
+      title: "STEM Trainers",
       description:
         "Expand your offerings with future-ready technology programs.",
       icon: Building2,
-      tag: "🏢 Institutes",
+      tag: "🏢 Trainers",
       accent: "text-amber-600 dark:text-amber-400 bg-amber-500/10",
       ring: "hover:border-amber-500/40",
     },
@@ -51,7 +51,7 @@ export default function WhoIsForSection() {
   return (
     <section
       id="who-is-for"
-      className="py-28 bg-background relative overflow-hidden"
+      className="py-14 bg-background relative overflow-hidden"
     >
       {/* Background */}
       <div className="absolute top-1/4 left-10 w-72 h-72 bg-primary/5 rounded-full blur-[100px]" />

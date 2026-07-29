@@ -27,7 +27,7 @@ export default function CertificationSection() {
   return (
     <section
       id="certification"
-      className="py-28 bg-slate-950 text-white relative overflow-hidden"
+      className="py-14 bg-slate-950 text-white relative overflow-hidden"
     >
       {/* Background */}
       <div className="absolute top-1/4 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[100px]" />

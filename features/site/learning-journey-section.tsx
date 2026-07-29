@@ -56,7 +56,7 @@ export default function LearningJourneySection() {
   return (
     <section
       id="journey"
-      className="py-28 bg-slate-950 text-white relative overflow-hidden"
+      className="py-14 bg-slate-950 text-white relative overflow-hidden"
     >
       {/* Background decorations */}
       <div className="absolute top-1/2 left-0 w-96 h-96 bg-primary/10 rounded-full blur-[120px] -translate-y-1/2 -ml-48" />

@@ -66,9 +66,9 @@ export function SiteMain() {
       </Suspense>
 
       {/* SECTION 9 - Learn by Building Gallery */}
-      <Suspense fallback={<SectionFallback />}>
+      {/* <Suspense fallback={<SectionFallback />}>
         <LearnByBuildingSection />
-      </Suspense>
+      </Suspense> */}
 
       {/* SECTION 10 - After Program Outcomes */}
       <Suspense fallback={<SectionFallback />}>
@@ -76,9 +76,9 @@ export function SiteMain() {
       </Suspense>
 
       {/* SECTION 11 - Certificate Mockup */}
-      <Suspense fallback={<SectionFallback />}>
+      {/* <Suspense fallback={<SectionFallback />}>
         <CertificationSection />
-      </Suspense>
+      </Suspense> */}
 
       {/* SECTION 12 - Why Aerophantom */}
       <Suspense fallback={<SectionFallback />}>

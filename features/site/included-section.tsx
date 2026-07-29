@@ -60,7 +60,7 @@ export default function IncludedSection() {
   ];
 
   return (
-    <section id="included" className="py-28 bg-white relative overflow-hidden">
+    <section id="included" className="py-14 bg-white relative overflow-hidden">
       {/* Background */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px]" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px]" />
@@ -110,15 +110,18 @@ export default function IncludedSection() {
               <motion.div
                 animate={{ y: [-6, 6, -6] }}
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                className="relative mt-6 self-center"
+                className="relative mt-6 self-center w-full"
               >
-                <Image
-                  src="/kit-illustration.svg"
-                  alt="Aerophantom STEM Hardware Kit"
-                  width={520}
-                  height={380}
-                  className="w-full max-w-[420px] h-auto drop-shadow-[0_16px_32px_rgba(31,192,199,0.25)]"
-                />
+                <div className="relative rounded-2xl overflow-hidden border border-white/15 bg-white/5 backdrop-blur-sm p-1.5 shadow-2xl">
+                  <Image
+                    src="/kit.png"
+                    alt="Aerophantom STEM Hardware Kit"
+                    width={520}
+                    height={380}
+                    className="w-full h-auto object-cover rounded-xl transform hover:scale-[1.02] transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-xl pointer-events-none" />
+                </div>
               </motion.div>
             </motion.div>
 

@@ -1,13 +1,16 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import {
   ArrowRight,
   CheckCircle2,
   Sparkles,
   Bot,
-  GraduationCap,
-  Star,
-  Download,
+  Cpu,
+  Award,
+  Zap,
+  BookOpen,
+  ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -19,14 +22,14 @@ const HeroSection = () => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.12,
-        delayChildren: 0.15,
+        staggerChildren: 0.1,
+        delayChildren: 0.1,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
+    hidden: { opacity: 0, y: 25 },
     visible: {
       opacity: 1,
       y: 0,
@@ -38,86 +41,77 @@ const HeroSection = () => {
   };
 
   const marqueeItems = [
-    "🎓 Practical Training",
-    "🛠 Hands-on Projects",
-    "💻 Live Sessions+",
-    "📚 Ready Curriculum",
-    "📜 Certification",
-    "♾️ Lifetime Learning Access",
+    { text: "Practical Training", icon: Zap },
+    { text: "Hands-on Projects", icon: Cpu },
+    { text: "Live Sessions+", icon: Bot },
+    { text: "Ready Curriculum", icon: BookOpen },
+    { text: "Recognized Certification", icon: Award },
+    { text: "Lifetime Learning Access", icon: ShieldCheck },
   ];
 
   return (
-    <section className="relative min-h-screen flex flex-col justify-center pt-28 pb-0 overflow-hidden">
-      {/* Layered Background */}
-      <div className="absolute inset-0 gradient-hero" />
-      <div className="absolute inset-0 bg-grid-pattern [mask-image:radial-gradient(ellipse_70%_60%_at_50%_40%,black,transparent)]" />
+    <section className="relative min-h-[85vh] flex flex-col justify-center pt-24 pb-8 overflow-hidden bg-background">
+      {/* Background Decorative Gradients & Grid */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-40 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_40%,black_30%,transparent_100%)]" />
 
-      {/* Floating Orbs */}
+      {/* Dynamic Ambient Light Spheres */}
       <motion.div
-        className="absolute -top-20 right-0 w-[500px] h-[500px] bg-primary/15 rounded-full blur-3xl"
-        animate={{ scale: [1, 1.15, 1], opacity: [0.35, 0.55, 0.35] }}
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-10 left-[15%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none"
+        animate={{
+          scale: [1, 1.2, 1],
+          opacity: [0.3, 0.6, 0.3],
+          x: [-20, 20, -20],
+        }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div
-        className="absolute bottom-24 -left-24 w-96 h-96 bg-primary/10 rounded-full blur-3xl"
-        animate={{ scale: [1.15, 1, 1.15], opacity: [0.3, 0.5, 0.3] }}
-        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-1/3 right-[10%] w-[450px] h-[450px] bg-teal-500/15 rounded-full blur-[110px] pointer-events-none"
+        animate={{
+          scale: [1.2, 1, 1.2],
+          opacity: [0.25, 0.5, 0.25],
+          y: [-30, 30, -30],
+        }}
+        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
       />
-
-      {/* Floating Particles */}
-      {[...Array(6)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-2 h-2 bg-primary/40 rounded-full"
-          style={{
-            left: `${12 + i * 15}%`,
-            top: `${18 + (i % 3) * 25}%`,
-          }}
-          animate={{
-            y: [-18, 18, -18],
-            opacity: [0.3, 0.8, 0.3],
-          }}
-          transition={{
-            duration: 3 + i * 0.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: i * 0.3,
-          }}
-        />
-      ))}
 
       <div className="container mx-auto px-4 relative z-10 flex-1 flex items-center">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center w-full">
-          {/* Left Content */}
+        <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center w-full">
+          {/* Left Hero Content */}
           <motion.div
-            className="text-center lg:text-left"
+            className="lg:col-span-7 text-center lg:text-left"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
           >
-            {/* Badge */}
-            <motion.div
-              variants={itemVariants}
-              className="inline-flex items-center gap-2 pl-1.5 pr-4 py-1.5 rounded-full bg-primary/10 text-primary mb-8 border border-primary/20 backdrop-blur-sm"
-            >
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider">
-                <Sparkles className="w-3.5 h-3.5" /> New Batch
-              </span>
-              <span className="text-sm font-semibold">
-                India's Practical Teacher Training Program
-              </span>
+            {/* Top Pill Tag */}
+            <motion.div variants={itemVariants} className="inline-block mb-6">
+              <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-primary/10 border border-primary/25 backdrop-blur-md shadow-sm">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
+                </span>
+                <span className="text-xs sm:text-sm font-semibold tracking-wide text-foreground">
+                  India&apos;s Practical Teacher Training Program
+                </span>
+                <Sparkles className="w-4 h-4 text-primary animate-pulse" />
+              </div>
             </motion.div>
 
-            {/* Main Heading */}
+            {/* Main Headline */}
             <motion.h1
               variants={itemVariants}
-              className="font-display text-2xl sm:text-3xl md:text-[38px] lg:text-[42px] font-bold text-foreground mb-6 leading-[1.15] tracking-tight"
+              className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-[54px] font-extrabold text-foreground mb-6 leading-[1.12] tracking-tight"
             >
               The Future of Education Needs{" "}
-              <span className="relative inline-block">
-                <span className="text-gradient">Future-Ready Educators</span>
-                <svg
-                  className="absolute -bottom-2 left-0 w-full"
+              <span className="relative inline-block mt-1">
+                <span className="bg-gradient-to-r from-primary via-teal-400 to-emerald-400 bg-clip-text text-transparent">
+                  Future-Ready Educators
+                </span>
+                <motion.svg
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ duration: 1.2, delay: 0.5 }}
+                  className="absolute -bottom-2 left-0 w-full h-3"
                   viewBox="0 0 300 12"
                   fill="none"
                   preserveAspectRatio="none"
@@ -127,161 +121,138 @@ const HeroSection = () => {
                     stroke="hsl(var(--primary))"
                     strokeWidth="4"
                     strokeLinecap="round"
-                    opacity="0.5"
+                    opacity="0.6"
                   />
-                </svg>
+                </motion.svg>
               </span>
             </motion.h1>
 
-            {/* Subheading */}
+            {/* Subtitle Description */}
             <motion.p
               variants={itemVariants}
-              className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-8 leading-relaxed"
+              className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 mb-8 leading-relaxed font-normal"
             >
               Become a{" "}
-              <strong className="text-foreground font-semibold">
+              <span className="text-foreground font-semibold underline decoration-primary/40 underline-offset-4">
                 Certified Robotics & AI Educator
-              </strong>
-              . Master in Robotics, Artificial Intelligence, Electronics, and
-              Project-Based Learning through a structured training program
-              designed specifically for educators.
+              </span>
+              . Master Robotics, Artificial Intelligence, Electronics, and
+              Project-Based Learning through structured, hands-on mentor guidance.
             </motion.p>
 
-            {/* CTA Buttons */}
+            {/* Action CTAs */}
             <motion.div
               variants={itemVariants}
-              className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-8"
+              className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-10"
             >
-              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
+              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                 <Button
                   variant="default"
                   size="lg"
                   asChild
-                  className="h-14 rounded-2xl shadow-xl shadow-primary/30 px-8 text-base font-bold"
+                  className="h-14 rounded-2xl bg-primary text-primary-foreground shadow-xl shadow-primary/30 px-8 text-base font-bold transition-all duration-300 hover:shadow-primary/50"
                 >
-                  <Link href="/inquiry">
-                    Enroll Now
+                  <Link href="/inquiry" className="flex items-center gap-2">
+                    <span>Inquire Now</span>
                     <motion.span
-                      animate={{ x: [0, 5, 0] }}
+                      animate={{ x: [0, 4, 0] }}
                       transition={{ duration: 1.5, repeat: Infinity }}
-                      className="inline-flex"
                     >
-                      <ArrowRight className="w-5 h-5 ml-2" />
+                      <ArrowRight className="w-5 h-5" />
                     </motion.span>
                   </Link>
                 </Button>
               </motion.div>
-              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  asChild
-                  className="h-14 rounded-2xl border-2 border-primary/30 hover:border-primary/60 hover:bg-primary/5 px-8 text-base font-semibold"
-                >
-                  <Link href="/inquiry">
-                    <Download className="w-5 h-5 mr-2 text-primary" />
-                    Download Brochure
-                  </Link>
-                </Button>
-              </motion.div>
+
             </motion.div>
 
-            {/* Trust Indicators */}
+            {/* Feature Checkmarks Row */}
             <motion.div
               variants={itemVariants}
-              className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 text-sm text-muted-foreground"
+              className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-3 pt-2 border-t border-border/50 text-sm text-muted-foreground font-medium"
             >
               {[
                 "Practical Skill Development",
                 "6-Week Hybrid Mode",
                 "Interactive Live Mentoring",
               ].map((text) => (
-                <span key={text} className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-success" /> {text}
+                <span key={text} className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>{text}</span>
                 </span>
               ))}
             </motion.div>
           </motion.div>
 
-          {/* Right Content - Generated Illustration */}
+          {/* Right Showcase Image & Interactive Glass Cards */}
           <motion.div
-            className="relative hidden lg:block"
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
+            className="lg:col-span-5 relative hidden lg:block"
+            initial={{ opacity: 0, scale: 0.92, x: 30 }}
+            animate={{ opacity: 1, scale: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
           >
             <motion.div
-              animate={{ y: [-8, 8, -8] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+              animate={{ y: [-6, 6, -6] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
               className="relative"
             >
-              {/* Glow Effect */}
-              <div className="absolute inset-8 bg-gradient-to-r from-primary/25 to-primary/10 rounded-full blur-3xl" />
+              {/* Outer Layered Glow Frame */}
+              <div className="absolute -inset-4 bg-gradient-to-tr from-primary/30 via-teal-400/25 to-emerald-400/30 rounded-[2.8rem] blur-2xl opacity-75" />
 
-              {/* Main Illustration */}
-              <Image
-                src="/hero-educator.svg"
-                alt="Robotics & AI Educator Illustration"
-                width={680}
-                height={560}
-                priority
-                className="relative w-full h-auto drop-shadow-xl"
-              />
+              {/* Main Glassmorphic Photo Container */}
+              <div className="relative rounded-[2.4rem] overflow-hidden border-2 border-primary/25 bg-card/40 backdrop-blur-xl p-3 shadow-2xl shadow-primary/20">
+                <div className="relative rounded-[1.8rem] overflow-hidden group">
+                  <Image
+                    src="/hero.png"
+                    alt="Robotics & AI Educator Showcase"
+                    width={680}
+                    height={560}
+                    priority
+                    className="w-full h-auto object-cover transform group-hover:scale-[1.03] transition-transform duration-700 ease-out"
+                  />
+                  {/* Subtle Shimmer Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent opacity-60" />
+                  <div className="absolute inset-0 ring-1 ring-inset ring-white/20 rounded-[1.8rem] pointer-events-none" />
+                </div>
+              </div>
 
-              {/* Floating Card: Trained Educators */}
+              {/* Floating Top Badge: AI & Robotics */}
               <motion.div
-                className="absolute -left-6 top-[16%] bg-card/90 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-primary/15"
-                animate={{ y: [-6, 6, -6], rotate: [-1.5, 1.5, -1.5] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -top-4 -right-4 bg-card/95 backdrop-blur-xl px-4 py-3 rounded-2xl shadow-xl border border-primary/20 flex items-center gap-3"
+                animate={{ y: [-4, 4, -4] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-success/15 flex items-center justify-center">
-                    <GraduationCap className="w-5 h-5 text-success" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">
-                      Trained Educators
-                    </p>
-                    <p className="text-lg font-bold text-foreground">500+</p>
-                  </div>
+                <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
+                  <Cpu className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground">
+                    Next-Gen Tech
+                  </p>
+                  <p className="text-sm font-bold text-foreground">
+                    Robotics & AI
+                  </p>
                 </div>
               </motion.div>
 
-              {/* Floating Card: Rating */}
+              {/* Floating Bottom Badge: 6-Week Program */}
               <motion.div
-                className="absolute -right-2 top-[55%] bg-card/90 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-primary/15"
-                animate={{ y: [6, -6, 6], rotate: [1.5, -1.5, 1.5] }}
-                transition={{
-                  duration: 5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 0.5,
-                }}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-amber-500/15 flex items-center justify-center">
-                    <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Course Rating</p>
-                    <p className="text-lg font-bold text-foreground">4.9/5</p>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Floating Card: Hybrid Program */}
-              <motion.div
-                className="absolute left-[8%] bottom-[4%] bg-card/90 backdrop-blur-md px-4 py-3 rounded-2xl shadow-xl border border-primary/15"
+                className="absolute -left-5 -bottom-4 bg-card/95 backdrop-blur-xl px-5 py-3.5 rounded-2xl shadow-xl border border-primary/20 flex items-center gap-3"
                 animate={{ y: [4, -4, 4] }}
                 transition={{
                   duration: 4.5,
                   repeat: Infinity,
                   ease: "easeInOut",
-                  delay: 1,
+                  delay: 0.8,
                 }}
               >
-                <div className="flex items-center gap-2.5">
-                  <Bot className="w-5 h-5 text-primary" />
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center">
+                  <Bot className="w-5 h-5 text-emerald-500" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground">
+                    Training Mode
+                  </p>
                   <p className="text-sm font-bold text-foreground">
                     6-Week Hybrid Program
                   </p>
@@ -292,23 +263,26 @@ const HeroSection = () => {
         </div>
       </div>
 
-      {/* Bottom Marquee Strip */}
+      {/* Infinite Marquee Ticker */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
-        className="relative z-10 mt-16 border-y border-primary/10 bg-primary/[0.04] backdrop-blur-sm py-4 overflow-hidden"
+        transition={{ delay: 0.6 }}
+        className="relative z-10 mt-8 border-y border-border/60 bg-muted/30 backdrop-blur-md py-3 overflow-hidden"
       >
-        <div className="flex w-max animate-marquee gap-4">
-          {[...marqueeItems, ...marqueeItems].map((item, i) => (
-            <span
-              key={i}
-              className="flex items-center gap-3 whitespace-nowrap px-4 text-sm font-semibold text-muted-foreground"
-            >
-              {item}
-              <span className="w-1.5 h-1.5 rounded-full bg-primary/50" />
-            </span>
-          ))}
+        <div className="flex w-max animate-marquee gap-6">
+          {[...marqueeItems, ...marqueeItems, ...marqueeItems].map((item, i) => {
+            const IconComponent = item.icon;
+            return (
+              <div
+                key={i}
+                className="flex items-center gap-2.5 whitespace-nowrap px-5 py-1.5 rounded-full bg-background/50 border border-border/40 text-xs sm:text-sm font-semibold text-foreground/80 shadow-xs"
+              >
+                <IconComponent className="w-4 h-4 text-primary" />
+                <span>{item.text}</span>
+              </div>
+            );
+          })}
         </div>
       </motion.div>
     </section>

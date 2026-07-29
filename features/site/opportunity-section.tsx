@@ -33,7 +33,7 @@ const OpportunitySection = () => {
   return (
     <section
       id="opportunity"
-      className="py-28 bg-slate-50 relative overflow-hidden"
+      className="py-14 bg-slate-50 relative overflow-hidden"
     >
       {/* Background Accents */}
       <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] -ml-64 -mt-64" />
@@ -87,7 +87,7 @@ const OpportunitySection = () => {
 
               <div className="grid gap-4">
                 {[
-                  "Emerging AI & Robotics modules in school curricula",
+                  "Emerging AI & Robotics modules in school curriculam",
                   "High demand for teachers with tech competency",
                   "Need for hands-on, project-based teaching skills",
                 ].map((item, i) => (
@@ -120,9 +120,8 @@ const OpportunitySection = () => {
                 <motion.div
                   key={index}
                   variants={itemVariants}
-                  className={`group relative p-7 rounded-3xl bg-white border border-slate-200/60 hover:border-primary/40 transition-all duration-500 hover:shadow-[0_20px_50px_-15px_rgba(31,192,199,0.25)] hover:-translate-y-1.5 overflow-hidden ${
-                    index % 2 === 1 ? "sm:translate-y-6" : ""
-                  }`}
+                  className={`group relative p-7 rounded-3xl bg-white border border-slate-200/60 hover:border-primary/40 transition-all duration-500 hover:shadow-[0_20px_50px_-15px_rgba(31,192,199,0.25)] hover:-translate-y-1.5 overflow-hidden ${index % 2 === 1 ? "sm:translate-y-6" : ""
+                    }`}
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.06] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">

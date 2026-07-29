@@ -1,16 +1,20 @@
-import { LoginForm } from "@/features/auth/components/login-form";
-import { Suspense } from "react";
+import { redirect } from "next/navigation";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Login",
-  description: "Login to your Aerophantom educator panel to manage your robotics training program and students.",
+  title: "Inquiry",
+  description: "Inquire for Aerophantom educator training program.",
 };
 
 export default function LoginPage() {
+  // Login route is disabled; redirecting to inquiry form
+  redirect("/inquiry");
+
+  /*
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <LoginForm />
     </Suspense>
   );
+  */
 }

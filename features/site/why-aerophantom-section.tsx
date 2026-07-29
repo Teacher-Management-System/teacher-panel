@@ -41,7 +41,7 @@ export default function WhyAerophantomSection() {
   return (
     <section
       id="why-aerophantom"
-      className="py-28 bg-slate-50 relative overflow-hidden"
+      className="py-14 bg-slate-50 relative overflow-hidden"
     >
       {/* Background */}
       <div className="absolute top-1/2 left-0 w-80 h-80 bg-primary/5 rounded-full blur-3xl -ml-40" />

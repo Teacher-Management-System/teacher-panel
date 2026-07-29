@@ -7,7 +7,7 @@ import { Rocket, PhoneCall, CheckCircle2 } from "lucide-react";
 
 const FinalCTASection = () => {
   return (
-    <section className="py-20 md:py-24 relative overflow-hidden rounded-[2.5rem] md:rounded-[4rem] mx-3 md:mx-8 my-16">
+    <section className="py-12 md:py-14 relative overflow-hidden rounded-[2.5rem] md:rounded-[3.5rem] mx-3 md:mx-8 my-8">
       {/* Premium Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-teal-700" />
       <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] bg-[size:20px_20px]" />
@@ -111,19 +111,10 @@ const FinalCTASection = () => {
               className="text-primary font-bold h-16 px-10 rounded-2xl text-lg shadow-2xl hover:scale-105 hover:shadow-white/30 transition-all bg-white hover:bg-white"
             >
               <Link href="/inquiry">
-                Enroll Now <Rocket className="ml-2 w-5 h-5" />
+                Inquire Now <Rocket className="ml-2 w-5 h-5" />
               </Link>
             </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              asChild
-              className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:text-white h-16 px-10 rounded-2xl text-lg hover:scale-105 transition-all backdrop-blur-md"
-            >
-              <Link href="tel:+919509206534">
-                Talk to Our Team <PhoneCall className="ml-2 w-5 h-5" />
-              </Link>
-            </Button>
+
           </motion.div>
         </div>
       </div>

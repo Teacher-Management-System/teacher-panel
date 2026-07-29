@@ -22,7 +22,7 @@ export default function IntroducingProgramSection() {
   return (
     <section
       id="introducing-program"
-      className="py-28 relative overflow-hidden bg-slate-900 text-white"
+      className="py-14 relative overflow-hidden bg-slate-900 text-white"
     >
       {/* Background decoration */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(31,192,199,0.16),transparent_60%)]" />

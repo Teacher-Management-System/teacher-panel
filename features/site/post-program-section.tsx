@@ -53,7 +53,7 @@ export default function PostProgramSection() {
   return (
     <section
       id="post-program"
-      className="py-28 bg-white relative overflow-hidden"
+      className="py-14 bg-white relative overflow-hidden"
     >
       {/* Background */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px]" />
@@ -69,7 +69,7 @@ export default function PostProgramSection() {
             </span>
             <h2 className="font-display text-4xl md:text-5xl font-bold text-slate-900 mb-5 leading-tight">
               Where Can This{" "}
-              <span className="text-gradient">Certification Take You?</span>
+              <span className="text-gradient">Training Program Take You?</span>
             </h2>
             <p className="text-slate-600 text-lg">
               After completing the program, you'll be prepared to transition

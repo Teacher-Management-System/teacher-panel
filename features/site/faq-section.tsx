@@ -6,7 +6,7 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
-import { HelpCircle, MessageCircle, PhoneCall } from "lucide-react";
+import { HelpCircle, MessageCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -28,17 +28,6 @@ export default function FAQSection() {
         "Yes! A practical hardware kit containing microcontrollers, various sensors, motor drivers, servo motors, breadboard, chassis, and wiring components is shipped directly to your address upon enrollment.",
     },
     {
-      question: "Is the certification official and verified?",
-      answer:
-        "Yes, you will receive an official Aerophantom Certified Robotics & AI Educator certification. It features a unique credential ID that schools or coaching centers can verify directly on our portal.",
-    },
-    {
-      question:
-        "What resource materials do I get to start teaching my own classes?",
-      answer:
-        "We provide complete student worksheets, teacher guides, structured lecture plans, presentation slides (PPTs), project reference guides, and promotional templates for local marketing.",
-    },
-    {
       question: "What is the duration of the training program?",
       answer:
         "The program is structured over 6 weeks. Each week covers a dedicated curriculum milestones, culminating in a week dedicated entirely to teaching methodologies and classroom deployment.",
@@ -46,7 +35,7 @@ export default function FAQSection() {
   ];
 
   return (
-    <section id="faq" className="py-28 bg-white relative overflow-hidden">
+    <section id="faq" className="py-14 bg-white relative overflow-hidden">
       {/* Background */}
       <div className="absolute top-1/4 left-0 w-80 h-80 bg-primary/5 rounded-full blur-3xl -ml-40" />
       <div className="absolute bottom-1/4 right-0 w-80 h-80 bg-primary/5 rounded-full blur-3xl -mr-40" />
@@ -84,11 +73,13 @@ export default function FAQSection() {
                     </p>
                     <Button
                       variant="default"
+                      size="lg"
                       asChild
-                      className="rounded-xl shadow-lg shadow-primary/30 w-full"
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-12 px-6 rounded-xl text-base font-bold shadow-lg shadow-primary/30 transition-all"
                     >
-                      <Link href="tel:+919509206534">
-                        <PhoneCall className="w-4 h-4 mr-2" /> Talk to Our Team
+                      <Link href="/inquiry" className="flex items-center justify-center gap-2">
+                        <span>Fill Inquiry Form</span>
+                        <ArrowRight className="w-4 h-4" />
                       </Link>
                     </Button>
                   </div>

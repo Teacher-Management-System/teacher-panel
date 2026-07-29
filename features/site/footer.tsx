@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Heart,
   ArrowUp,
   Facebook,
   Linkedin,
@@ -9,6 +8,9 @@ import {
   Youtube,
   Mail,
   PhoneCall,
+  MapPin,
+  ExternalLink,
+  Clock,
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -144,38 +146,38 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Account */}
+          {/* Head Office */}
           <div>
-            <h4 className="font-semibold text-lg mb-6 text-white">Account</h4>
-            <ul className="space-y-3.5">
-              {[
-                { href: "/auth/login", label: "Login" },
-                { href: "/auth/signup", label: "Sign Up" },
-                { href: "/dashboard", label: "Dashboard" },
-                { href: "/inquiry", label: "Enroll Now" },
-              ].map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-slate-400 hover:text-primary transition-colors inline-flex items-center gap-2 group"
-                  >
-                    <span className="w-0 h-0.5 bg-primary group-hover:w-4 transition-all duration-300" />
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <h4 className="font-semibold text-lg mb-6 text-white flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-primary shrink-0" />
+              <span>Head Office</span>
+            </h4>
+            <div className="space-y-4">
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Plot no 57 Balaji Vihar 2 Govindpura Kalwar Road, Jaipur, Rajasthan 302012
+              </p>
+
+              <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 text-xs text-slate-300 flex items-center gap-2.5">
+                <Clock className="w-4 h-4 text-primary shrink-0" />
+                <span>Mon - Sat: 9:00 AM - 7:00 PM IST</span>
+              </div>
+
+              <a
+                href="https://maps.google.com/?q=Plot+no+57+Balaji+Vihar+2+Govindpura+Kalwar+Road+Jaipur+Rajasthan+302012"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary/10 hover:bg-primary text-primary hover:text-white border border-primary/20 text-xs font-semibold transition-all duration-300 w-full justify-center"
+              >
+                <span>Get Directions</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-slate-500 text-sm flex items-center gap-1.5">
-            Made with
-            <Heart className="w-4 h-4 text-primary fill-primary animate-pulse" />
-            by Aerophantom in India
-          </p>
-          <p className="text-slate-500 text-sm">
+        <div className="pt-8 border-t border-white/10 w-full text-center flex justify-center items-center">
+          <p className="text-slate-500 text-sm text-center w-full">
             © {new Date().getFullYear()} Aerophantom. All rights reserved.
           </p>
         </div>

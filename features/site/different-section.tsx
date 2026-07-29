@@ -57,7 +57,7 @@ export default function DifferentSection() {
   ];
 
   return (
-    <section id="different" className="py-28 bg-slate-50 relative overflow-hidden">
+    <section id="different" className="py-14 bg-slate-50 relative overflow-hidden">
       {/* Background patterns */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] -mr-64 -mt-64" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] -ml-64 -mb-64" />

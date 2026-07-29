@@ -7,7 +7,7 @@ import {
   BarChart,
   Settings,
   Info,
-  ArrowDown,
+  ArrowRight,
 } from "lucide-react";
 
 const ChallengesSection = () => {
@@ -47,7 +47,7 @@ const ChallengesSection = () => {
   return (
     <section
       id="challenges"
-      className="py-28 relative overflow-hidden bg-slate-950"
+      className="py-14 relative overflow-hidden bg-slate-950"
     >
       {/* Background */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(239,68,68,0.08),transparent_50%)]" />
@@ -80,10 +80,12 @@ const ChallengesSection = () => {
                   viewport={{ once: true }}
                   className="p-6 rounded-3xl bg-primary/10 border border-primary/25 backdrop-blur-sm"
                 >
-                  <p className="text-primary font-semibold text-lg flex items-start gap-3">
-                    <ArrowDown className="w-5 h-5 mt-1 shrink-0 animate-bounce" />
-                    Aerophantom solves these challenges with one complete
-                    educator ecosystem.
+                  <p className="text-primary font-semibold text-lg flex items-end justify-between gap-3">
+                    <span>
+                      Aerophantom solves these challenges with one complete
+                      educator ecosystem.
+                    </span>
+                    <ArrowRight className="w-5 h-5 mb-1 shrink-0 animate-pulse" />
                   </p>
                 </motion.div>
               </div>

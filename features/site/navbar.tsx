@@ -93,24 +93,15 @@ const Navbar = () => {
                     </Link>
                   </Button>
                 ) : (
-                  <>
-                    <Button
-                      variant="ghost"
-                      asChild
-                      className="rounded-full font-medium"
-                    >
-                      <Link href="/auth/login">Login</Link>
-                    </Button>
-                    <Button
-                      variant="default"
-                      asChild
-                      className="rounded-full shadow-lg shadow-primary/30 px-6"
-                    >
-                      <Link href="/inquiry">
-                        Enroll Now <ArrowRight className="w-4 h-4 ml-1.5" />
-                      </Link>
-                    </Button>
-                  </>
+                  <Button
+                    variant="default"
+                    asChild
+                    className="rounded-full shadow-lg shadow-primary/30 px-6"
+                  >
+                    <Link href="/inquiry">
+                      Inquire Now <ArrowRight className="w-4 h-4 ml-1.5" />
+                    </Link>
+                  </Button>
                 )}
               </>
             )}
@@ -169,32 +160,18 @@ const Navbar = () => {
                             </Link>
                           </Button>
                         ) : (
-                          <>
-                            <Button
-                              variant="outline"
-                              asChild
-                              className="w-full rounded-xl"
+                          <Button
+                            variant="default"
+                            asChild
+                            className="w-full rounded-xl shadow-lg shadow-primary/25"
+                          >
+                            <Link
+                              href="/inquiry"
+                              onClick={() => setIsOpen(false)}
                             >
-                              <Link
-                                href="/auth/login"
-                                onClick={() => setIsOpen(false)}
-                              >
-                                Login
-                              </Link>
-                            </Button>
-                            <Button
-                              variant="default"
-                              asChild
-                              className="w-full rounded-xl shadow-lg shadow-primary/25"
-                            >
-                              <Link
-                                href="/inquiry"
-                                onClick={() => setIsOpen(false)}
-                              >
-                                Enroll Now
-                              </Link>
-                            </Button>
-                          </>
+                              Inquire Now
+                            </Link>
+                          </Button>
                         )}
                       </>
                     )}
