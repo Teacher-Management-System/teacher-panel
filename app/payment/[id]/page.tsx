@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { load } from "@cashfreepayments/cashfree-js";
 import { paymentService } from "@/features/payment/api.service";
 import { Button } from "@/components/ui/button";
 import { CreditCard, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
@@ -42,13 +43,34 @@ export default function PaymentPage() {
     }
   };
 
-  const handlePay = () => {
-    if (!payment?.gateway_link) {
+  const handlePay = async () => {
+    if (!payment?.payment_session_id && !payment?.gateway_link) {
       toast.error("Payment link is not available. Please contact support.");
       return;
     }
     setProcessing(true);
-    window.location.href = payment.gateway_link;
+    try {
+      if (payment?.payment_session_id) {
+        const cashfree = await load({
+          mode: (process.env.NEXT_PUBLIC_CASHFREE_MODE as "sandbox" | "production") || "sandbox",
+        });
+        await cashfree.checkout({
+          paymentSessionId: payment.payment_session_id,
+          redirectTarget: "_self",
+        });
+        return;
+      }
+      if (payment?.gateway_link) {
+        window.location.href = payment.gateway_link;
+      }
+    } catch (err) {
+      console.error("Cashfree Checkout error:", err);
+      if (payment?.gateway_link) {
+        window.location.href = payment.gateway_link;
+      }
+    } finally {
+      setProcessing(false);
+    }
   };
 
   if (loading) {
