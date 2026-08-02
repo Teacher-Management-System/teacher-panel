@@ -650,16 +650,19 @@ const ProfileForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                   </div>
                   <Input
                     id="monthlyPaymentExpectation"
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     placeholder="Enter expected earnings"
                     className="pl-12 bg-muted/50 border-border rounded-xl h-11 shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
                     value={formData.monthlyPaymentExpectation}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      const valStr = e.target.value.replace(/[^0-9]/g, '');
                       handleInputChange(
                         "monthlyPaymentExpectation",
-                        e.target.value,
-                      )
-                    }
+                        valStr,
+                      );
+                    }}
                     disabled={isProfileCompleted}
                   />
                 </div>
